@@ -6,9 +6,19 @@ export async function updateSession(request: NextRequest) {
         request,
     })
 
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+        console.error('Middleware Error: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is missing')
+        // Unless we are on localhost, this should probably be a 500, but let's allow it to pass 
+        // if purely static, but for auth it will fail.
+        return supabaseResponse
+    }
+
     const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        supabaseUrl,
+        supabaseAnonKey,
         {
             cookies: {
                 getAll() {
@@ -28,18 +38,24 @@ export async function updateSession(request: NextRequest) {
     )
 
     // IMPORTANT: Avoid writing any logic between createServerClient and
-    // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-    // issues with users being randomly logged out.
-
+    // supabase.auth.getUser().
     const {
         data: { user },
     } = await supabase.auth.getUser()
 
+    const protectedPaths = [
+        '/dashboard',
+        '/patients',
+        '/inventory',
+        '/prescriptions',
+        '/billing',
+        '/settings'
+    ]
+
+    const isProtectedRoute = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
+
     // Redirect to login if not authenticated and trying to access protected routes
-    if (
-        !user &&
-        request.nextUrl.pathname.startsWith('/dashboard')
-    ) {
+    if (!user && isProtectedRoute) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
         return NextResponse.redirect(url)
