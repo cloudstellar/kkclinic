@@ -29,7 +29,7 @@ export default async function PatientDetailPage({
         return age
     }
 
-    const genderMap = {
+    const genderMap: Record<string, string> = {
         male: 'ชาย',
         female: 'หญิง',
         other: 'อื่นๆ',
