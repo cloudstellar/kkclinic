@@ -294,7 +294,14 @@ CREATE TABLE transactions (
     prescription_id UUID REFERENCES prescriptions(id),
     patient_id UUID NOT NULL REFERENCES patients(id),
     staff_id UUID NOT NULL REFERENCES users(id),
-    total_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+    
+    -- ✨ Billing breakdown (VAT-ready)
+    subtotal DECIMAL(10,2) NOT NULL DEFAULT 0,      -- รวมก่อนลด/VAT
+    discount DECIMAL(10,2) DEFAULT 0,               -- ส่วนลดท้ายบิล (บาท)
+    vat_amount DECIMAL(10,2) DEFAULT 0,             -- VAT (เก็บเผื่ออนาคต)
+    vat_included BOOLEAN DEFAULT true,              -- ราคายารวม VAT แล้วหรือไม่
+    total_amount DECIMAL(10,2) NOT NULL DEFAULT 0,  -- ยอดสุทธิ
+    
     payment_method TEXT DEFAULT 'cash' CHECK (payment_method IN ('cash', 'card', 'transfer')),
     paid_at TIMESTAMPTZ DEFAULT now(),
     notes TEXT,
@@ -315,11 +322,17 @@ CREATE INDEX idx_transactions_paid_at ON transactions(paid_at DESC);
 | prescription_id | UUID | FK → prescriptions | ใบสั่งยาที่อ้างอิง (nullable) |
 | patient_id | UUID | FK → patients | ผู้ป่วย |
 | staff_id | UUID | FK → users | พนักงานผู้ทำรายการ |
-| total_amount | DECIMAL(10,2) | NOT NULL | ยอดรวมสุทธิ |
+| **subtotal** | DECIMAL(10,2) | NOT NULL | รวมก่อนหักส่วนลด ✨ |
+| **discount** | DECIMAL(10,2) | DEFAULT 0 | ส่วนลดท้ายบิล (บาท) ✨ |
+| **vat_amount** | DECIMAL(10,2) | DEFAULT 0 | VAT 7% (เตรียมไว้อนาคต) ✨ |
+| **vat_included** | BOOLEAN | DEFAULT true | ราคายารวม VAT แล้ว ✨ |
+| total_amount | DECIMAL(10,2) | NOT NULL | ยอดสุทธิ |
 | payment_method | TEXT | CHECK | cash/card/transfer |
 | paid_at | TIMESTAMPTZ | DEFAULT now() | วันเวลาที่ชำระ |
 | notes | TEXT | - | หมายเหตุ |
 | created_at | TIMESTAMPTZ | DEFAULT now() | วันที่สร้าง |
+
+> **หมายเหตุ MVP:** `vat_amount = 0` และซ่อน VAT ใน UI จนกว่าจะจด VAT
 
 ---
 
