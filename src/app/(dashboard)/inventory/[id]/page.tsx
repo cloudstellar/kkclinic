@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getMedicine } from '../actions'
+import { getMedicine, getStockLogs } from '../actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StockAdjustment } from './stock-adjustment'
+import { StockHistoryTable } from '@/components/inventory/stock-history-table'
 
 export default async function MedicineDetailPage({
     params,
@@ -12,6 +13,7 @@ export default async function MedicineDetailPage({
 }) {
     const { id } = await params
     const { data: medicine, error } = await getMedicine(id)
+    const { data: logs } = await getStockLogs(id)
 
     if (error || !medicine) {
         notFound()
@@ -20,8 +22,8 @@ export default async function MedicineDetailPage({
     const isLowStock = medicine.stock_qty <= medicine.min_stock
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
+        <div className="p-6 max-w-4xl mx-auto space-y-6">
+            <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Link href="/inventory">
                         <Button variant="ghost" size="sm">
@@ -42,7 +44,7 @@ export default async function MedicineDetailPage({
 
             {/* Low Stock Warning */}
             {isLowStock && (
-                <Card className="border-orange-300 bg-orange-50 mb-6">
+                <Card className="border-orange-300 bg-orange-50">
                     <CardContent className="pt-6">
                         <p className="text-orange-700 font-medium">
                             ⚠️ ยาใกล้หมด! คงเหลือ {medicine.stock_qty} {medicine.unit} (ต่ำกว่าขั้นต่ำ {medicine.min_stock})
@@ -121,6 +123,11 @@ export default async function MedicineDetailPage({
                         <StockAdjustment medicineId={medicine.id} currentStock={medicine.stock_qty} unit={medicine.unit} />
                     </CardContent>
                 </Card>
+
+                {/* Stock History */}
+                <div className="md:col-span-2">
+                    <StockHistoryTable logs={logs || []} />
+                </div>
 
                 {/* Metadata */}
                 <Card className="md:col-span-2 bg-gray-50">

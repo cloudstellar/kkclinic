@@ -177,3 +177,74 @@ export async function updateStock(id: string, quantityChange: number, notes?: st
     revalidatePath(`/inventory/${id}`)
     return { success: true, error: null }
 }
+
+// Helper to search medicines for autocomplete
+export async function searchMedicines(query: string) {
+    const supabase = await createClient()
+
+    const { data } = await supabase
+        .from('medicines')
+        .select('id, code, name, unit, price, stock_qty')
+        .or(`name.ilike.%${query}%,code.ilike.%${query}%`)
+        .order('name')
+        .limit(10)
+
+    return { data }
+}
+
+// Generate next available medicine code
+export async function generateMedicineCode() {
+    const supabase = await createClient()
+
+    // Call the RPC function we created
+    const { data, error } = await supabase.rpc('generate_medicine_code')
+
+    if (error) {
+        console.error('Error generating code:', error)
+        return { error: 'Failed to generate code' }
+    }
+
+    return { data: data as string }
+}
+
+// Check if code is unique
+export async function checkCodeUnique(code: string, excludeId?: string) {
+    const supabase = await createClient()
+
+    let query = supabase
+        .from('medicines')
+        .select('id')
+        .eq('code', code)
+
+    if (excludeId) {
+        query = query.neq('id', excludeId)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+        console.error('Error checking code:', error)
+        return { error: 'Failed to check code' }
+    }
+
+    return { isUnique: !data || data.length === 0 }
+}
+
+// Get stock logs for a medicine
+export async function getStockLogs(medicineId: string) {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('stock_logs')
+        .select('*')
+        .eq('medicine_id', medicineId)
+        .order('created_at', { ascending: false })
+        .limit(50)
+
+    if (error) {
+        console.error('Error fetching stock logs:', error)
+        return { data: null, error: error.message }
+    }
+
+    return { data, error: null }
+}

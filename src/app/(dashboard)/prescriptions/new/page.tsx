@@ -65,28 +65,19 @@ export default function NewPrescriptionPage() {
 
     // Search patients
     useEffect(() => {
-        if (patientSearch.length >= 2) {
-            searchPatients(patientSearch).then(({ data }) => {
-                setPatients(data || [])
-                setShowPatientDropdown(true)
-            })
-        } else {
-            setPatients([])
-            setShowPatientDropdown(false)
-        }
+        // Load initial patients or search
+        searchPatients(patientSearch).then(({ data }) => {
+            setPatients(data || [])
+            // Only show dropdown if there's a search term or explicit focus (handled by onFocus)
+        })
     }, [patientSearch])
 
     // Search medicines
     useEffect(() => {
-        if (medicineSearch.length >= 2) {
-            searchMedicines(medicineSearch).then(({ data }) => {
-                setMedicines(data || [])
-                setShowMedicineDropdown(true)
-            })
-        } else {
-            setMedicines([])
-            setShowMedicineDropdown(false)
-        }
+        // Load initial medicines or search
+        searchMedicines(medicineSearch).then(({ data }) => {
+            setMedicines(data || [])
+        })
     }, [medicineSearch])
 
     function selectPatient(patient: Patient) {
@@ -204,9 +195,15 @@ export default function NewPrescriptionPage() {
                     ) : (
                         <div className="relative">
                             <Input
-                                placeholder="ค้นหา HN หรือชื่อผู้ป่วย..."
+                                placeholder="ค้นหา HN หรือชื่อผู้ป่วย... (คลิกเพื่อดูรายชื่อ)"
                                 value={patientSearch}
-                                onChange={(e) => setPatientSearch(e.target.value)}
+                                onChange={(e) => {
+                                    setPatientSearch(e.target.value)
+                                    setShowPatientDropdown(true)
+                                }}
+                                onFocus={() => setShowPatientDropdown(true)}
+                                // Delay hide to allow clicking options
+                                onBlur={() => setTimeout(() => setShowPatientDropdown(false), 200)}
                             />
                             {showPatientDropdown && patients.length > 0 && (
                                 <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
@@ -238,9 +235,14 @@ export default function NewPrescriptionPage() {
                 <CardContent>
                     <div className="relative mb-4">
                         <Input
-                            placeholder="ค้นหารหัสยาหรือชื่อยา..."
+                            placeholder="ค้นหารหัสยาหรือชื่อยา... (คลิกเพื่อเลือก)"
                             value={medicineSearch}
-                            onChange={(e) => setMedicineSearch(e.target.value)}
+                            onChange={(e) => {
+                                setMedicineSearch(e.target.value)
+                                setShowMedicineDropdown(true)
+                            }}
+                            onFocus={() => setShowMedicineDropdown(true)}
+                            onBlur={() => setTimeout(() => setShowMedicineDropdown(false), 200)}
                         />
                         {showMedicineDropdown && medicines.length > 0 && (
                             <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
@@ -286,8 +288,8 @@ export default function NewPrescriptionPage() {
                                             <Input
                                                 type="number"
                                                 min="1"
-                                                value={item.quantity}
-                                                onChange={(e) => updateItemQuantity(index, parseInt(e.target.value))}
+                                                value={item.quantity === 0 ? '' : item.quantity}
+                                                onChange={(e) => updateItemQuantity(index, Number(e.target.value) || 0)}
                                                 className="w-20"
                                             />
                                         </TableCell>
