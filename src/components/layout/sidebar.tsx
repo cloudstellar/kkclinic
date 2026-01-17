@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
@@ -27,10 +28,21 @@ export function Sidebar({ userRole }: { userRole: string }) {
     const visibleItems = menuItems.filter(item => item.roles.includes(userRole))
 
     return (
-        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <aside className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col">{/* Hidden on mobile, visible on md+ */}
             <div className="p-4 border-b border-gray-200">
-                <h1 className="text-xl font-bold text-primary">🏥 KKClinic</h1>
-                <p className="text-xs text-muted-foreground">ระบบบริหารจัดการคลินิก</p>
+                <div className="flex items-center gap-3">
+                    <Image
+                        src="/kkclinic.svg"
+                        alt="KKClinic Logo"
+                        width={64}
+                        height={64}
+                        className="object-contain"
+                    />
+                    <div>
+                        <h1 className="text-lg font-bold text-primary">KKClinic</h1>
+                        <p className="text-xs text-muted-foreground">ระบบบริหารจัดการคลินิก</p>
+                    </div>
+                </div>
             </div>
 
             <nav className="flex-1 p-4">

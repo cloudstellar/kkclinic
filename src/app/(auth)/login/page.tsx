@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -28,13 +29,25 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
             <Card className="w-full max-w-md">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold text-primary">
-                        🏥 KKClinic
-                    </CardTitle>
-                    <CardDescription>
-                        ระบบบริหารจัดการคลินิก
-                    </CardDescription>
+                <CardHeader className="text-center space-y-4">
+                    <div className="flex justify-center">
+                        <Image
+                            src="/kkclinic.svg"
+                            alt="KKClinic Logo"
+                            width={240}
+                            height={240}
+                            className="object-contain w-40 h-40 md:w-60 md:h-60"
+                            priority
+                        />
+                    </div>
+                    <div>
+                        <CardTitle className="text-2xl font-bold text-primary">
+                            KKClinic
+                        </CardTitle>
+                        <CardDescription>
+                            ระบบบริหารจัดการคลินิก
+                        </CardDescription>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <form action={handleSubmit} className="space-y-4">

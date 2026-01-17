@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/sidebar'
+import { MobileNav } from '@/components/layout/mobile-nav'
 import { Header } from '@/components/layout/header'
 
 export default async function DashboardLayout({
@@ -26,6 +27,7 @@ export default async function DashboardLayout({
         <div className="min-h-screen flex bg-gray-50">
             <Sidebar userRole={profile?.role || 'staff'} />
             <div className="flex-1 flex flex-col">
+                <MobileNav userRole={profile?.role || 'staff'} user={profile} />
                 <Header user={profile} />
                 <main className="flex-1 overflow-auto">
                     {children}

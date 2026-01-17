@@ -12,6 +12,13 @@ const notoSansThai = Noto_Sans_Thai({
 export const metadata: Metadata = {
   title: "KKClinic - ระบบบริหารจัดการคลินิก",
   description: "ระบบบริหารจัดการคลินิก ครอบคลุมการลงทะเบียนผู้ป่วย การสั่งยา การจ่ายยาและคิดเงิน และการจัดการคลังยา",
+  icons: {
+    icon: [
+      { url: "/kkclinic.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: "/kkclinic.svg",
+  },
 };
 
 export default function RootLayout({

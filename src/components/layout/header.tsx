@@ -51,7 +51,7 @@ export function Header({ user }: { user: User | null }) {
     }
 
     return (
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+        <header className="hidden md:flex h-16 bg-white border-b border-gray-200 items-center justify-between px-6">
             <div>
                 {/* Breadcrumb or page title can go here */}
             </div>

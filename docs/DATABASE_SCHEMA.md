@@ -128,7 +128,10 @@ CREATE TABLE patients (
     phone TEXT NOT NULL,
     address TEXT,
     notes TEXT,
-    is_demo BOOLEAN DEFAULT false,  -- ✨ แยกข้อมูล demo/staging
+    id_card TEXT,                    -- ✨ เลขบัตรประชาชน 13 หลัก
+    drug_allergies TEXT,             -- ✨ ประวัติแพ้ยา (สำคัญมาก)
+    underlying_conditions TEXT,      -- ✨ โรคประจำตัว/โรคเรื้อรัง
+    is_demo BOOLEAN DEFAULT false,   -- แยกข้อมูล demo/staging
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     created_by UUID REFERENCES users(id)
@@ -138,6 +141,7 @@ CREATE TABLE patients (
 CREATE INDEX idx_patients_hn ON patients(hn);
 CREATE INDEX idx_patients_name ON patients(name);
 CREATE INDEX idx_patients_phone ON patients(phone);
+CREATE INDEX idx_patients_id_card ON patients(id_card);
 
 -- Full-text search index
 CREATE INDEX idx_patients_name_search ON patients USING gin(to_tsvector('simple', name));
@@ -153,6 +157,10 @@ CREATE INDEX idx_patients_name_search ON patients USING gin(to_tsvector('simple'
 | phone | TEXT | NOT NULL | เบอร์โทรศัพท์ |
 | address | TEXT | - | ที่อยู่ |
 | notes | TEXT | - | หมายเหตุ |
+| **id_card** | TEXT | - | เลขบัตรประชาชน 13 หลัก ✨ |
+| **drug_allergies** | TEXT | - | ประวัติแพ้ยา (แสดงเตือนสีแดง) ✨ |
+| **underlying_conditions** | TEXT | - | โรคประจำตัว/โรคเรื้อรัง ✨ |
+| is_demo | BOOLEAN | DEFAULT false | แยกข้อมูล demo |
 | created_at | TIMESTAMPTZ | DEFAULT now() | วันที่ลงทะเบียน |
 | updated_at | TIMESTAMPTZ | DEFAULT now() | วันที่แก้ไขล่าสุด |
 | created_by | UUID | FK → users | ผู้ลงทะเบียน |

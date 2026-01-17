@@ -181,14 +181,17 @@ This project is private and proprietary.
 
 ## 📅 Roadmap (MVP)
 
-### Phase 1: Foundation
+### Phase 1: Foundation ✅
 - [x] Project setup (Next.js + shadcn/ui)
 - [x] Database schema design
-- [ ] Auth system (Login/Logout)
-- [ ] Patient registration & search
+- [x] Auth system (Login/Logout)
+- [x] Patient registration & search
+- [x] Drug allergies & medical info
+- [x] Dashboard with real data
+- [x] Responsive mobile navigation
 
 ### Phase 2: Core Workflow
-- [ ] Medicine CRUD
+- [ ] Medicine CRUD (Inventory)
 - [ ] Prescription entry (Doctor)
 - [ ] Dispensing & Billing (Staff)
 - [ ] Auto stock deduction
@@ -198,7 +201,6 @@ This project is private and proprietary.
 - [ ] Barcode scanner (camera)
 - [ ] Stock adjustment
 - [ ] RLS policies
-- [ ] Responsive design
 - [ ] Staging deployment
 
 ### Future (Phase 4+)

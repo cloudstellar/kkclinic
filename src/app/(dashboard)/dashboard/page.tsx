@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardPage() {
@@ -16,6 +17,17 @@ export default async function DashboardPage() {
         .select('*')
         .eq('id', user.id)
         .single()
+
+    // Get real counts from database
+    const [patientsResult, prescriptionsResult, medicinesResult] = await Promise.all([
+        supabase.from('patients').select('id', { count: 'exact', head: true }),
+        supabase.from('prescriptions').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('medicines').select('id', { count: 'exact', head: true }).eq('is_active', true),
+    ])
+
+    const patientCount = patientsResult.count || 0
+    const pendingPrescriptions = prescriptionsResult.count || 0
+    const medicineCount = medicinesResult.count || 0
 
     const getRoleLabel = (role: string) => {
         switch (role) {
@@ -41,22 +53,23 @@ export default async function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white rounded-lg shadow p-6">
+                <Link href="/patients" className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
                     <h3 className="font-semibold text-lg">👤 ผู้ป่วย</h3>
-                    <p className="text-3xl font-bold mt-2">-</p>
+                    <p className="text-3xl font-bold mt-2 text-primary">{patientCount}</p>
                     <p className="text-sm text-muted-foreground">รายทั้งหมด</p>
-                </div>
+                </Link>
                 <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="font-semibold text-lg">💊 ใบสั่งยา</h3>
-                    <p className="text-3xl font-bold mt-2">-</p>
+                    <p className="text-3xl font-bold mt-2 text-orange-500">{pendingPrescriptions}</p>
                     <p className="text-sm text-muted-foreground">รอจ่ายยา</p>
                 </div>
-                <div className="bg-white rounded-lg shadow p-6">
+                <Link href="/inventory" className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
                     <h3 className="font-semibold text-lg">📦 รายการยา</h3>
-                    <p className="text-3xl font-bold mt-2">10</p>
+                    <p className="text-3xl font-bold mt-2 text-green-600">{medicineCount}</p>
                     <p className="text-sm text-muted-foreground">รายการในระบบ</p>
-                </div>
+                </Link>
             </div>
         </div>
     )
 }
+
