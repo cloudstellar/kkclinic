@@ -50,6 +50,7 @@ export function PaymentModal({
                 payment_method: paymentMethod,
                 discount,
                 notes: notes || undefined,
+                request_id: crypto.randomUUID(),
             })
 
             if (result.error) {
@@ -106,8 +107,8 @@ export function PaymentModal({
                                     type="button"
                                     onClick={() => setPaymentMethod(method.value as 'cash' | 'transfer' | 'card')}
                                     className={`p-3 rounded-lg border text-sm font-medium transition-colors ${paymentMethod === method.value
-                                            ? 'border-primary bg-primary/10 text-primary'
-                                            : 'border-gray-200 hover:bg-gray-50'
+                                        ? 'border-primary bg-primary/10 text-primary'
+                                        : 'border-gray-200 hover:bg-gray-50'
                                         }`}
                                 >
                                     {method.label}

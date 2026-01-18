@@ -1,7 +1,10 @@
 # Handoff Prompt for AI Agent
 
 **Current State:**
-We have just completed **Sprint 2A** for the KKClinic Billing & Inventory System. The system is stable, and all core features for this sprint are implemented and verified.
+We have completed **Sprint 2A** for the KKClinic Billing & Inventory System. The system is stable, build passes, and all core features for this sprint are implemented and verified.
+
+**Last Updated:** 19 มกราคม 2569  
+**Version:** v2.0.0-sprint2a-complete
 
 **Recently Completed Features (Sprint 2A):**
 1. **Void Transaction:** Soft-delete (`status='voided'`), audit logging, and strict inventory logic (void != restore).
