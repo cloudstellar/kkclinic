@@ -729,61 +729,68 @@ CREATE POLICY "Hide demo data in production"
 
 ```sql
 -- ============================================
--- Sprint 2A Migration Script (Safe Version)
+-- Sprint 2A Migration Script (Robust Version)
 -- ============================================
 
--- 1. Add dosage instruction for medicine labels
-ALTER TABLE prescription_items 
-ADD COLUMN IF NOT EXISTS dosage_instruction TEXT;
--- วิธีใช้ยา เช่น "ครั้งละ 1-2 เม็ด หลังอาหาร วันละ 3 ครั้ง"
+-- 0) Normalize existing data first
+-- ถ้ามี status ว่าง ให้กลายเป็น 'paid' (transaction สร้างตอน confirm payment เท่านั้น)
+UPDATE transactions
+SET status = 'paid'
+WHERE status IS NULL;
 
--- 2. Add void columns for transactions
-ALTER TABLE transactions 
+-- 1) Add dosage instruction for labels
+ALTER TABLE prescription_items
+ADD COLUMN IF NOT EXISTS dosage_instruction TEXT;
+
+-- 2) Add void columns (ไม่แตะ status แบบ add column)
+ALTER TABLE transactions
 ADD COLUMN IF NOT EXISTS voided_at TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS voided_by UUID REFERENCES users(id),
 ADD COLUMN IF NOT EXISTS void_reason TEXT;
 
--- 3. Handle status column safely
--- ถ้ามี status อยู่แล้ว: set default
--- ถ้าไม่มี: add column
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'transactions' AND column_name = 'status'
-    ) THEN
-        ALTER TABLE transactions ADD COLUMN status TEXT DEFAULT 'paid';
-    ELSE
-        ALTER TABLE transactions ALTER COLUMN status SET DEFAULT 'paid';
-    END IF;
-END $$;
+-- 3) Ensure status default (ถ้าคอลัมน์ status มีอยู่แล้ว)
+ALTER TABLE transactions
+ALTER COLUMN status SET DEFAULT 'paid';
 
--- 4. Normalize existing data before adding constraint
--- Set NULL values to 'paid' (ทุก transaction ที่มีอยู่คือชำระแล้ว)
-UPDATE transactions SET status = 'paid' WHERE status IS NULL;
-
--- 5. Add status constraint (paid/voided only)
--- Drop existing constraint first (if any)
-ALTER TABLE transactions DROP CONSTRAINT IF EXISTS transactions_status_check;
-ALTER TABLE transactions 
-ADD CONSTRAINT transactions_status_check 
+-- 4) Status constraint (paid/voided only)
+ALTER TABLE transactions
+DROP CONSTRAINT IF EXISTS transactions_status_check;
+ALTER TABLE transactions
+ADD CONSTRAINT transactions_status_check
 CHECK (status IN ('paid', 'voided'));
--- อนาคต: เพิ่ม 'refunded' ตอน Phase 4
 
--- 6. กันจ่ายซ้ำ (Partial Unique Index) ⭐ สำคัญมาก
+-- 5) Void consistency check
+-- ถ้า voided ต้องมี voided_at และ void_reason
+ALTER TABLE transactions
+DROP CONSTRAINT IF EXISTS transactions_void_consistency_check;
+ALTER TABLE transactions
+ADD CONSTRAINT transactions_void_consistency_check
+CHECK (
+  status <> 'voided'
+  OR (voided_at IS NOT NULL AND void_reason IS NOT NULL)
+);
+
+-- 6) Prevent double payment (partial unique index)
+-- void แล้วจ่ายใหม่ได้ แต่ paid ซ้ำไม่ได้
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_paid_tx_per_prescription
 ON transactions(prescription_id)
 WHERE status = 'paid';
 
--- 7. Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_stock_logs_medicine_date 
+-- 7) Index for stock audit trail
+CREATE INDEX IF NOT EXISTS idx_stock_logs_medicine_date
 ON stock_logs(medicine_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_transactions_status 
-ON transactions(status);
-CREATE INDEX IF NOT EXISTS idx_transactions_status_paid_at
-ON transactions(status, paid_at DESC);
+
+-- 8) Indexes for Daily Sales (partial เฉพาะ paid = เร็วกว่า)
+DROP INDEX IF EXISTS idx_transactions_status;
+DROP INDEX IF EXISTS idx_transactions_status_paid_at;
+
 CREATE INDEX IF NOT EXISTS idx_transactions_paid_at
-ON transactions(paid_at DESC);
+ON transactions(paid_at DESC)
+WHERE status = 'paid';
+
+CREATE INDEX IF NOT EXISTS idx_transactions_paid_method_paid_at
+ON transactions(payment_method, paid_at DESC)
+WHERE status = 'paid';
 ```
 
 ---
