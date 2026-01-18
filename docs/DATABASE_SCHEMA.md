@@ -1,8 +1,8 @@
 # Database Schema Documentation
 # KKClinic - Supabase PostgreSQL
 
-**Version:** 1.0  
-**Last Updated:** 17 มกราคม 2569  
+**Version:** 1.1  
+**Last Updated:** 18 มกราคม 2569  
 
 ---
 
@@ -260,6 +260,7 @@ CREATE TABLE prescription_items (
     quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
     unit_price DECIMAL(10,2) NOT NULL DEFAULT 0,
     price_override DECIMAL(10,2),  -- ✨ ราคาปรับเฉพาะเคส
+    dosage_instruction TEXT,  -- ✨ วิธีใช้ยา สำหรับพิมพ์ฉลาก (Sprint 2A)
     note TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     
@@ -286,7 +287,8 @@ CREATE INDEX idx_prescription_items_type ON prescription_items(item_type);
 | quantity | INTEGER | NOT NULL, > 0 | จำนวน |
 | unit_price | DECIMAL(10,2) | NOT NULL | ราคาต่อหน่วย |
 | price_override | DECIMAL(10,2) | - | ราคาปรับเฉพาะเคส ✨ |
-| note | TEXT | - | หมายเหตุ (วิธีใช้) |
+| **dosage_instruction** | TEXT | - | วิธีใช้ยา (สำหรับฉลาก) ✨ Sprint 2A |
+| note | TEXT | - | หมายเหตุ |
 | created_at | TIMESTAMPTZ | DEFAULT now() | วันที่สร้าง |
 
 > **หมายเหตุ:** ใช้ `COALESCE(price_override, unit_price)` เพื่อคำนวณราคาจริง
@@ -302,6 +304,12 @@ CREATE TABLE transactions (
     prescription_id UUID REFERENCES prescriptions(id),
     patient_id UUID NOT NULL REFERENCES patients(id),
     staff_id UUID NOT NULL REFERENCES users(id),
+    
+    -- ✨ Status + Void (Sprint 2A)
+    status TEXT NOT NULL DEFAULT 'paid' CHECK (status IN ('pending', 'paid', 'voided')),
+    voided_at TIMESTAMPTZ,           -- ✨ เวลาที่ยกเลิก
+    voided_by UUID REFERENCES users(id),  -- ✨ ใครยกเลิก
+    void_reason TEXT,                -- ✨ เหตุผลการยกเลิก
     
     -- ✨ Billing breakdown (VAT-ready)
     subtotal DECIMAL(10,2) NOT NULL DEFAULT 0,      -- รวมก่อนลด/VAT
@@ -321,6 +329,7 @@ CREATE INDEX idx_transactions_patient ON transactions(patient_id);
 CREATE INDEX idx_transactions_staff ON transactions(staff_id);
 CREATE INDEX idx_transactions_prescription ON transactions(prescription_id);
 CREATE INDEX idx_transactions_paid_at ON transactions(paid_at DESC);
+CREATE INDEX idx_transactions_status ON transactions(status);
 ```
 
 | Column | Type | Constraints | Description |
@@ -330,6 +339,10 @@ CREATE INDEX idx_transactions_paid_at ON transactions(paid_at DESC);
 | prescription_id | UUID | FK → prescriptions | ใบสั่งยาที่อ้างอิง (nullable) |
 | patient_id | UUID | FK → patients | ผู้ป่วย |
 | staff_id | UUID | FK → users | พนักงานผู้ทำรายการ |
+| **status** | TEXT | CHECK | pending/paid/voided ✨ Sprint 2A |
+| **voided_at** | TIMESTAMPTZ | - | เวลาที่ยกเลิก ✨ Sprint 2A |
+| **voided_by** | UUID | FK → users | ใครยกเลิก ✨ Sprint 2A |
+| **void_reason** | TEXT | - | เหตุผลการยกเลิก ✨ Sprint 2A |
 | **subtotal** | DECIMAL(10,2) | NOT NULL | รวมก่อนหักส่วนลด ✨ |
 | **discount** | DECIMAL(10,2) | DEFAULT 0 | ส่วนลดท้ายบิล (บาท) ✨ |
 | **vat_amount** | DECIMAL(10,2) | DEFAULT 0 | VAT 7% (เตรียมไว้อนาคต) ✨ |
@@ -700,3 +713,52 @@ CREATE POLICY "Hide demo data in production"
 |---------|------|------|
 | 1.0 | 2026-01-17 | Initial schema |
 | 1.1 | 2026-01-17 | Added `item_type`, `procedure_name`, `price_override`, `total_price`, `cancelled_reason`, `completed_at`, `last_login_at`, `is_demo` |
+| **1.2** | **2026-01-18** | **Sprint 2A:** Added `dosage_instruction`, `status`, `voided_at`, `voided_by`, `void_reason`, stock audit index |
+
+---
+
+## Pending Migrations (Sprint 2A)
+
+> ⚠️ **Run these migrations before deploying Sprint 2A features**
+
+```sql
+-- 1. Add dosage instruction for medicine labels
+ALTER TABLE prescription_items 
+ADD COLUMN IF NOT EXISTS dosage_instruction TEXT;
+-- วิธีใช้ยา เช่น "ครั้งละ 1-2 เม็ด หลังอาหาร วันละ 3 ครั้ง"
+-- หมอกรอกตอนสร้างใบสั่งยา
+
+-- 2. Add void columns for transactions
+ALTER TABLE transactions 
+ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'paid',
+ADD COLUMN IF NOT EXISTS voided_at TIMESTAMPTZ,
+ADD COLUMN IF NOT EXISTS voided_by UUID REFERENCES users(id),
+ADD COLUMN IF NOT EXISTS void_reason TEXT;
+
+-- 3. Update/Add status constraint to include 'voided'
+ALTER TABLE transactions 
+DROP CONSTRAINT IF EXISTS transactions_status_check;
+ALTER TABLE transactions 
+ADD CONSTRAINT transactions_status_check 
+CHECK (status IN ('pending', 'paid', 'voided'));
+
+-- 4. Add index for stock audit trail
+CREATE INDEX IF NOT EXISTS idx_stock_logs_medicine_date 
+ON stock_logs(medicine_id, created_at DESC);
+
+-- 5. Add index for transaction status
+CREATE INDEX IF NOT EXISTS idx_transactions_status 
+ON transactions(status);
+```
+
+---
+
+## Future Migrations (Sprint 3)
+
+```sql
+-- Low stock threshold (2 levels)
+ALTER TABLE medicines 
+ADD COLUMN IF NOT EXISTS low_stock_threshold INT DEFAULT 10,
+ADD COLUMN IF NOT EXISTS critical_threshold INT DEFAULT 3;
+```
+
