@@ -306,7 +306,8 @@ CREATE TABLE transactions (
     staff_id UUID NOT NULL REFERENCES users(id),
     
     -- ✨ Status + Void (Sprint 2A)
-    status TEXT NOT NULL DEFAULT 'paid' CHECK (status IN ('pending', 'paid', 'voided')),
+    -- Transaction สร้างตอน confirm payment เท่านั้น (ไม่มี pending)
+    status TEXT NOT NULL DEFAULT 'paid' CHECK (status IN ('paid', 'voided')),
     voided_at TIMESTAMPTZ,           -- ✨ เวลาที่ยกเลิก
     voided_by UUID REFERENCES users(id),  -- ✨ ใครยกเลิก
     void_reason TEXT,                -- ✨ เหตุผลการยกเลิก
@@ -330,6 +331,11 @@ CREATE INDEX idx_transactions_staff ON transactions(staff_id);
 CREATE INDEX idx_transactions_prescription ON transactions(prescription_id);
 CREATE INDEX idx_transactions_paid_at ON transactions(paid_at DESC);
 CREATE INDEX idx_transactions_status ON transactions(status);
+CREATE INDEX idx_transactions_status_paid_at ON transactions(status, paid_at DESC);
+
+-- ✨ กันจ่ายซ้ำ (Partial Unique Index)
+CREATE UNIQUE INDEX uniq_paid_tx_per_prescription
+ON transactions(prescription_id) WHERE status = 'paid';
 ```
 
 | Column | Type | Constraints | Description |
@@ -339,7 +345,7 @@ CREATE INDEX idx_transactions_status ON transactions(status);
 | prescription_id | UUID | FK → prescriptions | ใบสั่งยาที่อ้างอิง (nullable) |
 | patient_id | UUID | FK → patients | ผู้ป่วย |
 | staff_id | UUID | FK → users | พนักงานผู้ทำรายการ |
-| **status** | TEXT | CHECK | pending/paid/voided ✨ Sprint 2A |
+| **status** | TEXT | CHECK | paid/voided (no pending) ✨ Sprint 2A |
 | **voided_at** | TIMESTAMPTZ | - | เวลาที่ยกเลิก ✨ Sprint 2A |
 | **voided_by** | UUID | FK → users | ใครยกเลิก ✨ Sprint 2A |
 | **void_reason** | TEXT | - | เหตุผลการยกเลิก ✨ Sprint 2A |
@@ -735,20 +741,30 @@ ADD COLUMN IF NOT EXISTS voided_at TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS voided_by UUID REFERENCES users(id),
 ADD COLUMN IF NOT EXISTS void_reason TEXT;
 
--- 3. Update/Add status constraint to include 'voided'
+-- 3. Status constraint (paid/voided only - ไม่มี pending)
+-- เพราะ transaction สร้างตอน confirm payment เท่านั้น
 ALTER TABLE transactions 
 DROP CONSTRAINT IF EXISTS transactions_status_check;
 ALTER TABLE transactions 
 ADD CONSTRAINT transactions_status_check 
-CHECK (status IN ('pending', 'paid', 'voided'));
+CHECK (status IN ('paid', 'voided'));
+-- อนาคต: เพิ่ม 'refunded' ตอน Phase 4
 
--- 4. Add index for stock audit trail
+-- 4. กันจ่ายซ้ำ (Partial Unique Index) ⭐ สำคัญมาก
+-- void แล้วจ่ายใหม่ได้ แต่ paid ซ้ำไม่ได้
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_paid_tx_per_prescription
+ON transactions(prescription_id)
+WHERE status = 'paid';
+
+-- 5. Add index for stock audit trail
 CREATE INDEX IF NOT EXISTS idx_stock_logs_medicine_date 
 ON stock_logs(medicine_id, created_at DESC);
 
--- 5. Add index for transaction status
+-- 6. Add indexes for Daily Sales performance
 CREATE INDEX IF NOT EXISTS idx_transactions_status 
 ON transactions(status);
+CREATE INDEX IF NOT EXISTS idx_transactions_status_paid_at
+ON transactions(status, paid_at DESC);
 ```
 
 ---
