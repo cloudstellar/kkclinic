@@ -759,15 +759,15 @@ ALTER TABLE transactions
 ADD CONSTRAINT transactions_status_check
 CHECK (status IN ('paid', 'voided'));
 
--- 5) Void consistency check
--- ถ้า voided ต้องมี voided_at และ void_reason
+-- 5) Void consistency check (ครบทั้ง 3 fields)
+-- ถ้า voided ต้องมี voided_at, void_reason, และ voided_by
 ALTER TABLE transactions
 DROP CONSTRAINT IF EXISTS transactions_void_consistency_check;
 ALTER TABLE transactions
 ADD CONSTRAINT transactions_void_consistency_check
 CHECK (
   status <> 'voided'
-  OR (voided_at IS NOT NULL AND void_reason IS NOT NULL)
+  OR (voided_at IS NOT NULL AND void_reason IS NOT NULL AND voided_by IS NOT NULL)
 );
 
 -- 6) Prevent double payment (partial unique index)
@@ -780,11 +780,9 @@ WHERE status = 'paid';
 CREATE INDEX IF NOT EXISTS idx_stock_logs_medicine_date
 ON stock_logs(medicine_id, created_at DESC);
 
--- 8) Indexes for Daily Sales (partial เฉพาะ paid = เร็วกว่า)
-DROP INDEX IF EXISTS idx_transactions_status;
-DROP INDEX IF EXISTS idx_transactions_status_paid_at;
-
-CREATE INDEX IF NOT EXISTS idx_transactions_paid_at
+-- 8) Indexes for Daily Sales (ใช้ชื่อใหม่กัน collision กับ index เดิม)
+-- ใช้ suffix _paid เพื่อบอกว่าเป็น partial index
+CREATE INDEX IF NOT EXISTS idx_transactions_paid_at_paid
 ON transactions(paid_at DESC)
 WHERE status = 'paid';
 
