@@ -1,7 +1,7 @@
 # KKClinic Knowledge Base
 # Internal Development Documentation
 
-**Last Updated:** 17 มกราคม 2569
+**Last Updated:** 18 มกราคม 2569
 
 ---
 
@@ -411,23 +411,37 @@ function usePatients() {
 8. Redirect ไป /prescriptions/{id}
 ```
 
-### 3. Staff Dispenses & Bills
+### 3. Staff Dispenses & Bills (Payment Modal)
 
 ```
-1. Staff ไปที่ /dispensing
+1. Staff ไปที่ /prescriptions
 2. เห็นรายการใบสั่งที่ status='pending'
-3. เลือกใบสั่ง → ไปที่ /dispensing/{id}
+3. เลือกใบสั่ง → ไปที่ /prescriptions/{id}
 4. ตรวจสอบรายการยา
-5. กด "ยืนยันจ่ายยา"
-6. BEGIN TRANSACTION:
-   - UPDATE prescriptions SET status='dispensed'
-   - INSERT INTO transactions
-   - INSERT INTO transaction_items
+5. กดปุ่ม "💳 ชำระเงิน"
+6. Payment Modal เปิด:
+   - แสดง Preview รายการ
+   - เลือก ส่วนลด (THB หรือ %)
+   - เลือก วิธีชำระ (เงินสด/โอน/บัตร)
+   - ใส่หมายเหตุ (optional)
+7. กด "ยืนยันชำระเงิน"
+8. Stock Validation:
+   - ถ้าสต็อกไม่พอ → แสดง Error, ไม่ดำเนินการ
+9. BEGIN TRANSACTION:
+   - INSERT INTO transactions (receipt_no, totals)
    - UPDATE medicines SET stock_qty = stock_qty - qty
    - INSERT INTO stock_logs (type='dispense')
-7. COMMIT
-8. แสดงใบเสร็จ (พร้อมปุ่มพิมพ์)
+   - UPDATE prescriptions SET status='dispensed'
+10. COMMIT
+11. Redirect ไป /billing/receipt/{id}
+12. แสดงใบเสร็จ (พร้อมปุ่มพิมพ์)
 ```
+
+**Key Components:**
+- `PaymentModal` - src/components/payment/payment-modal.tsx
+- `PaymentButton` - src/app/(dashboard)/prescriptions/[id]/payment-button.tsx  
+- `processPayment()` - src/app/(dashboard)/billing/actions.ts
+- `formatCurrency()` - src/lib/utils.ts
 
 ### 4. Stock Restock
 

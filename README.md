@@ -190,23 +190,43 @@ This project is private and proprietary.
 - [x] Dashboard with real data
 - [x] Responsive mobile navigation
 
-### Phase 2: Core Workflow
-- [ ] Medicine CRUD (Inventory)
-- [ ] Prescription entry (Doctor)
-- [ ] Dispensing & Billing (Staff)
-- [ ] Auto stock deduction
-- [ ] Receipt generation
+### Phase 2: Core Workflow ✅
+- [x] Medicine CRUD (Inventory)
+- [x] Prescription entry (Doctor)
+- [x] Dispensing flow (Staff)
+- [x] Auto stock deduction
+- [x] Receipt generation (thermal 80mm)
+
+### Phase 2.3: UX & Billing ✅
+- [x] Autocomplete: Open dropdown on focus
+- [x] Auto Code: Generate button for medicines
+- [x] Unit Selection: Combobox with Creatable
+- [x] Stock History: Detailed logs in medicine detail
+- [x] Void transaction (cancel with reason)
+- [x] **Payment Modal workflow** (discount, payment methods, stock validation)
+- [ ] Daily sales summary page
+
+### Phase 2.5: MVP+ (Next)
+- [ ] Procedure/Service items UI (item_type = 'procedure')
+- [ ] `service_category` field for reporting
+- [ ] VAT-ready structure (is_taxable field)
+- [ ] Label printing (medication labels A6 format)
 
 ### Phase 3: Inventory & Polish
 - [ ] Barcode scanner (camera)
-- [ ] Stock adjustment
-- [ ] RLS policies
+- [x] Stock adjustment
+- [ ] RLS policies (production)
 - [ ] Staging deployment
 
 ### Future (Phase 4+)
+- [ ] Quick Restock Mode (scan → qty → save)
+- [ ] Scan-to-Dispense (error-proofing)
 - [ ] PDF Receipt export
 - [ ] LOT/Expiry tracking
 - [ ] Mobile PWA support
+- [ ] Optical orders (แว่น/คอนแทค)
+- [ ] Insurance billing / Multi-payer
+- [ ] Split payment (multiple methods)
 - [ ] Advanced reports
 - [ ] EMR integration
 

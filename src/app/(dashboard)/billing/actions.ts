@@ -48,10 +48,40 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
         return { data: null, error: 'ใบสั่งยานี้ไม่อยู่ในสถานะรอจ่ายยา' }
     }
 
+    // Stock validation (Fail Fast)
+    if (prescription.items && prescription.items.length > 0) {
+        const medicineIds = prescription.items
+            .filter((item: { medicine_id: string | null }) => item.medicine_id)
+            .map((item: { medicine_id: string }) => item.medicine_id)
+
+        if (medicineIds.length > 0) {
+            const { data: medicines } = await supabase
+                .from('medicines')
+                .select('id, name, stock_qty')
+                .in('id', medicineIds)
+
+            const stockMap = new Map(medicines?.map(m => [m.id, { name: m.name, stock: m.stock_qty }]) || [])
+
+            const insufficientItems: string[] = []
+            for (const item of prescription.items) {
+                if (item.medicine_id) {
+                    const med = stockMap.get(item.medicine_id)
+                    if (med && item.quantity > med.stock) {
+                        insufficientItems.push(`${med.name} (ต้องการ ${item.quantity}, เหลือ ${med.stock})`)
+                    }
+                }
+            }
+
+            if (insufficientItems.length > 0) {
+                return { data: null, error: `สต็อกไม่เพียงพอ: ${insufficientItems.join(', ')}` }
+            }
+        }
+    }
+
     // Calculate amounts
     const subtotal = prescription.total_price || 0
     const discount = formData.discount || 0
-    const totalAmount = Math.max(0, subtotal - discount)
+    const totalAmount = Math.max(0, Math.round((subtotal - discount) * 100) / 100)
 
     // Generate receipt number
     const receiptNo = await generateReceiptNo()

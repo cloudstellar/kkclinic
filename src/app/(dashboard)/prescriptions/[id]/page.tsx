@@ -11,7 +11,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { DispenseButton } from './dispense-button'
+import { PaymentButton } from './payment-button'
 
 const statusLabels: Record<string, { label: string; className: string }> = {
     pending: { label: 'รอจ่ายยา', className: 'bg-yellow-100 text-yellow-700' },
@@ -50,7 +50,7 @@ export default async function PrescriptionDetailPage({
                     </div>
                 </div>
                 {prescription.status === 'pending' && (
-                    <DispenseButton prescriptionId={prescription.id} prescriptionNo={prescription.prescription_no} />
+                    <PaymentButton prescription={prescription} />
                 )}
             </div>
 

@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/table'
 import { createPrescription, searchPatients, searchMedicines } from '../actions'
 import { toast } from 'sonner'
+import { QuantityInput } from '@/components/ui/quantity-input'
 
 type Patient = {
     id: string
@@ -41,6 +42,7 @@ type PrescriptionItem = {
     unit: string
     price: number
     quantity: number
+    stock_qty: number  // เก็บไว้เตือน Soft warn
     note: string
 }
 
@@ -98,6 +100,7 @@ export default function NewPrescriptionPage() {
             medicine_name: medicine.name,
             unit: medicine.unit,
             price: medicine.price,
+            stock_qty: medicine.stock_qty,
             quantity: 1,
             note: '',
         }])
@@ -107,7 +110,7 @@ export default function NewPrescriptionPage() {
 
     function updateItemQuantity(index: number, quantity: number) {
         const newItems = [...items]
-        newItems[index].quantity = Math.max(1, quantity)
+        newItems[index].quantity = quantity
         setItems(newItems)
     }
 
@@ -285,12 +288,13 @@ export default function NewPrescriptionPage() {
                                             <span className="text-sm text-muted-foreground ml-2">({item.unit})</span>
                                         </TableCell>
                                         <TableCell>
-                                            <Input
-                                                type="number"
-                                                min="1"
-                                                value={item.quantity === 0 ? '' : item.quantity}
-                                                onChange={(e) => updateItemQuantity(index, Number(e.target.value) || 0)}
-                                                className="w-20"
+                                            <QuantityInput
+                                                value={item.quantity}
+                                                onChange={(val) => updateItemQuantity(index, val)}
+                                                min={1}
+                                                max={999}
+                                                stockQty={item.stock_qty}
+                                                unit={item.unit}
                                             />
                                         </TableCell>
                                         <TableCell>

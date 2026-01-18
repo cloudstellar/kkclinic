@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { updateStock } from '../actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { QuantityInput } from '@/components/ui/quantity-input'
 import { toast } from 'sonner'
 
 export function StockAdjustment({
@@ -17,20 +18,24 @@ export function StockAdjustment({
     unit: string
 }) {
     const router = useRouter()
-    const [quantity, setQuantity] = useState('')
+    const [quantity, setQuantity] = useState(1)
     const [notes, setNotes] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
 
+    // Preview ผลลัพธ์หลังปรับ
+    const previewAdd = currentStock + quantity
+    const previewSubtract = currentStock - quantity
+    const willBeNegative = previewSubtract < 0
+
     async function handleAdjust(type: 'add' | 'subtract') {
-        const qty = parseInt(quantity, 10)
-        if (isNaN(qty) || qty <= 0) {
+        if (quantity <= 0) {
             toast.error('กรุณาระบุจำนวนที่ถูกต้อง')
             return
         }
 
-        const change = type === 'add' ? qty : -qty
+        const change = type === 'add' ? quantity : -quantity
 
-        if (type === 'subtract' && qty > currentStock) {
+        if (type === 'subtract' && quantity > currentStock) {
             toast.error('จำนวนสต็อกไม่เพียงพอ')
             return
         }
@@ -44,8 +49,8 @@ export function StockAdjustment({
                 return
             }
 
-            toast.success(`${type === 'add' ? 'เพิ่ม' : 'ลด'}สต็อก ${qty} ${unit} สำเร็จ`)
-            setQuantity('')
+            toast.success(`${type === 'add' ? 'เพิ่ม' : 'ลด'}สต็อก ${quantity} ${unit} สำเร็จ`)
+            setQuantity(1)
             setNotes('')
             router.refresh()
         } catch (error) {
@@ -57,18 +62,22 @@ export function StockAdjustment({
 
     return (
         <div className="space-y-4">
-            <div className="flex gap-4 items-end">
-                <div className="flex-1 max-w-[200px]">
+            {/* Current Stock Display */}
+            <div className="text-sm text-muted-foreground">
+                สต็อกปัจจุบัน: <span className="font-bold text-foreground">{currentStock} {unit}</span>
+            </div>
+
+            <div className="flex gap-4 items-start">
+                <div className="flex-shrink-0">
                     <label className="text-sm text-muted-foreground block mb-1">
                         จำนวน ({unit})
                     </label>
-                    <Input
-                        type="number"
-                        min="1"
+                    <QuantityInput
                         value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
-                        placeholder="0"
-                        disabled={isSubmitting}
+                        onChange={setQuantity}
+                        min={1}
+                        max={9999}
+                        autoFocus
                     />
                 </div>
                 <div className="flex-1">
@@ -78,22 +87,34 @@ export function StockAdjustment({
                     <Input
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        placeholder="เช่น รับสินค้าเพิ่ม, ปรับยอด"
+                        placeholder="เช่น รับสินค้าเพิ่ม, ยาหมดอายุ, ปรับยอด"
                         disabled={isSubmitting}
                     />
                 </div>
             </div>
+
+            {/* Preview Results */}
+            <div className="flex gap-4 text-sm">
+                <div className="text-green-600">
+                    ถ้าเพิ่ม: {currentStock} → <span className="font-bold">{previewAdd}</span>
+                </div>
+                <div className={willBeNegative ? "text-red-600" : "text-orange-600"}>
+                    ถ้าลด: {currentStock} → <span className="font-bold">{previewSubtract}</span>
+                    {willBeNegative && <span className="ml-1">⚠️ ติดลบ</span>}
+                </div>
+            </div>
+
             <div className="flex gap-2">
                 <Button
                     onClick={() => handleAdjust('add')}
-                    disabled={isSubmitting || !quantity}
+                    disabled={isSubmitting || quantity <= 0}
                     className="bg-green-600 hover:bg-green-700"
                 >
                     + เพิ่มสต็อก
                 </Button>
                 <Button
                     onClick={() => handleAdjust('subtract')}
-                    disabled={isSubmitting || !quantity}
+                    disabled={isSubmitting || quantity <= 0 || willBeNegative}
                     variant="destructive"
                 >
                     - ลดสต็อก

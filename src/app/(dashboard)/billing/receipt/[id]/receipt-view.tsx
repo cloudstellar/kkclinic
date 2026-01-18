@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { TransactionWithRelations } from '@/types/transactions'
 
 const paymentMethodLabels: Record<string, string> = {
@@ -42,20 +43,29 @@ export function ReceiptView({ transaction }: { transaction: TransactionWithRelat
                         🖨️ พิมพ์ใบเสร็จ
                     </button>
                     <button
-                        onClick={() => window.close()}
+                        onClick={() => window.history.back()}
                         className="px-4 py-2 border rounded-lg hover:bg-gray-50"
                     >
-                        ปิด
+                        ← ย้อนกลับ
                     </button>
                 </div>
 
                 {/* Receipt */}
                 <div className="receipt-container max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg" style={{ width: '80mm' }}>
-                    {/* Header */}
+                    {/* Header with Logo */}
                     <div className="text-center mb-4 border-b pb-4">
-                        <h1 className="text-xl font-bold">คลินิกเวชกรรม KK</h1>
-                        <p className="text-sm text-gray-600">123/45 ถนนสุขุมวิท กรุงเทพฯ</p>
-                        <p className="text-sm text-gray-600">โทร: 02-123-4567</p>
+                        <div className="flex justify-center mb-2">
+                            <Image
+                                src="/kkclinic.svg"
+                                alt="คลินิกตาใสใส"
+                                width={60}
+                                height={60}
+                                className="object-contain"
+                            />
+                        </div>
+                        <h1 className="text-xl font-bold">คลินิกตาใสใส</h1>
+                        <p className="text-sm text-gray-600">เทศบาล 34 ต.บ้านฉาง อ.บ้านฉาง</p>
+                        <p className="text-sm text-gray-600">จ.ระยอง 21130</p>
                     </div>
 
                     {/* Receipt Info */}
