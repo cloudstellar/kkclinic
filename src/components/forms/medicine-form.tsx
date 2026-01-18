@@ -302,14 +302,17 @@ export function MedicineForm({ medicine, onSubmit, isSubmitting }: MedicineFormP
                     )}
 
                     <div className="space-y-2">
-                        <Label htmlFor="description">รายละเอียด/หมายเหตุ</Label>
+                        <Label htmlFor="description">สรรพคุณ/คำอธิบาย</Label>
                         <Textarea
                             id="description"
                             {...register('description')}
-                            placeholder="ข้อมูลเพิ่มเติมเกี่ยวกับยา"
+                            placeholder="เช่น บรรเทาอาการปวด ลดไข้, น้ำตาเทียม รักษาแผลถลอกผิวตา"
                             rows={2}
                             disabled={isSubmitting}
                         />
+                        <p className="text-xs text-muted-foreground">
+                            ข้อมูลนี้จะแสดงบนฉลากยา
+                        </p>
                     </div>
                 </CardContent>
             </Card>

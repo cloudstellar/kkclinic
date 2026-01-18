@@ -100,13 +100,23 @@ export function PaymentModal({ open, onOpenChange, prescription }: PaymentModalP
 
         setIsProcessing(true)
         try {
+            // Generate request_id for idempotency (prevents double-submit)
+            const requestId = crypto.randomUUID()
+
             const result = await processPayment(prescription.id, {
                 payment_method: paymentMethod,
                 discount: discountAmount,
                 notes: notes || undefined,
+                request_id: requestId,
             })
 
             if (result.error) {
+                // Check if already paid by another request
+                if ('existingReceiptId' in result && result.existingReceiptId) {
+                    toast.error(result.error)
+                    router.push(`/billing/receipt/${result.existingReceiptId}`)
+                    return
+                }
                 toast.error(result.error)
                 return
             }
@@ -173,8 +183,8 @@ export function PaymentModal({ open, onOpenChange, prescription }: PaymentModalP
                                     type="button"
                                     onClick={() => setDiscountType('thb')}
                                     className={`px-3 py-2 text-sm transition-colors ${discountType === 'thb'
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted hover:bg-muted/80'
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-muted hover:bg-muted/80'
                                         }`}
                                 >
                                     บาท
@@ -183,8 +193,8 @@ export function PaymentModal({ open, onOpenChange, prescription }: PaymentModalP
                                     type="button"
                                     onClick={() => setDiscountType('percent')}
                                     className={`px-3 py-2 text-sm transition-colors ${discountType === 'percent'
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted hover:bg-muted/80'
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-muted hover:bg-muted/80'
                                         }`}
                                 >
                                     %
@@ -230,8 +240,8 @@ export function PaymentModal({ open, onOpenChange, prescription }: PaymentModalP
                                     type="button"
                                     onClick={() => setPaymentMethod(method.value as typeof paymentMethod)}
                                     className={`p-3 rounded-lg border text-sm transition-colors ${paymentMethod === method.value
-                                            ? 'border-primary bg-primary/10 text-primary'
-                                            : 'hover:border-muted-foreground/50'
+                                        ? 'border-primary bg-primary/10 text-primary'
+                                        : 'hover:border-muted-foreground/50'
                                         }`}
                                 >
                                     {method.label}

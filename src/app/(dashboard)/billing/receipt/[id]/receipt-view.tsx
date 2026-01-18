@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { TransactionWithRelations } from '@/types/transactions'
+import { VoidTransactionDialog } from './void-transaction-dialog'
 
 const paymentMethodLabels: Record<string, string> = {
     cash: 'เงินสด',
@@ -9,7 +10,15 @@ const paymentMethodLabels: Record<string, string> = {
     card: 'บัตรเครดิต/เดบิต',
 }
 
-export function ReceiptView({ transaction }: { transaction: TransactionWithRelations & { items: any[] } }) {
+type ReceiptViewProps = {
+    transaction: TransactionWithRelations & { items: any[] }
+    userRole?: string
+}
+
+export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
+    const isVoided = transaction.status === 'voided'
+    const canVoid = !isVoided && ['admin', 'staff'].includes(userRole || '')
+
     return (
         <>
             {/* Print Styles */}
@@ -30,28 +39,68 @@ export function ReceiptView({ transaction }: { transaction: TransactionWithRelat
                     .no-print {
                         display: none !important;
                     }
+                    .voided-watermark {
+                        display: block !important;
+                    }
                 }
             `}</style>
 
             <div className="min-h-screen bg-gray-100 p-4">
+                {/* Voided Banner */}
+                {isVoided && (
+                    <div className="no-print max-w-md mx-auto mb-4 bg-red-100 border border-red-300 rounded-lg p-4">
+                        <p className="text-red-700 font-bold text-center">❌ บิลนี้ถูกยกเลิกแล้ว</p>
+                        <div className="text-sm text-red-600 mt-2 space-y-1">
+                            <p><strong>เหตุผล:</strong> {transaction.void_reason}</p>
+                            <p><strong>ยกเลิกโดย:</strong> {transaction.voided_by_user?.full_name || '-'}</p>
+                            <p><strong>เมื่อ:</strong> {transaction.voided_at ? new Date(transaction.voided_at).toLocaleString('th-TH') : '-'}</p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Action Buttons */}
-                <div className="no-print max-w-md mx-auto mb-4 flex gap-2">
-                    <button
-                        onClick={() => window.print()}
-                        className="flex-1 bg-primary text-white py-2 px-4 rounded-lg font-medium hover:bg-primary/90"
-                    >
-                        🖨️ พิมพ์ใบเสร็จ
-                    </button>
+                <div className="no-print max-w-md mx-auto mb-4 flex gap-2 flex-wrap">
+                    {!isVoided && (
+                        <>
+                            <button
+                                onClick={() => window.print()}
+                                className="flex-1 bg-primary text-white py-2 px-4 rounded-lg font-medium hover:bg-primary/90"
+                            >
+                                🖨️ พิมพ์ใบเสร็จ
+                            </button>
+                            <a
+                                href={`/billing/receipt/${transaction.id}/labels`}
+                                className="flex-1 bg-amber-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-amber-600 text-center"
+                            >
+                                🏷️ พิมพ์ฉลากยา
+                            </a>
+                        </>
+                    )}
                     <button
                         onClick={() => window.history.back()}
                         className="px-4 py-2 border rounded-lg hover:bg-gray-50"
                     >
                         ← ย้อนกลับ
                     </button>
+                    {canVoid && (
+                        <VoidTransactionDialog
+                            transactionId={transaction.id}
+                            receiptNo={transaction.receipt_no}
+                        />
+                    )}
                 </div>
 
                 {/* Receipt */}
-                <div className="receipt-container max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg" style={{ width: '80mm' }}>
+                <div className={`receipt-container max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg relative ${isVoided ? 'opacity-60' : ''}`} style={{ width: '80mm' }}>
+                    {/* Voided Watermark (visible on print) */}
+                    {isVoided && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="text-red-500 text-6xl font-bold opacity-30 rotate-[-30deg] border-4 border-red-500 px-4 py-2">
+                                VOIDED
+                            </div>
+                        </div>
+                    )}
+
                     {/* Header with Logo */}
                     <div className="text-center mb-4 border-b pb-4">
                         <div className="flex justify-center mb-2">
@@ -86,6 +135,12 @@ export function ReceiptView({ transaction }: { transaction: TransactionWithRelat
                                 })}
                             </span>
                         </div>
+                        {isVoided && (
+                            <div className="flex justify-between text-red-600">
+                                <span>สถานะ:</span>
+                                <span className="font-bold">❌ ยกเลิกแล้ว</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Patient Info */}
@@ -107,14 +162,16 @@ export function ReceiptView({ transaction }: { transaction: TransactionWithRelat
                     <div className="text-sm mb-4">
                         <div className="font-bold mb-2">รายการยา</div>
                         {transaction.items?.map((item: any, index: number) => (
-                            <div key={index} className="flex justify-between py-1 border-b border-gray-100">
-                                <div className="flex-1">
-                                    <span>{item.medicine?.name}</span>
-                                    <span className="text-gray-500 text-xs ml-1">x{item.quantity}</span>
+                            <div key={index} className="py-1 border-b border-gray-100">
+                                <div className="flex justify-between">
+                                    <div className="flex-1">
+                                        <span>{item.medicine?.name}</span>
+                                        <span className="text-gray-500 text-xs ml-1">x{item.quantity}</span>
+                                    </div>
+                                    <span>
+                                        ฿{((item.unit_price || 0) * item.quantity).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                                    </span>
                                 </div>
-                                <span>
-                                    ฿{((item.unit_price || 0) * item.quantity).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-                                </span>
                             </div>
                         ))}
                     </div>
@@ -134,7 +191,7 @@ export function ReceiptView({ transaction }: { transaction: TransactionWithRelat
                                 <span>-฿{transaction.discount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
                             </div>
                         )}
-                        <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                        <div className={`flex justify-between text-lg font-bold pt-2 border-t ${isVoided ? 'line-through text-gray-400' : ''}`}>
                             <span>รวมทั้งสิ้น</span>
                             <span>฿{(transaction.total_amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
                         </div>
@@ -150,8 +207,14 @@ export function ReceiptView({ transaction }: { transaction: TransactionWithRelat
 
                     {/* Footer */}
                     <div className="mt-6 text-center text-xs text-gray-500 border-t pt-4">
-                        <p>ขอบคุณที่ใช้บริการ</p>
-                        <p>Thank you for your visit</p>
+                        {!isVoided ? (
+                            <>
+                                <p>ขอบคุณที่ใช้บริการ</p>
+                                <p>Thank you for your visit</p>
+                            </>
+                        ) : (
+                            <p className="text-red-500 font-bold">❌ เอกสารนี้ถูกยกเลิกแล้ว</p>
+                        )}
                         <p className="mt-2 font-mono text-xs">{transaction.staff?.full_name}</p>
                     </div>
                 </div>

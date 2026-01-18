@@ -155,7 +155,7 @@ export default async function PrescriptionDetailPage({
                                         <span className="text-sm text-muted-foreground ml-2">({item.medicine?.unit})</span>
                                     </TableCell>
                                     <TableCell className="text-muted-foreground">
-                                        {item.note || '-'}
+                                        {item.dosage_instruction || item.note || '-'}
                                     </TableCell>
                                     <TableCell className="text-right">{item.quantity}</TableCell>
                                     <TableCell className="text-right">

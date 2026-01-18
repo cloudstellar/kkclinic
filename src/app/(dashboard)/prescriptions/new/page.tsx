@@ -19,6 +19,7 @@ import {
 import { createPrescription, searchPatients, searchMedicines } from '../actions'
 import { toast } from 'sonner'
 import { QuantityInput } from '@/components/ui/quantity-input'
+import { DosageInput } from '@/components/ui/dosage-input'
 
 type Patient = {
     id: string
@@ -43,7 +44,7 @@ type PrescriptionItem = {
     price: number
     quantity: number
     stock_qty: number  // เก็บไว้เตือน Soft warn
-    note: string
+    dosage_instruction: string  // วิธีใช้ยา (สำหรับฉลาก)
 }
 
 export default function NewPrescriptionPage() {
@@ -102,7 +103,7 @@ export default function NewPrescriptionPage() {
             price: medicine.price,
             stock_qty: medicine.stock_qty,
             quantity: 1,
-            note: '',
+            dosage_instruction: '',
         }])
         setMedicineSearch('')
         setShowMedicineDropdown(false)
@@ -114,9 +115,9 @@ export default function NewPrescriptionPage() {
         setItems(newItems)
     }
 
-    function updateItemNote(index: number, note: string) {
+    function updateItemDosage(index: number, dosage: string) {
         const newItems = [...items]
-        newItems[index].note = note
+        newItems[index].dosage_instruction = dosage
         setItems(newItems)
     }
 
@@ -144,7 +145,7 @@ export default function NewPrescriptionPage() {
                 items.map(i => ({
                     medicine_id: i.medicine_id,
                     quantity: i.quantity,
-                    note: i.note || undefined,
+                    dosage_instruction: i.dosage_instruction || undefined,
                 })),
                 note || undefined
             )
@@ -265,6 +266,12 @@ export default function NewPrescriptionPage() {
                                         </span>
                                     </button>
                                 ))}
+                                {/* Hint for more results */}
+                                {!medicineSearch && (
+                                    <div className="px-4 py-2 text-xs text-muted-foreground bg-gray-50 border-t">
+                                        💡 แสดง 20 รายการที่ใช้บ่อย — พิมพ์ชื่อ/รหัสยาเพื่อค้นหาเพิ่ม
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -275,7 +282,7 @@ export default function NewPrescriptionPage() {
                                 <TableRow>
                                     <TableHead>ชื่อยา</TableHead>
                                     <TableHead className="w-[100px]">จำนวน</TableHead>
-                                    <TableHead className="w-[200px]">วิธีใช้</TableHead>
+                                    <TableHead className="w-[300px]">วิธีใช้</TableHead>
                                     <TableHead className="text-right">ราคารวม</TableHead>
                                     <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
@@ -298,10 +305,9 @@ export default function NewPrescriptionPage() {
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Input
-                                                placeholder="เช่น วันละ 3 ครั้ง"
-                                                value={item.note}
-                                                onChange={(e) => updateItemNote(index, e.target.value)}
+                                            <DosageInput
+                                                value={item.dosage_instruction}
+                                                onChange={(val) => updateItemDosage(index, val)}
                                             />
                                         </TableCell>
                                         <TableCell className="text-right">

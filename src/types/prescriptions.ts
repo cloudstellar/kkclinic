@@ -43,6 +43,7 @@ export type PrescriptionItem = {
     quantity: number
     unit_price: number
     price_override: number | null
+    dosage_instruction: string | null  // วิธีใช้ยา (สำหรับฉลาก)
     note: string | null
     created_at: string
     medicine?: {
@@ -58,6 +59,7 @@ export type PrescriptionItem = {
 export type PrescriptionItemFormData = {
     medicine_id: string
     quantity: number
+    dosage_instruction?: string  // วิธีใช้ยา
     note?: string
 }
 
@@ -65,6 +67,7 @@ export type PrescriptionItemFormData = {
 export const prescriptionItemSchema = z.object({
     medicine_id: z.string().min(1, 'กรุณาเลือกยา'),
     quantity: z.coerce.number().int().min(1, 'จำนวนต้องมากกว่า 0'),
+    dosage_instruction: z.string().optional(),  // วิธีใช้ยา
     note: z.string().optional(),
 })
 

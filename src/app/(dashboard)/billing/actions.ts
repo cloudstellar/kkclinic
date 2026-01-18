@@ -4,6 +4,15 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { PaymentFormData } from '@/types/transactions'
 
+// ============================================
+// CONSTANTS
+// ============================================
+const POSTGRES_UNIQUE_VIOLATION = '23505'
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
 // Generate receipt number
 async function generateReceiptNo(): Promise<string> {
     const supabase = await createClient()
@@ -19,17 +28,49 @@ async function generateReceiptNo(): Promise<string> {
     return `RC${dateStr}-${nextNum.toString().padStart(4, '0')}`
 }
 
-// Process payment and dispense
+// Get transaction by request_id (for idempotency)
+async function getTransactionByRequestId(requestId: string) {
+    const supabase = await createClient()
+    const { data } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('request_id', requestId)
+        .single()
+    return data
+}
+
+// Get existing paid transaction for prescription
+async function getExistingPaidTransaction(prescriptionId: string) {
+    const supabase = await createClient()
+    const { data } = await supabase
+        .from('transactions')
+        .select('id, receipt_no')
+        .eq('prescription_id', prescriptionId)
+        .eq('status', 'paid')
+        .single()
+    return data
+}
+
+// ============================================
+// PROCESS PAYMENT - Correct Order per Sprint 2A
+// ============================================
+// Order: 1) Read prescription → 2) INSERT transaction (lock) →
+//        3) Handle unique → 4) Deduct stock (if not repay) → 5) Auto-void if fail
 export async function processPayment(prescriptionId: string, formData: PaymentFormData) {
     const supabase = await createClient()
 
-    // Get current user (staff)
+    // 0. Validate request_id
+    if (!formData.request_id) {
+        return { data: null, error: 'Missing request_id for idempotency' }
+    }
+
+    // 1. Get current user (staff)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { data: null, error: 'ไม่ได้เข้าสู่ระบบ' }
     }
 
-    // Get prescription with items
+    // 2. Get prescription with items (read latest state)
     const { data: prescription, error: prescriptionError } = await supabase
         .from('prescriptions')
         .select(`
@@ -44,12 +85,11 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
         return { data: null, error: 'ไม่พบใบสั่งยา' }
     }
 
-    if (prescription.status !== 'pending') {
-        return { data: null, error: 'ใบสั่งยานี้ไม่อยู่ในสถานะรอจ่ายยา' }
-    }
+    // 3. Check if this is a repay (prescription already dispensed)
+    const isRepay = prescription.status === 'dispensed'
 
-    // Stock validation (Fail Fast)
-    if (prescription.items && prescription.items.length > 0) {
+    // 4. For new payment: Validate stock (Fail Fast)
+    if (!isRepay && prescription.items && prescription.items.length > 0) {
         const medicineIds = prescription.items
             .filter((item: { medicine_id: string | null }) => item.medicine_id)
             .map((item: { medicine_id: string }) => item.medicine_id)
@@ -78,15 +118,15 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
         }
     }
 
-    // Calculate amounts
+    // 5. Calculate amounts
     const subtotal = prescription.total_price || 0
     const discount = formData.discount || 0
     const totalAmount = Math.max(0, Math.round((subtotal - discount) * 100) / 100)
 
-    // Generate receipt number
+    // 6. Generate receipt number
     const receiptNo = await generateReceiptNo()
 
-    // Create transaction
+    // 7. INSERT transaction FIRST (this is the "logic lock")
     const { data: transaction, error: transactionError } = await supabase
         .from('transactions')
         .insert({
@@ -94,6 +134,8 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
             prescription_id: prescriptionId,
             patient_id: prescription.patient_id,
             staff_id: user.id,
+            status: 'paid',
+            request_id: formData.request_id,  // Idempotency key
             subtotal: subtotal,
             discount: discount,
             vat_amount: 0,
@@ -106,13 +148,37 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
         .select()
         .single()
 
+    // 8. Handle unique constraint violation
     if (transactionError) {
+        if (transactionError.code === POSTGRES_UNIQUE_VIOLATION) {
+            // Case A: Same request_id (idempotent - return existing)
+            const sameRequest = await getTransactionByRequestId(formData.request_id)
+            if (sameRequest) {
+                return { data: sameRequest, error: null }
+            }
+
+            // Case B: Prescription already paid by another request
+            const existing = await getExistingPaidTransaction(prescriptionId)
+            if (existing) {
+                return {
+                    data: null,
+                    error: `ใบสั่งยานี้ชำระแล้ว (${existing.receipt_no})`,
+                    existingReceiptId: existing.id
+                }
+            }
+
+            // Fallback
+            return { data: null, error: 'ชำระแล้ว กรุณารีเฟรชรายการ', shouldRefresh: true }
+        }
+
         console.error('Error creating transaction:', transactionError)
         return { data: null, error: transactionError.message }
     }
 
-    // Deduct stock for each item
-    if (prescription.items) {
+    // 9. If NOT repay: Deduct stock
+    if (!isRepay && prescription.items) {
+        let stockError = false
+
         for (const item of prescription.items) {
             if (item.medicine_id) {
                 const { data: medicine } = await supabase
@@ -123,10 +189,15 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
 
                 if (medicine) {
                     const newQty = Math.max(0, medicine.stock_qty - item.quantity)
-                    await supabase
+                    const { error: updateError } = await supabase
                         .from('medicines')
                         .update({ stock_qty: newQty })
                         .eq('id', item.medicine_id)
+
+                    if (updateError) {
+                        stockError = true
+                        break
+                    }
 
                     // Log stock change
                     await supabase.from('stock_logs').insert({
@@ -142,16 +213,30 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
                 }
             }
         }
+
+        // 10. Auto-void if stock update failed
+        if (stockError) {
+            await supabase.from('transactions').update({
+                status: 'voided',
+                voided_at: new Date().toISOString(),
+                voided_by: user.id,
+                void_reason: 'auto-void: stock update failed',
+            }).eq('id', transaction.id)
+
+            return { data: null, error: 'เกิดข้อผิดพลาดในการตัดสต๊อก กรุณาลองใหม่' }
+        }
     }
 
-    // Update prescription status
-    await supabase
-        .from('prescriptions')
-        .update({
-            status: 'dispensed',
-            completed_at: new Date().toISOString(),
-        })
-        .eq('id', prescriptionId)
+    // 11. Update prescription status (only for new payment, not repay)
+    if (!isRepay) {
+        await supabase
+            .from('prescriptions')
+            .update({
+                status: 'dispensed',
+                completed_at: new Date().toISOString(),
+            })
+            .eq('id', prescriptionId)
+    }
 
     revalidatePath('/prescriptions')
     revalidatePath(`/prescriptions/${prescriptionId}`)
@@ -161,7 +246,9 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
     return { data: transaction, error: null }
 }
 
-// Get transaction for receipt
+// ============================================
+// GET TRANSACTION
+// ============================================
 export async function getTransaction(id: string) {
     const supabase = await createClient()
 
@@ -171,7 +258,8 @@ export async function getTransaction(id: string) {
             *,
             patient:patients(id, hn, name, phone),
             prescription:prescriptions(id, prescription_no, note),
-            staff:users!transactions_staff_id_fkey(id, full_name)
+            staff:users!transactions_staff_id_fkey(id, full_name),
+            voided_by_user:users!transactions_voided_by_fkey(id, full_name)
         `)
         .eq('id', id)
         .single()
@@ -180,15 +268,16 @@ export async function getTransaction(id: string) {
         return { data: null, error: error.message }
     }
 
-    // Get prescription items
+    // Get prescription items (with dosage_instruction)
     if (data?.prescription?.id) {
         const { data: items } = await supabase
             .from('prescription_items')
             .select(`
                 *,
-                medicine:medicines(code, name, unit)
+                medicine:medicines(code, name, unit, description)
             `)
             .eq('prescription_id', data.prescription.id)
+            .order('created_at', { ascending: true })
 
         return { data: { ...data, items: items || [] }, error: null }
     }
@@ -196,19 +285,38 @@ export async function getTransaction(id: string) {
     return { data, error: null }
 }
 
-// Void transaction
+// ============================================
+// VOID TRANSACTION - Sprint 2A Correct Implementation
+// ============================================
+// Rules:
+// ✅ Soft void (update, not delete)
+// ❌ NO stock restoration (ยาจ่ายไปแล้ว)
+// ✅ Idempotent (void ซ้ำไม่ทำอะไร)
+// ✅ Permission: admin/staff only (doctor ❌)
 export async function voidTransaction(id: string, reason: string) {
     const supabase = await createClient()
 
+    // 1. Check auth
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return { success: false, error: 'ไม่ได้เข้าสู่ระบบ' }
     }
 
-    // Get transaction
+    // 2. Check user role (admin/staff only)
+    const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (!userData || !['admin', 'staff'].includes(userData.role)) {
+        return { success: false, error: 'ไม่มีสิทธิ์ยกเลิกบิล (ต้องเป็น Admin หรือ Staff)' }
+    }
+
+    // 3. Get transaction
     const { data: transaction, error: fetchError } = await supabase
         .from('transactions')
-        .select('*, prescription:prescriptions(items:prescription_items(medicine_id, quantity))')
+        .select('id, status, receipt_no')
         .eq('id', id)
         .single()
 
@@ -216,60 +324,48 @@ export async function voidTransaction(id: string, reason: string) {
         return { success: false, error: 'ไม่พบ Transaction' }
     }
 
-    // Restore stock
-    if (transaction.prescription?.items) {
-        for (const item of transaction.prescription.items) {
-            if (item.medicine_id) {
-                const { data: medicine } = await supabase
-                    .from('medicines')
-                    .select('stock_qty')
-                    .eq('id', item.medicine_id)
-                    .single()
-
-                if (medicine) {
-                    const newQty = medicine.stock_qty + item.quantity
-                    await supabase
-                        .from('medicines')
-                        .update({ stock_qty: newQty })
-                        .eq('id', item.medicine_id)
-
-                    // Log stock restore
-                    await supabase.from('stock_logs').insert({
-                        medicine_id: item.medicine_id,
-                        changed_by: user.id,
-                        change_type: 'void',
-                        quantity_change: item.quantity,
-                        quantity_before: medicine.stock_qty,
-                        quantity_after: newQty,
-                        reference_id: transaction.prescription_id,
-                        notes: `ยกเลิก Transaction: ${reason}`,
-                    })
-                }
-            }
-        }
+    // 4. Idempotent: Already voided → no-op
+    if (transaction.status === 'voided') {
+        return { success: true, error: null, alreadyVoided: true }
     }
 
-    // Update prescription back to pending
-    await supabase
-        .from('prescriptions')
+    // 5. Guard: Can only void 'paid' status
+    if (transaction.status !== 'paid') {
+        return { success: false, error: `ไม่สามารถยกเลิกบิลสถานะ "${transaction.status}" ได้` }
+    }
+
+    // 6. Validate reason
+    if (!reason || reason.trim().length === 0) {
+        return { success: false, error: 'กรุณาระบุเหตุผลในการยกเลิก' }
+    }
+
+    // 7. Soft void (NO stock restoration per spec)
+    const { error: updateError } = await supabase
+        .from('transactions')
         .update({
-            status: 'cancelled',
-            cancelled_reason: `Voided: ${reason}`,
+            status: 'voided',
+            voided_at: new Date().toISOString(),
+            voided_by: user.id,
+            void_reason: reason.trim(),
         })
-        .eq('id', transaction.prescription_id)
+        .eq('id', id)
 
-    // Delete transaction
-    await supabase.from('transactions').delete().eq('id', id)
+    if (updateError) {
+        console.error('Error voiding transaction:', updateError)
+        return { success: false, error: updateError.message }
+    }
 
-    revalidatePath('/prescriptions')
     revalidatePath('/billing')
-    revalidatePath('/inventory')
+    revalidatePath(`/billing/receipt/${id}`)
 
     return { success: true, error: null }
 }
 
-// Get sales summary for date range
+// ============================================
+// GET SALES SUMMARY
+// ============================================
 // Max 31 days to prevent slow queries
+// Only counts status='paid' (excludes voided)
 export async function getSalesSummary(dateFrom?: string, dateTo?: string) {
     const supabase = await createClient()
 
@@ -287,6 +383,7 @@ export async function getSalesSummary(dateFrom?: string, dateTo?: string) {
         return { data: null, error: 'ช่วงวันที่เกิน 31 วัน กรุณาเลือกช่วงที่สั้นกว่านี้' }
     }
 
+    // Get all transactions including voided (for display)
     const { data, error } = await supabase
         .from('transactions')
         .select(`
@@ -302,23 +399,27 @@ export async function getSalesSummary(dateFrom?: string, dateTo?: string) {
         return { data: null, error: error.message }
     }
 
-    // Calculate unique patients
-    const patientIds = new Set(data?.map(t => t.patient?.id).filter(Boolean))
+    // Filter paid only for calculations
+    const paidTransactions = data?.filter(t => t.status === 'paid') || []
+    const voidedTransactions = data?.filter(t => t.status === 'voided') || []
 
-    // Calculate totals
-    // TODO: Phase 2.5 - Add breakdown by service_category (ยา/บริการ/แว่น)
+    // Calculate unique patients (paid only)
+    const patientIds = new Set(paidTransactions.map(t => t.patient?.id).filter(Boolean))
+
+    // Calculate totals (paid only)
     const summary = {
         dateFrom: from,
         dateTo: to,
-        transactions: data || [],
-        count: data?.length || 0,
+        transactions: data || [],  // All for display
+        count: paidTransactions.length,
+        voidedCount: voidedTransactions.length,
         uniquePatients: patientIds.size,
-        totalSubtotal: data?.reduce((sum, t) => sum + (t.subtotal || 0), 0) || 0,
-        totalAmount: data?.reduce((sum, t) => sum + (t.total_amount || 0), 0) || 0,
-        totalDiscount: data?.reduce((sum, t) => sum + (t.discount || 0), 0) || 0,
-        byCash: data?.filter(t => t.payment_method === 'cash').reduce((sum, t) => sum + (t.total_amount || 0), 0) || 0,
-        byTransfer: data?.filter(t => t.payment_method === 'transfer').reduce((sum, t) => sum + (t.total_amount || 0), 0) || 0,
-        byCard: data?.filter(t => t.payment_method === 'card').reduce((sum, t) => sum + (t.total_amount || 0), 0) || 0,
+        totalSubtotal: paidTransactions.reduce((sum, t) => sum + (t.subtotal || 0), 0),
+        totalAmount: paidTransactions.reduce((sum, t) => sum + (t.total_amount || 0), 0),
+        totalDiscount: paidTransactions.reduce((sum, t) => sum + (t.discount || 0), 0),
+        byCash: paidTransactions.filter(t => t.payment_method === 'cash').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+        byTransfer: paidTransactions.filter(t => t.payment_method === 'transfer').reduce((sum, t) => sum + (t.total_amount || 0), 0),
+        byCard: paidTransactions.filter(t => t.payment_method === 'card').reduce((sum, t) => sum + (t.total_amount || 0), 0),
     }
 
     return { data: summary, error: null }

@@ -35,7 +35,7 @@ export default async function BillingPage() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
                 <div className="bg-white rounded-lg border p-4">
                     <div className="text-sm text-muted-foreground">รายการวันนี้</div>
                     <div className="text-2xl font-bold text-primary">{dailySales?.count || 0}</div>
@@ -56,6 +56,12 @@ export default async function BillingPage() {
                         {formatCurrency((dailySales?.byTransfer || 0) + (dailySales?.byCard || 0))}
                     </div>
                 </div>
+                {(dailySales?.voidedCount || 0) > 0 && (
+                    <div className="bg-red-50 rounded-lg border border-red-200 p-4">
+                        <div className="text-sm text-red-600">ยกเลิกวันนี้</div>
+                        <div className="text-xl font-semibold text-red-600">{dailySales?.voidedCount || 0}</div>
+                    </div>
+                )}
             </div>
 
             {/* Transaction List */}
@@ -66,48 +72,71 @@ export default async function BillingPage() {
 
                 {dailySales?.transactions && dailySales.transactions.length > 0 ? (
                     <div className="divide-y">
-                        {dailySales.transactions.map((tx: any) => (
-                            <div key={tx.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-mono font-bold">{tx.receipt_no}</span>
-                                        <Badge variant="outline" className="text-xs">
-                                            {paymentMethodLabels[tx.payment_method] || tx.payment_method}
-                                        </Badge>
-                                    </div>
-                                    <div className="text-sm text-muted-foreground mt-1">
-                                        <span className="font-medium">{tx.patient?.name}</span>
-                                        <span className="mx-2">•</span>
-                                        <span>{tx.patient?.hn}</span>
-                                        <span className="mx-2">•</span>
-                                        <span>
-                                            {new Date(tx.paid_at).toLocaleTimeString('th-TH', {
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="text-right">
-                                        <div className="font-semibold text-green-600">
-                                            {formatCurrency(tx.total_amount || 0)}
+                        {dailySales.transactions.map((tx: any) => {
+                            const isVoided = tx.status === 'voided'
+                            return (
+                                <div
+                                    key={tx.id}
+                                    className={`flex items-center justify-between p-4 hover:bg-gray-50 ${isVoided ? 'bg-red-50/50' : ''}`}
+                                >
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`font-mono font-bold ${isVoided ? 'line-through text-gray-400' : ''}`}>
+                                                {tx.receipt_no}
+                                            </span>
+                                            {isVoided ? (
+                                                <Badge variant="destructive" className="text-xs">
+                                                    ❌ ยกเลิก
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="outline" className="text-xs">
+                                                    {paymentMethodLabels[tx.payment_method] || tx.payment_method}
+                                                </Badge>
+                                            )}
                                         </div>
-                                        {tx.discount > 0 && (
-                                            <div className="text-xs text-red-500">
-                                                ส่วนลด {formatCurrency(tx.discount)}
-                                            </div>
-                                        )}
+                                        <div className="text-sm text-muted-foreground mt-1">
+                                            <span className="font-medium">{tx.patient?.name}</span>
+                                            <span className="mx-2">•</span>
+                                            <span>{tx.patient?.hn}</span>
+                                            <span className="mx-2">•</span>
+                                            <span>
+                                                {new Date(tx.paid_at).toLocaleTimeString('th-TH', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
+                                            </span>
+                                            {isVoided && tx.void_reason && (
+                                                <>
+                                                    <span className="mx-2">•</span>
+                                                    <span className="text-red-500">เหตุผล: {tx.void_reason}</span>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
-                                    <Link
-                                        href={`/billing/receipt/${tx.id}`}
-                                        className="px-3 py-1.5 text-sm bg-primary text-white rounded-md hover:bg-primary/90"
-                                    >
-                                        🖨️ พิมพ์
-                                    </Link>
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-right">
+                                            <div className={`font-semibold ${isVoided ? 'line-through text-gray-400' : 'text-green-600'}`}>
+                                                {formatCurrency(tx.total_amount || 0)}
+                                            </div>
+                                            {tx.discount > 0 && !isVoided && (
+                                                <div className="text-xs text-red-500">
+                                                    ส่วนลด {formatCurrency(tx.discount)}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <Link
+                                            href={`/billing/receipt/${tx.id}`}
+                                            className={`px-3 py-1.5 text-sm rounded-md ${isVoided
+                                                    ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                    : 'bg-primary text-white hover:bg-primary/90'
+                                                }`}
+                                        >
+                                            {isVoided ? '👁️ ดู' : '🖨️ พิมพ์'}
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 ) : (
                     <div className="p-8 text-center text-muted-foreground">
@@ -118,7 +147,7 @@ export default async function BillingPage() {
             </div>
 
             <p className="text-sm text-muted-foreground mt-4">
-                💡 คลิกปุ่ม "พิมพ์" เพื่อดูและพิมพ์ใบเสร็จซ้ำ
+                💡 คลิกปุ่ม &quot;พิมพ์&quot; เพื่อดูและพิมพ์ใบเสร็จซ้ำ
             </p>
         </div>
     )

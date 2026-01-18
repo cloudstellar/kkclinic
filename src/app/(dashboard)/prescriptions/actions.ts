@@ -146,6 +146,7 @@ export async function createPrescription(
         medicine_id: item.medicine_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
+        dosage_instruction: item.dosage_instruction || null,  // วิธีใช้ยา
         note: item.note || null,
     }))
 
@@ -259,16 +260,38 @@ export async function searchPatients(query: string) {
 export async function searchMedicines(query: string) {
     const supabase = await createClient()
 
-    const { data, error } = await supabase
-        .from('medicines')
-        .select('id, code, name, unit, price, stock_qty')
-        .eq('is_active', true)
-        .or(`code.ilike.%${query}%,name.ilike.%${query}%`)
-        .limit(10)
+    if (query && query.trim()) {
+        // If searching, use simple text search
+        const { data, error } = await supabase
+            .from('medicines')
+            .select('id, code, name, unit, price, stock_qty')
+            .eq('is_active', true)
+            .or(`code.ilike.%${query}%,name.ilike.%${query}%`)
+            .limit(30)
+
+        if (error) {
+            return { data: null, error: error.message }
+        }
+        return { data, error: null }
+    }
+
+    // If no query, return frequently used medicines
+    const { data, error } = await supabase.rpc('get_frequently_used_medicines', {
+        limit_count: 20
+    })
 
     if (error) {
-        return { data: null, error: error.message }
+        // Fallback to simple query if RPC doesn't exist
+        console.warn('RPC not found, using fallback:', error.message)
+        const { data: fallback } = await supabase
+            .from('medicines')
+            .select('id, code, name, unit, price, stock_qty')
+            .eq('is_active', true)
+            .order('name')
+            .limit(20)
+        return { data: fallback, error: null }
     }
 
     return { data, error: null }
 }
+

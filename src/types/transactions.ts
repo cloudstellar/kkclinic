@@ -1,12 +1,16 @@
 import { z } from 'zod'
 
+// Transaction status
+export type TransactionStatus = 'paid' | 'voided'
+
 // Transaction type matching database schema
 export type Transaction = {
     id: string
     receipt_no: string
-    prescription_id: string
+    prescription_id: string | null
     patient_id: string
     staff_id: string
+    status: TransactionStatus
     subtotal: number
     discount: number
     vat_amount: number
@@ -15,6 +19,12 @@ export type Transaction = {
     payment_method: 'cash' | 'transfer' | 'card'
     paid_at: string
     notes: string | null
+    // Void fields (Sprint 2A)
+    voided_at: string | null
+    voided_by: string | null
+    void_reason: string | null
+    // Idempotency key
+    request_id: string | null
     created_at: string
 }
 
@@ -24,12 +34,18 @@ export type TransactionWithRelations = Transaction & {
         id: string
         hn: string
         name: string
+        phone?: string
     }
     prescription?: {
         id: string
         prescription_no: string
+        note?: string
     }
     staff?: {
+        id: string
+        full_name: string
+    }
+    voided_by_user?: {
         id: string
         full_name: string
     }
@@ -40,6 +56,7 @@ export type PaymentFormData = {
     payment_method: 'cash' | 'transfer' | 'card'
     discount: number
     notes?: string
+    request_id: string  // Required for idempotency
 }
 
 // Zod validation schema
@@ -47,6 +64,7 @@ export const paymentFormSchema = z.object({
     payment_method: z.enum(['cash', 'transfer', 'card']),
     discount: z.coerce.number().min(0, 'ส่วนลดต้องไม่ติดลบ').default(0),
     notes: z.string().optional(),
+    request_id: z.string().uuid(),
 })
 
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>
