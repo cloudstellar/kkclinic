@@ -1,64 +1,78 @@
 # Handoff Prompt for AI Agent
 
 **Current State:**
-We have completed **Sprint 2A** for the KKClinic Billing & Inventory System. The system is stable, build passes, and all core features for this sprint are implemented and verified.
+Sprint 2B (DosageSheet UX Refactor) is complete. Workflow documentation has been set up.
 
 **Last Updated:** 19 มกราคม 2569  
-**Version:** v2.0.0-sprint2a-complete
-
-**Recently Completed Features (Sprint 2A):**
-1. **Void Transaction:** Soft-delete (`status='voided'`), audit logging, and strict inventory logic (void != restore).
-2. **Idempotency:** Payment processing uses `request_id` preventing double-charging.
-3. **Label Printing:** A6 Landscape page (`/billing/receipt/[id]/labels`) with clinic config.
-4. **Current Dosage UX:**
-   - `DosageInput` with basic preset chips (Oral/Eye/Topical).
-   - Character counter (80 chars).
-   - Saved separately from `note`.
-5. **Medicine Search:**
-   - Default: "Frequently Used Medicines" (RPC).
-   - Limit: 20/30 items.
-
-**Key Documentation:**
-- `docs/SPRINT_2A.md`: Detailed feature breakdown.
-- `src/lib/clinic-config.ts`: Config/settings.
-- `src/components/ui/dosage-input.tsx`: Current dosage component.
+**Version:** v0.5.0-sprint2b-dosagesheet
 
 ---
 
-## 🚀 Sprint 2B: UX/UI Refinement (Critical for iPad)
+## ⚠️ Before You Start
 
-The next phase requires significant UX improvements for iPad/Touch usability. Please follow these **User-Approved Patterns**:
-
-### 1. Dosage Input Pattern (Pattern A: Summary + Sheet)
-**Problem:** Small textareas in table rows are hard to use on iPad.
-**Solution:**
-- **In Table Row:** Show **Read-only Summary** (line-clamp 2) + **"Edit" Button**.
-- **Action:** Clicking "Edit" opens a **Bottom Sheet / Drawer** (Shadcn Sheet).
-- **Sheet Content:**
-  - Large Textarea (Auto-grow).
-  - **Preset Chips** (Touch-friendly, min 44px target).
-  - **Save** / **Cancel** buttons (Large).
-  - (Optional) Label Preview.
-
-### 2. Responsive Layout (Pattern C: Table vs Card)
-- **Desktop:** Keep standard Table layout.
-- **Mobile/iPad:** Switch row to **Card Layout**.
-  - Medicine Name (Top)
-  - Qty / Dosage / Price (Stacked)
-  - Full-width "Method" button.
-
-### 3. Smart Features (Next Steps)
-- **Recent Presets:** Store "Last 5 used dosages" per doctor (LocalStorage or DB).
-- **Copy Function:** "Copy dosage to all items" button.
-- **Refined Presets:** (From Eye Clinic specific list)
-  - "หลังอาหาร เช้า-กลางวัน-เย็น ครั้งละ 1 เม็ด"
-  - "หยอดตา ครั้งละ 1 หยด วันละ 4 ครั้ง"
-  - "ทาบางๆ เช้า-เย็น"
+**อ่านเอกสารสำคัญก่อนเสมอ:**
+1. [docs/AI_RULES.md](AI_RULES.md) - กฎการทำงานกับ AI
+2. [docs/ROADMAP.md](ROADMAP.md) - Sprint overview และ decision locks
+3. [docs/WORKFLOW.md](WORKFLOW.md) - Definition of Ready (DoR)
 
 ---
 
-**Codebase Context:**
-- Tech Stack: Next.js 14, Supabase, Tailwind, Shadcn UI.
-- Database: see `docs/DATABASE_SCHEMA.md`.
+## ✅ Recently Completed
 
-**Action Item:** Start Sprint 2B by refactoring `DosageInput` into a **Sheet-based component** (`DosageInstructionSheet`) to solve the "small input" problem once and for all.
+### Sprint 2B - DosageSheet UX Refactor
+- ✅ `DosageInstructionSheet` (bottom sheet component)
+- ✅ `DosageDisplay` (2-line clamp, empty badge)
+- ✅ `useRecentInstructions` hook (localStorage)
+- ✅ Copy from previous item
+- ✅ Length badge + keyboard shortcuts
+- **ADR:** [docs/ADR/0001-dosage-sheet-ux.md](ADR/0001-dosage-sheet-ux.md)
+
+### Sprint 2A - Billing & Dispensing
+- ✅ Payment modal with cash calculation
+- ✅ Void transactions with stock reversal
+- ✅ Label printing (A6 landscape, 4 per row)
+- ✅ Daily billing summary
+
+---
+
+## 🔲 Next Steps (Sprint 3)
+
+- Low stock alerts and thresholds
+- Barcode scanning for restock/dispense
+- Responsive card layout for mobile
+- Monthly/weekly reports
+
+---
+
+## 📁 Key Files
+
+| File | Purpose |
+|------|---------|
+| `docs/ROADMAP.md` | Sprint overview, decision locks |
+| `docs/WORKFLOW.md` | Definition of Ready, dev flow |
+| `docs/AI_RULES.md` | AI prompt policy |
+| `docs/ADR/` | Architecture Decision Records |
+| `src/components/prescription/dosage-instruction-sheet.tsx` | Bottom sheet for dosage |
+| `src/hooks/use-recent-instructions.ts` | Recent dosages hook |
+| `src/lib/clinic-config.ts` | Clinic settings |
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Database:** Supabase (PostgreSQL)
+- **UI:** Tailwind CSS, Shadcn UI
+- **Auth:** Supabase Auth
+
+---
+
+## 📋 Quick Start Checklist
+
+ก่อนเริ่มงานใหม่:
+- [ ] อ่าน `docs/ROADMAP.md`
+- [ ] อ่าน `docs/AI_RULES.md`
+- [ ] สร้าง implementation plan พร้อม DoR
+- [ ] รอ user approve ก่อนเริ่มโค้ด
+- [ ] ถ้ามี design decision ใหม่ → สร้าง ADR
+- [ ] หลังเสร็จ → อัปเดตเอกสาร + tag
