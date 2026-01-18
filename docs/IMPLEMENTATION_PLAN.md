@@ -1,8 +1,8 @@
 # Implementation Plan
 # KKClinic MVP - ระบบบริหารจัดการคลินิก
 
-**Version:** 1.0  
-**Last Updated:** 17 มกราคม 2569  
+**Version:** 1.1  
+**Last Updated:** 18 มกราคม 2569  
 **Supabase Project:** kkclinic (`xlgztefpllpurbowibvz`)  
 **API URL:** `https://xlgztefpllpurbowibvz.supabase.co`  
 
@@ -278,6 +278,43 @@ kkclinic/
 
 ---
 
+### 🟧 Phase 2.3: UX & Billing Enhancements ✅
+
+**Goal:** ปรับปรุง UX สำหรับการชำระเงินและจัดการสต็อก
+
+| Task | Status | Component/Route |
+|------|--------|----------------|
+| Payment Modal | ✅ | `components/payment/payment-modal.tsx` |
+| ส่วนลด Toggle (THB/%) | ✅ | PaymentModal |
+| Stock Validation (Fail Fast) | ✅ | `billing/actions.ts` |
+| QuantityInput Stepper | ✅ | `components/ui/quantity-input.tsx` |
+| formatCurrency utility | ✅ | `lib/utils.ts` |
+| Dispensing Page | ✅ | `/dispensing` - แสดง pending prescriptions |
+| Billing Page | ✅ | `/billing` - transaction history + reprint |
+| Receipt Update | ✅ | Logo + clinic info |
+| Soft stock warning | ✅ | ตอนสั่งยา (prescription form) |
+
+**New Components:**
+```
+src/components/payment/payment-modal.tsx   # Payment Modal with discount
+src/components/ui/quantity-input.tsx       # Stepper [-][+] component
+src/app/(dashboard)/prescriptions/[id]/payment-button.tsx
+```
+
+**Key Features:**
+- Payment Modal with discount toggle (THB/%), payment method selection
+- QuantityInput with keyboard support (Arrow ↑↓), auto-reset to 1
+- Stock validation at payment (hard block) and prescription (soft warn)
+- Transaction history with reprint button
+
+**Deliverables:**
+- ✅ Payment Modal MVP
+- ✅ QuantityInput Stepper UI
+- ✅ Receipt with clinic branding
+- ✅ Tag: `v0.3.0-payment-modal`
+
+---
+
 ### 🟦 Phase 3: Inventory & Polish (Week 5–6)
 
 **Goal:** ระบบคลังยาสมบูรณ์ + สแกน + RLS + Deploy
@@ -500,6 +537,7 @@ npm run test:coverage
 
 ## Changelog
 
-| Date | Version | Changes |
-|------|---------|---------|
-| 2026-01-17 | 1.0 | Initial plan created |
+| Date | Version | Tag | Changes |
+|------|---------|-----|---------|
+| 2026-01-18 | 1.1 | v0.3.0-payment-modal | Payment Modal, QuantityInput Stepper, Stock warnings, Receipt branding |
+| 2026-01-17 | 1.0 | v0.2.2-ux-stock | Initial plan created |
