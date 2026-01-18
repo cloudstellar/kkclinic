@@ -733,20 +733,22 @@ CREATE POLICY "Hide demo data in production"
 -- ============================================
 
 -- 0) Normalize existing data first
--- ถ้ามี status ว่าง ให้กลายเป็น 'paid' (transaction สร้างตอน confirm payment เท่านั้น)
+-- กัน dirty data จากการทดลอง (NULL, '', 'pending' หรืออื่น ๆ)
 UPDATE transactions
 SET status = 'paid'
-WHERE status IS NULL;
+WHERE status IS NULL OR status NOT IN ('paid', 'voided');
 
 -- 1) Add dosage instruction for labels
 ALTER TABLE prescription_items
 ADD COLUMN IF NOT EXISTS dosage_instruction TEXT;
 
--- 2) Add void columns (ไม่แตะ status แบบ add column)
+-- 2) Add void columns + idempotency key
 ALTER TABLE transactions
 ADD COLUMN IF NOT EXISTS voided_at TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS voided_by UUID REFERENCES users(id),
-ADD COLUMN IF NOT EXISTS void_reason TEXT;
+ADD COLUMN IF NOT EXISTS void_reason TEXT,
+ADD COLUMN IF NOT EXISTS request_id UUID UNIQUE;
+-- request_id = idempotency key กันกดซ้ำ/เน็ตสะดุด
 
 -- 3) Ensure status default (ถ้าคอลัมน์ status มีอยู่แล้ว)
 ALTER TABLE transactions
@@ -772,9 +774,10 @@ CHECK (
 
 -- 6) Prevent double payment (partial unique index)
 -- void แล้วจ่ายใหม่ได้ แต่ paid ซ้ำไม่ได้
+-- กัน NULL prescription_id ด้วยเพื่อความชัดเจนและลด index size
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_paid_tx_per_prescription
 ON transactions(prescription_id)
-WHERE status = 'paid';
+WHERE status = 'paid' AND prescription_id IS NOT NULL;
 
 -- 7) Index for stock audit trail
 CREATE INDEX IF NOT EXISTS idx_stock_logs_medicine_date
