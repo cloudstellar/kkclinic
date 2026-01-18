@@ -1,8 +1,8 @@
 # Implementation Plan
 # KKClinic MVP - ระบบบริหารจัดการคลินิก
 
-**Version:** 1.1  
-**Last Updated:** 18 มกราคม 2569  
+**Version:** 1.2  
+**Last Updated:** 19 มกราคม 2569  
 **Supabase Project:** kkclinic (`xlgztefpllpurbowibvz`)  
 **API URL:** `https://xlgztefpllpurbowibvz.supabase.co`  
 
@@ -539,5 +539,8 @@ npm run test:coverage
 
 | Date | Version | Tag | Changes |
 |------|---------|-----|---------|
+| 2026-01-19 | 1.2 | v0.5.1-workflow-docs | Workflow documentation, AI Rules, ADR, ROADMAP |
+| 2026-01-19 | 1.2 | v0.5.0-sprint2b-dosagesheet | DosageSheet UX, Recent Instructions, Copy from Previous |
+| 2026-01-18 | 1.1 | v0.4.0-sprint2a | Void transactions, Label printing, Billing Summary |
 | 2026-01-18 | 1.1 | v0.3.0-payment-modal | Payment Modal, QuantityInput Stepper, Stock warnings, Receipt branding |
 | 2026-01-17 | 1.0 | v0.2.2-ux-stock | Initial plan created |

@@ -1,6 +1,6 @@
 # KKClinic Roadmap
 
-> อัปเดตล่าสุด: 2026-01-19
+> อัปเดตล่าสุด: 19 มกราคม 2569
 
 ---
 
@@ -17,8 +17,10 @@
 | Sprint 1 | ✅ Done | Core foundation: Patients, Inventory, Prescriptions | `v0.1.0` - `v0.3.0` |
 | Sprint 2A | ✅ Done | Billing & Payment, Label Printing, Void Transactions | `v0.4.0-sprint2a` |
 | Sprint 2B | ✅ Done | DosageSheet UX Refactor | `v0.5.0-sprint2b-dosagesheet` |
-| Sprint 2C | 🔲 Planned | Workflow Documentation Setup | - |
-| Sprint 3 | 🔲 Planned | Low stock alerts, Barcode scanning, Reports | - |
+| Sprint 2C | ✅ Done | Workflow Documentation Setup | `v0.5.1-workflow-docs` |
+| Sprint 3 | ⏸️ Pending Decision | Options: A) Current flow, B) Service Charges, C) Full Clinic Flow | - |
+
+> **⚠️ Pending User Decision:** Sprint 3 รอ user ตัดสินใจเรื่อง Full Clinic Flow (Visit → Billing → Dispense)
 
 ---
 

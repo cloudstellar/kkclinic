@@ -1,8 +1,8 @@
 # Product Requirements Document (PRD)
 # ระบบบริหารจัดการคลินิก KKClinic
 
-**Version:** 1.0 (MVP)  
-**วันที่:** 17 มกราคม 2569  
+**Version:** 1.1 (MVP)  
+**วันที่:** 19 มกราคม 2569  
 **ผู้จัดทำ:** Development Team  
 
 ---
