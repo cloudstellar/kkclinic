@@ -747,8 +747,12 @@ ALTER TABLE transactions
 ADD COLUMN IF NOT EXISTS voided_at TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS voided_by UUID REFERENCES users(id),
 ADD COLUMN IF NOT EXISTS void_reason TEXT,
-ADD COLUMN IF NOT EXISTS request_id UUID UNIQUE;
--- request_id = idempotency key กันกดซ้ำ/เน็ตสะดุด
+ADD COLUMN IF NOT EXISTS request_id UUID;
+
+-- request_id unique index (ใช้ partial กัน NULL สำหรับ tx เก่า)
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_transactions_request_id
+ON transactions(request_id)
+WHERE request_id IS NOT NULL;
 
 -- 3) Ensure status default (ถ้าคอลัมน์ status มีอยู่แล้ว)
 ALTER TABLE transactions
