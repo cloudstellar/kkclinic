@@ -19,7 +19,8 @@ import {
 import { createPrescription, searchPatients, searchMedicines } from '../actions'
 import { toast } from 'sonner'
 import { QuantityInput } from '@/components/ui/quantity-input'
-import { DosageInput } from '@/components/ui/dosage-input'
+import { DosageDisplay } from '@/components/prescription/dosage-display'
+import { DosageInstructionSheet } from '@/components/prescription/dosage-instruction-sheet'
 
 type Patient = {
     id: string
@@ -65,6 +66,9 @@ export default function NewPrescriptionPage() {
     // Prescription items
     const [items, setItems] = useState<PrescriptionItem[]>([])
     const [note, setNote] = useState('')
+
+    // Dosage sheet state (tracks which item's sheet is open by medicine_id)
+    const [openSheetItemId, setOpenSheetItemId] = useState<string | null>(null)
 
     // Search patients
     useEffect(() => {
@@ -305,9 +309,9 @@ export default function NewPrescriptionPage() {
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <DosageInput
-                                                value={item.dosage_instruction}
-                                                onChange={(val) => updateItemDosage(index, val)}
+                                            <DosageDisplay
+                                                instruction={item.dosage_instruction}
+                                                onClick={() => setOpenSheetItemId(item.medicine_id)}
                                             />
                                         </TableCell>
                                         <TableCell className="text-right">
@@ -369,6 +373,28 @@ export default function NewPrescriptionPage() {
                     {isSubmitting ? 'กำลังบันทึก...' : 'สร้างใบสั่งยา'}
                 </Button>
             </div>
+
+            {/* Dosage Instruction Sheet */}
+            {(() => {
+                const openItemIndex = items.findIndex(i => i.medicine_id === openSheetItemId)
+                const openItem = openItemIndex !== -1 ? items[openItemIndex] : null
+                const previousItem = openItemIndex > 0 ? items[openItemIndex - 1] : null
+
+                return (
+                    <DosageInstructionSheet
+                        open={!!openItem}
+                        instruction={openItem?.dosage_instruction ?? ''}
+                        medicineName={openItem?.medicine_name}
+                        onSave={(text) => {
+                            if (openItem) {
+                                updateItemDosage(openItemIndex, text)
+                            }
+                        }}
+                        onClose={() => setOpenSheetItemId(null)}
+                        previousInstructionText={previousItem?.dosage_instruction ?? ''}
+                    />
+                )
+            })()}
         </div>
     )
 }
