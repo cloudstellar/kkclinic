@@ -16,13 +16,21 @@ export default async function BillingPage() {
         <div className="p-6">
             <div className="flex items-center justify-between mb-4">
                 <h1 className="text-2xl font-bold">💳 คิดเงิน / ประวัติการชำระ</h1>
-                <div className="text-sm text-muted-foreground">
-                    วันนี้: {new Date().toLocaleDateString('th-TH', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                    })}
+                <div className="flex items-center gap-4">
+                    <Link
+                        href="/billing/summary"
+                        className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                    >
+                        📊 สรุปยอดขาย
+                    </Link>
+                    <div className="text-sm text-muted-foreground">
+                        วันนี้: {new Date().toLocaleDateString('th-TH', {
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                        })}
+                    </div>
                 </div>
             </div>
 

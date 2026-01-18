@@ -268,30 +268,52 @@ export async function voidTransaction(id: string, reason: string) {
     return { success: true, error: null }
 }
 
-// Get daily sales summary
-export async function getDailySales(date?: string) {
+// Get sales summary for date range
+// Max 31 days to prevent slow queries
+export async function getSalesSummary(dateFrom?: string, dateTo?: string) {
     const supabase = await createClient()
-    const targetDate = date || new Date().toISOString().slice(0, 10)
+
+    // Default to today if no dates provided
+    const today = new Date().toISOString().slice(0, 10)
+    const from = dateFrom || today
+    const to = dateTo || from
+
+    // Validate max 31 days
+    const fromDate = new Date(from)
+    const toDate = new Date(to)
+    const diffDays = Math.ceil((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24))
+
+    if (diffDays > 31) {
+        return { data: null, error: 'ช่วงวันที่เกิน 31 วัน กรุณาเลือกช่วงที่สั้นกว่านี้' }
+    }
 
     const { data, error } = await supabase
         .from('transactions')
         .select(`
             *,
-            patient:patients(hn, name),
+            patient:patients(id, hn, name),
             staff:users!transactions_staff_id_fkey(full_name)
         `)
-        .gte('paid_at', `${targetDate}T00:00:00`)
-        .lt('paid_at', `${targetDate}T23:59:59`)
+        .gte('paid_at', `${from}T00:00:00`)
+        .lte('paid_at', `${to}T23:59:59`)
         .order('paid_at', { ascending: false })
 
     if (error) {
         return { data: null, error: error.message }
     }
 
+    // Calculate unique patients
+    const patientIds = new Set(data?.map(t => t.patient?.id).filter(Boolean))
+
     // Calculate totals
+    // TODO: Phase 2.5 - Add breakdown by service_category (ยา/บริการ/แว่น)
     const summary = {
+        dateFrom: from,
+        dateTo: to,
         transactions: data || [],
         count: data?.length || 0,
+        uniquePatients: patientIds.size,
+        totalSubtotal: data?.reduce((sum, t) => sum + (t.subtotal || 0), 0) || 0,
         totalAmount: data?.reduce((sum, t) => sum + (t.total_amount || 0), 0) || 0,
         totalDiscount: data?.reduce((sum, t) => sum + (t.discount || 0), 0) || 0,
         byCash: data?.filter(t => t.payment_method === 'cash').reduce((sum, t) => sum + (t.total_amount || 0), 0) || 0,
@@ -300,4 +322,9 @@ export async function getDailySales(date?: string) {
     }
 
     return { data: summary, error: null }
+}
+
+// Alias for backward compatibility
+export async function getDailySales(date?: string) {
+    return getSalesSummary(date, date)
 }
