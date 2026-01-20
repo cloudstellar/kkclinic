@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { CLINIC_CONFIG, formatPatientId, formatThaiDate } from '@/lib/clinic-config'
+import { getDisplayName } from '@/lib/patient-utils'
 
 type LabelItem = {
     id: string
@@ -22,6 +23,8 @@ type Transaction = {
     patient?: {
         hn: string
         name: string
+        name_en?: string | null
+        nationality?: string | null
     } | null
     items?: LabelItem[]
 }
@@ -159,7 +162,11 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
 
                         <div className="text-sm text-muted-foreground mb-4">
                             <p>ใบเสร็จ: <strong>{transaction.receipt_no}</strong></p>
-                            <p>ผู้ป่วย: <strong>{transaction.patient?.name}</strong> ({formatPatientId(transaction.patient?.hn || '')})</p>
+                            <p>ผู้ป่วย: <strong>{transaction.patient ? getDisplayName({
+                                name: transaction.patient.name || null,
+                                name_en: transaction.patient.name_en || null,
+                                nationality: transaction.patient.nationality || 'thai'
+                            }) : '-'}</strong> ({formatPatientId(transaction.patient?.hn || '')})</p>
                         </div>
 
                         {/* Dosage Warning */}
@@ -286,9 +293,16 @@ function LabelTemplate({
     paidAt,
 }: {
     item: LabelItem
-    patient?: { hn: string; name: string } | null
+    patient?: { hn: string; name: string; name_en?: string | null; nationality?: string | null } | null
     paidAt: string
 }) {
+    // Get display name based on nationality
+    const displayName = patient ? getDisplayName({
+        name: patient.name || null,
+        name_en: patient.name_en || null,
+        nationality: patient.nationality || 'thai'
+    }) : '-'
+
     return (
         <div className="label-container">
             {/* Header - ชื่อคลินิกเป็นสีดำ */}
@@ -308,7 +322,7 @@ function LabelTemplate({
                 <span>วันที่ {formatThaiDate(paidAt)}</span>
             </div>
             <p className="text-sm mb-2">
-                ชื่อ : {patient?.name || '-'}
+                ชื่อ : {displayName || '-'}
             </p>
 
             {/* Medicine Info */}

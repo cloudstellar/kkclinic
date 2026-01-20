@@ -75,7 +75,7 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
         .from('prescriptions')
         .select(`
             *,
-            patient:patients(id, hn, name),
+            patient:patients(id, hn, name, name_en, nationality),
             items:prescription_items(medicine_id, quantity)
         `)
         .eq('id', prescriptionId)
@@ -256,7 +256,7 @@ export async function getTransaction(id: string) {
         .from('transactions')
         .select(`
             *,
-            patient:patients(id, hn, name, phone),
+            patient:patients(id, hn, name, name_en, nationality, phone),
             prescription:prescriptions(id, prescription_no, note),
             staff:users!transactions_staff_id_fkey(id, full_name),
             voided_by_user:users!transactions_voided_by_fkey(id, full_name)
@@ -388,7 +388,7 @@ export async function getSalesSummary(dateFrom?: string, dateTo?: string) {
         .from('transactions')
         .select(`
             *,
-            patient:patients(id, hn, name),
+            patient:patients(id, hn, name, name_en, nationality),
             staff:users!transactions_staff_id_fkey(full_name)
         `)
         .gte('paid_at', `${from}T00:00:00`)

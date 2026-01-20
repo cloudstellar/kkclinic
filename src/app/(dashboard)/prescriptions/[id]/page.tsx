@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getPrescription } from '../actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getDisplayName } from '@/lib/patient-utils'
 import {
     Table,
     TableBody,
@@ -74,10 +75,16 @@ export default async function PrescriptionDetailPage({
                     <CardContent className="space-y-2">
                         <div>
                             <p className="text-sm text-muted-foreground">ชื่อ-นามสกุล</p>
-                            <p className="font-medium">{prescription.patient?.name}</p>
+                            <p className="font-medium">
+                                {getDisplayName({
+                                    name: prescription.patient?.name || null,
+                                    name_en: prescription.patient?.name_en || null,
+                                    nationality: prescription.patient?.nationality || 'thai'
+                                }) || '-'}
+                            </p>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">HN</p>
+                            <p className="text-sm text-muted-foreground">TN</p>
                             <p className="font-mono">{prescription.patient?.hn}</p>
                         </div>
                         {prescription.patient?.phone && (

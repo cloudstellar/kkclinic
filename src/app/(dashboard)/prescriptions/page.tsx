@@ -64,7 +64,7 @@ export default async function PrescriptionsPage({
                         <div className="flex-1 min-w-[200px]">
                             <Input
                                 name="search"
-                                placeholder="ค้นหาเลขใบสั่งยา, HN, ชื่อผู้ป่วย..."
+                                placeholder="ค้นหาเลขใบสั่งยา, TN, ชื่อผู้ป่วย..."
                                 defaultValue={params.search || ''}
                             />
                         </div>

@@ -19,14 +19,16 @@ export const CLINIC_CONFIG = {
 }
 
 /**
- * แปลง HN เป็น TN format สำหรับแสดงผล
- * @example formatPatientId('HN000001') => 'TN 000001'
+ * แปลง HN/TN เป็น TN format สำหรับแสดงผล (ไม่รวม "TN" อีกครั้ง)
+ * @example formatPatientId('TN269003') => 'TN269003'
+ * @example formatPatientId('HN000001') => 'TN000001'
  */
-export function formatPatientId(hn: string, label = CLINIC_CONFIG.patientIdLabel): string {
+export function formatPatientId(hn: string, includeLabel = true): string {
     if (!hn) return ''
-    // Remove prefix and add new label
-    const number = hn.replace(CLINIC_CONFIG.patientIdPrefix, '')
-    return `${label} ${number}`
+    // Strip any existing prefix (HN or TN)
+    const number = hn.replace(/^(HN|TN)/i, '')
+    // Return with or without label
+    return includeLabel ? `TN${number}` : number
 }
 
 /**

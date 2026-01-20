@@ -203,7 +203,7 @@ export default function NewPrescriptionPage() {
                     ) : (
                         <div className="relative">
                             <Input
-                                placeholder="ค้นหา HN หรือชื่อผู้ป่วย... (คลิกเพื่อดูรายชื่อ)"
+                                placeholder="ค้นหา TN หรือชื่อผู้ป่วย... (คลิกเพื่อดูรายชื่อ)"
                                 value={patientSearch}
                                 onChange={(e) => {
                                     setPatientSearch(e.target.value)

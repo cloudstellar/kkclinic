@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { TransactionWithRelations } from '@/types/transactions'
 import { VoidTransactionDialog } from './void-transaction-dialog'
+import { getDisplayName } from '@/lib/patient-utils'
 
 const paymentMethodLabels: Record<string, string> = {
     cash: 'เงินสด',
@@ -146,12 +147,16 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                     {/* Patient Info */}
                     <div className="text-sm mb-4 p-2 bg-gray-50 rounded">
                         <div className="flex justify-between">
-                            <span className="text-gray-600">HN:</span>
+                            <span className="text-gray-600">TN:</span>
                             <span className="font-mono">{transaction.patient?.hn}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-600">ชื่อ:</span>
-                            <span>{transaction.patient?.name}</span>
+                            <span>{transaction.patient ? getDisplayName({
+                                name: transaction.patient.name || null,
+                                name_en: (transaction.patient as any).name_en || null,
+                                nationality: (transaction.patient as any).nationality || 'thai'
+                            }) : '-'}</span>
                         </div>
                     </div>
 

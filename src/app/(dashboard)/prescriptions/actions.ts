@@ -12,7 +12,7 @@ export async function getPrescriptions(status?: string, search?: string) {
         .from('prescriptions')
         .select(`
             *,
-            patient:patients(id, hn, name, drug_allergies),
+            patient:patients(id, hn, name, name_en, nationality, drug_allergies),
             doctor:users!prescriptions_doctor_id_fkey(id, full_name)
         `)
         .order('created_at', { ascending: false })
@@ -23,7 +23,8 @@ export async function getPrescriptions(status?: string, search?: string) {
 
     if (search && search.trim()) {
         const searchTerm = `%${search.trim()}%`
-        query = query.or(`prescription_no.ilike.${searchTerm},patient.name.ilike.${searchTerm},patient.hn.ilike.${searchTerm}`)
+        // Can only filter on main table columns - foreign table filters don't work with .or()
+        query = query.ilike('prescription_no', searchTerm)
     }
 
     const { data, error } = await query
@@ -44,7 +45,7 @@ export async function getPrescription(id: string) {
         .from('prescriptions')
         .select(`
             *,
-            patient:patients(id, hn, name, drug_allergies, phone, birth_date),
+            patient:patients(id, hn, name, name_en, nationality, drug_allergies, phone, birth_date),
             doctor:users!prescriptions_doctor_id_fkey(id, full_name)
         `)
         .eq('id', id)
@@ -245,7 +246,7 @@ export async function searchPatients(query: string) {
 
     const { data, error } = await supabase
         .from('patients')
-        .select('id, hn, name, drug_allergies')
+        .select('id, hn, name, name_en, nationality, drug_allergies')
         .or(`hn.ilike.%${query}%,name.ilike.%${query}%`)
         .limit(10)
 

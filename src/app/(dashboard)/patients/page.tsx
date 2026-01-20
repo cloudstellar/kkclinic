@@ -36,7 +36,7 @@ export default async function PatientsPage({
                     <form method="get" className="flex gap-4">
                         <Input
                             name="search"
-                            placeholder="ค้นหา HN, ชื่อ, หรือเบอร์โทร..."
+                            placeholder="ค้นหา TN, ชื่อ, หรือเบอร์โทร..."
                             defaultValue={params.search || ''}
                             className="max-w-md"
                         />
@@ -91,7 +91,7 @@ export default async function PatientsPage({
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>HN</TableHead>
+                                    <TableHead>TN</TableHead>
                                     <TableHead>ชื่อ-นามสกุล</TableHead>
                                     <TableHead>เบอร์โทร</TableHead>
                                     <TableHead>แพ้ยา</TableHead>

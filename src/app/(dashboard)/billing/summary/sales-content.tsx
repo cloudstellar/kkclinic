@@ -69,7 +69,7 @@ export function DailySalesContent({
         }
 
         // Create CSV content
-        const headers = ['เลขใบเสร็จ', 'วันที่', 'เวลา', 'ผู้ป่วย', 'HN', 'ยอดก่อนลด', 'ส่วนลด', 'ยอดสุทธิ', 'วิธีชำระ']
+        const headers = ['เลขใบเสร็จ', 'วันที่', 'เวลา', 'ผู้ป่วย', 'TN', 'ยอดก่อนลด', 'ส่วนลด', 'ยอดสุทธิ', 'วิธีชำระ']
         const rows = summary.transactions.map(tx => [
             tx.receipt_no,
             new Date(tx.paid_at).toLocaleDateString('th-TH'),
