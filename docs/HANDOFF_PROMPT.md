@@ -1,8 +1,8 @@
 # Handoff Prompt for AI Agent
 
 **Current State:** Sprint 3A+ In Progress  
-**Last Updated:** 20 มกราคม 2569  
-**Version:** `feature/sprint-3a` @ `3b914bf`
+**Last Updated:** 21 มกราคม 2569  
+**Version:** `feature/sprint-3a` @ `004c9f1`
 
 ---
 
@@ -29,9 +29,11 @@
 
 ### ✅ Part 1: Bug Fixes (DONE)
 
-Commit `3b914bf`:
-- `lib/patient-utils.ts` - `getDisplayName()`
-- `lib/date-utils.ts` - BE auto-detect
+Commit `004c9f1`:
+- **Foreign Names:** Unified display (Eng if foreign) in Rx list, Payment, Print.
+- **Search:** Added `name_en` to search query in Prescriptions.
+- **Label Print:** Fixed 10x7.5cm thermal layout & removed preview gap.
+- **Utilities:** Restored `patient-utils` & `date-utils`.
 
 ### 🔄 Part 2: UX Improvements (PENDING)
 
@@ -40,7 +42,7 @@ Commit `3b914bf`:
 - [ ] Sortable tables (`?sort=&order=`)
 
 **PR-UX-02:**
-- [ ] Foreign name in dropdowns
+- [x] Foreign name in Display & Search
 - [ ] Nav highlight (`?from=billing`)
 - [ ] **TN Standardization (HN → TN)**
 
@@ -51,8 +53,8 @@ Commit `3b914bf`:
 ```
 1. อ่าน HANDOFF_PROMPT.md
 2. เริ่ม PR-UX-01: Filter + Sort
-3. ใช้ TN แทน HN ทุกจุด
-4. Server map: tn → hn temporarily
+3. ทำ Nav highlight (?from=billing)
+4. ตรวจสอบ TN Standardization (HN → TN) ให้ครบ
 ```
 
 ---

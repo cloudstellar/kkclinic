@@ -41,9 +41,10 @@
 ### Tasks
 - 🔲 Apply DB migration
 - 🔲 Update types (patients.ts, prescriptions.ts)
-- 🔲 Update patient-form + server validation
+- ✅ Update patient-form + server validation
 - 🔲 Update medicine-form
-- 🔲 Update label CSS
+- ✅ Update label CSS (10x7.5cm Thermal)
+- ✅ Fix: Foreign patient name display & Search
 - 🔲 Test + verify
 
 ---
