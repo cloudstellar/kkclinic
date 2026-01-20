@@ -1,8 +1,8 @@
 # Database Schema Documentation
 # KKClinic - Supabase PostgreSQL
 
-**Version:** 1.1  
-**Last Updated:** 18 มกราคม 2569  
+**Version:** 1.2  
+**Last Updated:** 20 มกราคม 2569 (Sprint 3A)  
 
 ---
 
@@ -123,14 +123,21 @@ CREATE TABLE patients (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     hn TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
+    name_en TEXT,                    -- ✨ Sprint 3A: ชื่อภาษาอังกฤษ
     birth_date DATE,
     gender TEXT CHECK (gender IN ('male', 'female', 'other')),
     phone TEXT NOT NULL,
     address TEXT,
+    address_en TEXT,                 -- ✨ Sprint 3A: ที่อยู่ภาษาอังกฤษ
+    postal_code TEXT,                -- ✨ Sprint 3A: รหัสไปรษณีย์
+    nationality TEXT DEFAULT 'thai', -- ✨ Sprint 3A: thai/other
+    emergency_contact_name TEXT,     -- ✨ Sprint 3A
+    emergency_contact_relationship TEXT,
+    emergency_contact_phone TEXT,
     notes TEXT,
-    id_card TEXT,                    -- ✨ เลขบัตรประชาชน 13 หลัก
-    drug_allergies TEXT,             -- ✨ ประวัติแพ้ยา (สำคัญมาก)
-    underlying_conditions TEXT,      -- ✨ โรคประจำตัว/โรคเรื้อรัง
+    id_card TEXT,                    -- เลขบัตรประชาชน 13 หลัก
+    drug_allergies TEXT,             -- ประวัติแพ้ยา (สำคัญมาก)
+    underlying_conditions TEXT,      -- โรคประจำตัว/โรคเรื้อรัง
     is_demo BOOLEAN DEFAULT false,   -- แยกข้อมูล demo/staging
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
@@ -142,6 +149,7 @@ CREATE INDEX idx_patients_hn ON patients(hn);
 CREATE INDEX idx_patients_name ON patients(name);
 CREATE INDEX idx_patients_phone ON patients(phone);
 CREATE INDEX idx_patients_id_card ON patients(id_card);
+CREATE INDEX idx_patients_nationality ON patients(nationality);  -- ✨ Sprint 3A
 
 -- Full-text search index
 CREATE INDEX idx_patients_name_search ON patients USING gin(to_tsvector('simple', name));
@@ -150,16 +158,23 @@ CREATE INDEX idx_patients_name_search ON patients USING gin(to_tsvector('simple'
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | UUID | PK | รหัสผู้ป่วย (internal) |
-| hn | TEXT | UNIQUE, NOT NULL | Hospital Number |
-| name | TEXT | NOT NULL | ชื่อ-นามสกุล |
+| hn | TEXT | UNIQUE, NOT NULL | TN + 6 หลัก (Sprint 3A) |
+| name | TEXT | NOT NULL | ชื่อ-นามสกุล (ไทย) |
+| **name_en** | TEXT | - | ชื่อภาษาอังกฤษ ✨ 3A |
 | birth_date | DATE | - | วันเกิด |
 | gender | TEXT | CHECK | male/female/other |
 | phone | TEXT | NOT NULL | เบอร์โทรศัพท์ |
-| address | TEXT | - | ที่อยู่ |
+| address | TEXT | - | ที่อยู่ (ไทย) |
+| **address_en** | TEXT | - | ที่อยู่ EN ✨ 3A |
+| **postal_code** | TEXT | - | รหัสไปรษณีย์ ✨ 3A |
+| **nationality** | TEXT | DEFAULT 'thai' | thai/other ✨ 3A |
+| **emergency_contact_name** | TEXT | - | ชื่อผู้ติดต่อฉุกเฉิน ✨ 3A |
+| **emergency_contact_relationship** | TEXT | - | ความสัมพันธ์ ✨ 3A |
+| **emergency_contact_phone** | TEXT | - | เบอร์ติดต่อ ✨ 3A |
 | notes | TEXT | - | หมายเหตุ |
-| **id_card** | TEXT | - | เลขบัตรประชาชน 13 หลัก ✨ |
-| **drug_allergies** | TEXT | - | ประวัติแพ้ยา (แสดงเตือนสีแดง) ✨ |
-| **underlying_conditions** | TEXT | - | โรคประจำตัว/โรคเรื้อรัง ✨ |
+| id_card | TEXT | - | เลขบัตรประชาชน 13 หลัก |
+| drug_allergies | TEXT | - | ประวัติแพ้ยา (แสดงเตือนสีแดง) |
+| underlying_conditions | TEXT | - | โรคประจำตัว/โรคเรื้อรัง |
 | is_demo | BOOLEAN | DEFAULT false | แยกข้อมูล demo |
 | created_at | TIMESTAMPTZ | DEFAULT now() | วันที่ลงทะเบียน |
 | updated_at | TIMESTAMPTZ | DEFAULT now() | วันที่แก้ไขล่าสุด |

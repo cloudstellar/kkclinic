@@ -33,6 +33,9 @@ export type PrescriptionWithRelations = Prescription & {
     items?: PrescriptionItem[]
 }
 
+// Instruction language type
+export type InstructionLanguage = 'thai' | 'english'
+
 // Prescription item type
 export type PrescriptionItem = {
     id: string
@@ -44,12 +47,17 @@ export type PrescriptionItem = {
     unit_price: number
     price_override: number | null
     dosage_instruction: string | null  // วิธีใช้ยา (สำหรับฉลาก)
+    dosage_raw: string | null          // Sprint 3A: ภาษาหมอ (เช่น 1 gtt OU qid)
+    instruction_language: InstructionLanguage  // Sprint 3A: ภาษาที่ใช้พิมพ์ฉลาก
+    df: number                          // Sprint 3A: Doctor's Fee
+    df_note: string | null              // Sprint 3A: หมายเหตุ DF
     note: string | null
     created_at: string
     medicine?: {
         id: string
         code: string
         name: string
+        name_en: string | null          // Sprint 3A: ชื่อยา EN
         unit: string
         stock_qty: number
     }

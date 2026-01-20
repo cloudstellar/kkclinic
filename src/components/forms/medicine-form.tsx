@@ -53,11 +53,13 @@ export function MedicineForm({ medicine, onSubmit, isSubmitting }: MedicineFormP
         defaultValues: {
             code: medicine?.code || '',
             name: medicine?.name || '',
+            name_en: medicine?.name_en || '',
             unit: medicine?.unit || 'เม็ด',
             price: medicine?.price || 0,
             stock_qty: medicine?.stock_qty || 0,
             min_stock: medicine?.min_stock || 10,
             description: medicine?.description || '',
+            description_en: medicine?.description_en || '',
         },
     })
 
@@ -174,7 +176,7 @@ export function MedicineForm({ medicine, onSubmit, isSubmitting }: MedicineFormP
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="name">ชื่อยา *</Label>
+                            <Label htmlFor="name">ชื่อยา (ไทย) *</Label>
                             <Input
                                 id="name"
                                 {...register('name')}
@@ -184,6 +186,16 @@ export function MedicineForm({ medicine, onSubmit, isSubmitting }: MedicineFormP
                             {errors.name && (
                                 <p className="text-sm text-red-500">{errors.name.message}</p>
                             )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="name_en">ชื่อยา (EN)</Label>
+                            <Input
+                                id="name_en"
+                                {...register('name_en')}
+                                placeholder="Paracetamol 500mg"
+                                disabled={isSubmitting}
+                            />
                         </div>
                     </div>
 
@@ -301,19 +313,32 @@ export function MedicineForm({ medicine, onSubmit, isSubmitting }: MedicineFormP
                         </div>
                     )}
 
-                    <div className="space-y-2">
-                        <Label htmlFor="description">สรรพคุณ/คำอธิบาย</Label>
-                        <Textarea
-                            id="description"
-                            {...register('description')}
-                            placeholder="เช่น บรรเทาอาการปวด ลดไข้, น้ำตาเทียม รักษาแผลถลอกผิวตา"
-                            rows={2}
-                            disabled={isSubmitting}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            ข้อมูลนี้จะแสดงบนฉลากยา
-                        </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="description">สรรพคุณ/คำอธิบาย (ไทย)</Label>
+                            <Textarea
+                                id="description"
+                                {...register('description')}
+                                placeholder="เช่น บรรเทาอาการปวด ลดไข้, น้ำตาเทียม รักษาแผลถลอกผิวตา"
+                                rows={2}
+                                disabled={isSubmitting}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="description_en">Description (EN)</Label>
+                            <Textarea
+                                id="description_en"
+                                {...register('description_en')}
+                                placeholder="e.g., Artificial tears, lubricating eye drops"
+                                rows={2}
+                                disabled={isSubmitting}
+                            />
+                        </div>
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                        ข้อมูลนี้จะแสดงบนฉลากยา
+                    </p>
                 </CardContent>
             </Card>
 

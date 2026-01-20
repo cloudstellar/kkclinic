@@ -72,12 +72,12 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
 
     return (
         <>
-            {/* Print Styles - A6 size Landscape */}
+            {/* Print Styles - 10×7.5 cm Thermal Label (Sprint 3A) */}
             <style jsx global>{`
                 @media print {
                     @page {
-                        size: 148mm 105mm;
-                        margin: 5mm;
+                        size: 100mm 75mm;
+                        margin: 3mm;
                     }
 
                     body {
@@ -100,11 +100,11 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
 
                 @media screen {
                     .label-container {
-                        width: 148mm;
-                        height: 105mm;
+                        width: 100mm;
+                        height: 75mm;
                         border: 1px dashed #ccc;
                         margin: 10px auto;
-                        padding: 5mm;
+                        padding: 3mm;
                         background: white;
                         box-sizing: border-box;
                     }
