@@ -13,7 +13,6 @@ export type Patient = {
     gender: 'male' | 'female' | 'other' | null
     phone: string
     address: string | null
-    address_en: string | null
     postal_code: string | null
     nationality: Nationality
     emergency_contact_name: string | null
@@ -38,7 +37,6 @@ export type PatientFormData = {
     gender?: 'male' | 'female' | 'other'
     phone: string
     address?: string
-    address_en?: string
     postal_code?: string
     nationality: Nationality
     emergency_contact_name?: string
@@ -70,13 +68,12 @@ export const patientFormSchema = z.object({
         .refine((val) => TN_REGEX.test(val), {
             message: 'รหัส TN ต้องเป็น TN ตามด้วยตัวเลข 6 หลัก (เช่น TN250429)'
         }),
-    name: z.string().min(2, 'ชื่อต้องมีอย่างน้อย 2 ตัวอักษร'),
-    name_en: z.string().optional(),
+    name: z.string().optional(),        // Optional in base, validated per nationality
+    name_en: z.string().optional(),     // Optional in base, validated per nationality
     birth_date: z.string().optional(),
     gender: z.enum(['male', 'female', 'other']).optional(),
     phone: z.string().min(9, 'เบอร์โทรไม่ถูกต้อง').max(15, 'เบอร์โทรไม่ถูกต้อง'),
-    address: z.string().optional(),
-    address_en: z.string().optional(),
+    address: z.string().optional(),     // Single field, not required
     postal_code: z.string().max(5, 'รหัสไปรษณีย์ต้องไม่เกิน 5 หลัก').optional().or(z.literal('')),
     nationality: z.enum(['thai', 'other']).default('thai'),
     emergency_contact_name: z.string().optional(),
@@ -87,20 +84,22 @@ export const patientFormSchema = z.object({
     drug_allergies: z.string().optional(),
     underlying_conditions: z.string().optional(),
 }).superRefine((data, ctx) => {
-    // Nationality-based validation (SKILL.md: Data Integrity)
+    // Nationality-based validation (Bug Fix: only validate the relevant field)
     if (data.nationality === 'thai') {
+        // Thai nationality: require name (Thai)
         if (!data.name || data.name.trim().length < 2) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: 'สัญชาติไทยต้องกรอกชื่อภาษาไทย',
+                message: 'กรุณากรอกชื่อ-นามสกุล',
                 path: ['name']
             })
         }
     } else if (data.nationality === 'other') {
+        // Foreign nationality: require name_en ONLY, name is optional
         if (!data.name_en || data.name_en.trim().length < 2) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: 'ต่างชาติต้องกรอกชื่อภาษาอังกฤษ (Name EN)',
+                message: 'Please enter name in English',
                 path: ['name_en']
             })
         }

@@ -87,11 +87,11 @@ function validatePatientData(data: PatientFormValues): { valid: boolean; error?:
     // Nationality-based validation
     if (data.nationality === 'thai') {
         if (!data.name || data.name.trim().length < 2) {
-            return { valid: false, error: 'สัญชาติไทยต้องกรอกชื่อภาษาไทย' }
+            return { valid: false, error: 'กรุณากรอกชื่อ-นามสกุล' }
         }
     } else if (data.nationality === 'other') {
         if (!data.name_en || data.name_en.trim().length < 2) {
-            return { valid: false, error: 'ต่างชาติต้องกรอกชื่อภาษาอังกฤษ (Name EN)' }
+            return { valid: false, error: 'Please enter name in English' }
         }
     }
 
@@ -133,7 +133,6 @@ export async function createPatient(formData: PatientFormValues) {
             gender: formData.gender || null,
             phone: formData.phone,
             address: formData.address || null,
-            address_en: formData.address_en || null,
             postal_code: formData.postal_code || null,
             nationality: formData.nationality || 'thai',
             emergency_contact_name: formData.emergency_contact_name || null,
@@ -190,7 +189,6 @@ export async function updatePatient(id: string, formData: PatientFormValues) {
             gender: formData.gender || null,
             phone: formData.phone,
             address: formData.address || null,
-            address_en: formData.address_en || null,
             postal_code: formData.postal_code || null,
             nationality: formData.nationality || 'thai',
             emergency_contact_name: formData.emergency_contact_name || null,

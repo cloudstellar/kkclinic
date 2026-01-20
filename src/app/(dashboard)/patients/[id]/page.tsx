@@ -45,8 +45,17 @@ export default async function PatientDetailPage({
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold">{patient.name}</h1>
+                        <h1 className="text-2xl font-bold">
+                            {patient.nationality === 'other' && patient.name_en
+                                ? patient.name_en
+                                : patient.name || patient.name_en}
+                        </h1>
                         <p className="text-muted-foreground font-mono">{patient.hn}</p>
+                        {patient.nationality === 'other' && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                                🌍 Foreigner
+                            </span>
+                        )}
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -133,6 +142,35 @@ export default async function PatientDetailPage({
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Emergency Contact */}
+                {(patient.emergency_contact_name || patient.emergency_contact_phone) && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">📞 ผู้ติดต่อฉุกเฉิน</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            {patient.emergency_contact_name && (
+                                <div>
+                                    <p className="text-sm text-muted-foreground">ชื่อ</p>
+                                    <p className="font-medium">{patient.emergency_contact_name}</p>
+                                </div>
+                            )}
+                            {patient.emergency_contact_relationship && (
+                                <div>
+                                    <p className="text-sm text-muted-foreground">ความสัมพันธ์</p>
+                                    <p>{patient.emergency_contact_relationship}</p>
+                                </div>
+                            )}
+                            {patient.emergency_contact_phone && (
+                                <div>
+                                    <p className="text-sm text-muted-foreground">เบอร์โทร</p>
+                                    <p className="font-medium">{patient.emergency_contact_phone}</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Medical Info */}
                 <Card className="md:col-span-2">

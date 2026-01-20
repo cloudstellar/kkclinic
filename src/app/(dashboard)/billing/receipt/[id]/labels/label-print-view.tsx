@@ -186,7 +186,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
 
                         {/* Page hint */}
                         <p className="text-sm text-muted-foreground mb-4">
-                            📄 รายการยา {selectedIds.size} รายการ → จะพิมพ์ {selectedIds.size} หน้า (A6)
+                            🏷️ รายการยา {selectedIds.size} รายการ → พิมพ์ {selectedIds.size} แผ่น (10×7.5 ซม.)
                         </p>
 
                         {/* Actions */}

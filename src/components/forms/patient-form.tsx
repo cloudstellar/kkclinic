@@ -40,7 +40,6 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
             gender: patient?.gender || undefined,
             phone: patient?.phone || '',
             address: patient?.address || '',
-            address_en: patient?.address_en || '',
             postal_code: patient?.postal_code || '',
             nationality: patient?.nationality || 'thai',
             emergency_contact_name: patient?.emergency_contact_name || '',
@@ -222,20 +221,6 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                             )}
                         </div>
                     </div>
-
-                    {/* Address EN - show when nationality is other */}
-                    {nationality === 'other' && (
-                        <div className="space-y-2">
-                            <Label htmlFor="address_en">Address (EN)</Label>
-                            <Textarea
-                                id="address_en"
-                                {...register('address_en')}
-                                placeholder="Full address in English"
-                                rows={2}
-                                disabled={isSubmitting}
-                            />
-                        </div>
-                    )}
                 </CardContent>
             </Card>
 
