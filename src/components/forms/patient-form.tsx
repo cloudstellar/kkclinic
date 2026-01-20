@@ -98,14 +98,16 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                             </Select>
                         </div>
 
-                        {/* เลขบัตรประชาชน */}
+                        {/* เลขบัตรประชาชน / Passport */}
                         <div className="space-y-2">
-                            <Label htmlFor="id_card">เลขบัตรประชาชน</Label>
+                            <Label htmlFor="id_card">
+                                {nationality === 'other' ? 'Passport / National ID' : 'เลขบัตรประชาชน'}
+                            </Label>
                             <Input
                                 id="id_card"
                                 {...register('id_card')}
-                                placeholder="1234567890123"
-                                maxLength={13}
+                                placeholder={nationality === 'other' ? 'Passport / National ID number' : '1234567890123'}
+                                maxLength={nationality === 'other' ? 20 : 13}
                                 disabled={isSubmitting}
                             />
                             {errors.id_card && (
@@ -196,12 +198,12 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="md:col-span-2 space-y-2">
                             <Label htmlFor="address">
-                                ที่อยู่ {nationality === 'thai' ? '(ไทย)' : ''}
+                                {nationality === 'other' ? 'Address' : 'ที่อยู่'}
                             </Label>
                             <Textarea
                                 id="address"
                                 {...register('address')}
-                                placeholder="บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด"
+                                placeholder={nationality === 'other' ? 'Full address' : 'บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด'}
                                 rows={2}
                                 disabled={isSubmitting}
                             />

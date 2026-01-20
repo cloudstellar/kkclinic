@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { normalizeBirthDate, isFutureBirthDate } from '@/lib/date-utils'
 
 // Nationality type
 export type Nationality = 'thai' | 'other'
@@ -70,7 +71,7 @@ export const patientFormSchema = z.object({
         }),
     name: z.string().optional(),        // Optional in base, validated per nationality
     name_en: z.string().optional(),     // Optional in base, validated per nationality
-    birth_date: z.string().optional(),
+    birth_date: z.string().optional().transform(val => val ? normalizeBirthDate(val) : val),
     gender: z.enum(['male', 'female', 'other']).optional(),
     phone: z.string().min(9, 'เบอร์โทรไม่ถูกต้อง').max(15, 'เบอร์โทรไม่ถูกต้อง'),
     address: z.string().optional(),     // Single field, not required
@@ -80,7 +81,7 @@ export const patientFormSchema = z.object({
     emergency_contact_relationship: z.string().optional(),
     emergency_contact_phone: z.string().optional(),
     notes: z.string().optional(),
-    id_card: z.string().length(13, 'เลขบัตรประชาชนต้องมี 13 หลัก').optional().or(z.literal('')),
+    id_card: z.string().max(20).optional().or(z.literal('')),
     drug_allergies: z.string().optional(),
     underlying_conditions: z.string().optional(),
 }).superRefine((data, ctx) => {
@@ -103,6 +104,24 @@ export const patientFormSchema = z.object({
                 path: ['name_en']
             })
         }
+    }
+
+    // ID card validation - only for Thai (must be exactly 13 digits)
+    if (data.nationality === 'thai' && data.id_card && data.id_card.length > 0 && data.id_card.length !== 13) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'เลขบัตรประชาชนต้องมี 13 หลัก',
+            path: ['id_card']
+        })
+    }
+
+    // Birth date validation - no future dates
+    if (data.birth_date && isFutureBirthDate(data.birth_date)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'วันเกิดอยู่ในอนาคต กรุณาตรวจสอบ พ.ศ./ค.ศ.',
+            path: ['birth_date']
+        })
     }
 })
 

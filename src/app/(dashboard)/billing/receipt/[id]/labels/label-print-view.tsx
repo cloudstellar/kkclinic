@@ -80,13 +80,19 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         margin: 3mm;
                     }
 
-                    body {
-                        margin: 0;
-                        padding: 0;
+                    /* Print CSS Isolation - hide everything except labels */
+                    body * {
+                        visibility: hidden !important;
                     }
-
-                    .no-print {
-                        display: none !important;
+                    .print-area,
+                    .print-area * {
+                        visibility: visible !important;
+                    }
+                    .print-area {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100mm;
                     }
 
                     .label-container {
@@ -107,6 +113,14 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         padding: 3mm;
                         background: white;
                         box-sizing: border-box;
+                    }
+                    /* Overflow fix - block element required for line-clamp */
+                    .dosage-text {
+                        display: -webkit-box;
+                        -webkit-line-clamp: 3;
+                        -webkit-box-orient: vertical;
+                        overflow: hidden;
+                        max-width: 100%;
                     }
                 }
             `}</style>
@@ -225,7 +239,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
             </div>
 
             {/* Print Area - Hidden on screen, visible on print */}
-            <div className="hidden print:block">
+            <div className="hidden print:block print-area">
                 {selectedItems.map(item => (
                     <LabelTemplate
                         key={item.id}
@@ -280,7 +294,7 @@ function LabelTemplate({
 
                 <p className="text-sm">
                     <span className="font-medium">วิธีใช้ : </span>
-                    <span className="ml-4">{item.dosage_instruction || item.note || '-'}</span>
+                    <div className="ml-4 dosage-text">{item.dosage_instruction || item.note || '-'}</div>
                 </p>
 
                 <p className="text-sm">

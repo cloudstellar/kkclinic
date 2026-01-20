@@ -11,6 +11,7 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getDisplayName, hasValidName } from '@/lib/patient-utils'
 
 export default async function PatientsPage({
     searchParams,
@@ -104,7 +105,18 @@ export default async function PatientsPage({
                                         <TableCell className="font-mono font-medium">
                                             {patient.hn}
                                         </TableCell>
-                                        <TableCell>{patient.name}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                {hasValidName(patient) ? (
+                                                    <span>{getDisplayName(patient)}</span>
+                                                ) : (
+                                                    <span className="text-amber-600">⚠️ ชื่อไม่ครบ</span>
+                                                )}
+                                                {patient.nationality === 'other' && (
+                                                    <span className="px-1.5 py-0.5 rounded text-xs bg-blue-100 text-blue-800">🌍</span>
+                                                )}
+                                            </div>
+                                        </TableCell>
                                         <TableCell>{patient.phone}</TableCell>
                                         <TableCell>
                                             {patient.drug_allergies ? (
