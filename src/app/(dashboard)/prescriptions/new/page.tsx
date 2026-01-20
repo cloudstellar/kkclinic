@@ -21,11 +21,15 @@ import { toast } from 'sonner'
 import { QuantityInput } from '@/components/ui/quantity-input'
 import { DosageDisplay } from '@/components/prescription/dosage-display'
 import { DosageInstructionSheet } from '@/components/prescription/dosage-instruction-sheet'
+import { getDisplayName } from '@/lib/patient-utils'
+import { formatPatientId } from '@/lib/clinic-config'
 
 type Patient = {
     id: string
     hn: string
     name: string
+    name_en?: string | null
+    nationality?: 'thai' | 'other' | string
     drug_allergies: string | null
 }
 
@@ -188,8 +192,14 @@ export default function NewPrescriptionPage() {
                     {selectedPatient ? (
                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                             <div>
-                                <p className="font-medium">{selectedPatient.name}</p>
-                                <p className="text-sm text-muted-foreground font-mono">{selectedPatient.hn}</p>
+                                <p className="font-medium">
+                                    {getDisplayName({
+                                        name: selectedPatient.name || null,
+                                        name_en: selectedPatient.name_en || null,
+                                        nationality: selectedPatient.nationality || 'thai'
+                                    }) || '-'}
+                                </p>
+                                <p className="text-sm text-muted-foreground font-mono">{formatPatientId(selectedPatient.hn)}</p>
                                 {selectedPatient.drug_allergies && (
                                     <p className="text-sm text-red-600 mt-1">
                                         ⚠️ แพ้ยา: {selectedPatient.drug_allergies}
@@ -221,8 +231,14 @@ export default function NewPrescriptionPage() {
                                             className="w-full px-4 py-2 text-left hover:bg-gray-100 border-b last:border-b-0"
                                             onClick={() => selectPatient(patient)}
                                         >
-                                            <span className="font-medium">{patient.name}</span>
-                                            <span className="text-sm text-muted-foreground ml-2">({patient.hn})</span>
+                                            <span className="font-medium">
+                                                {getDisplayName({
+                                                    name: patient.name || null,
+                                                    name_en: patient.name_en || null,
+                                                    nationality: patient.nationality || 'thai'
+                                                }) || '-'}
+                                            </span>
+                                            <span className="text-sm text-muted-foreground ml-2">({formatPatientId(patient.hn)})</span>
                                             {patient.drug_allergies && (
                                                 <span className="text-xs text-red-600 ml-2">⚠️ แพ้ยา</span>
                                             )}

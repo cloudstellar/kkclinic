@@ -37,26 +37,21 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
     // Filter only medicine items (not procedures)
     const medicineItems = (transaction.items || []).filter(item => item.medicine)
 
-    // State for checkbox selection
     const [selectedIds, setSelectedIds] = useState<Set<string>>(
         new Set(medicineItems.map(item => item.id))
     )
 
-    // Items with missing dosage instruction
-    const itemsWithoutDosage = medicineItems.filter(
-        item => !item.dosage_instruction && selectedIds.has(item.id)
-    )
+    // Items without dosage instruction (warning)
+    const itemsWithoutDosage = medicineItems.filter(item => !item.dosage_instruction && !item.note)
 
     const toggleItem = (id: string) => {
-        setSelectedIds(prev => {
-            const next = new Set(prev)
-            if (next.has(id)) {
-                next.delete(id)
-            } else {
-                next.add(id)
-            }
-            return next
-        })
+        const newSelected = new Set(selectedIds)
+        if (newSelected.has(id)) {
+            newSelected.delete(id)
+        } else {
+            newSelected.add(id)
+        }
+        setSelectedIds(newSelected)
     }
 
     const selectAll = () => {
@@ -75,58 +70,44 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
 
     return (
         <>
-            {/* Print Styles - 10×7.5 cm Thermal Label (Sprint 3A) */}
+            {/* Print Styles - 10×7.5 cm Thermal Label */}
             <style jsx global>{`
-                /* Shared styles for both screen and print */
-                .label-container {
-                    width: 94mm;
-                    max-height: 69mm;
-                    padding: 3mm;
-                    overflow: hidden !important;
-                    box-sizing: border-box;
-                }
-
-                .dosage-text {
-                    display: -webkit-box !important;
-                    -webkit-line-clamp: 2 !important;
-                    -webkit-box-orient: vertical !important;
-                    overflow: hidden !important;
-                    max-width: 100%;
-                }
-
-                .description-text {
-                    display: -webkit-box !important;
-                    -webkit-line-clamp: 1 !important;
-                    -webkit-box-orient: vertical !important;
-                    overflow: hidden !important;
-                }
-
                 @media print {
                     @page {
                         size: 100mm 75mm;
-                        margin: 3mm;
+                        margin: 0;
                     }
 
-                    /* Print CSS Isolation - hide everything except labels */
-                    body * {
-                        visibility: hidden !important;
+                    html, body {
+                        margin: 0;
+                        padding: 0;
+                        width: 100mm;
+                        height: 75mm;
                     }
-                    .print-area,
-                    .print-area * {
-                        visibility: visible !important;
+
+                    .no-print {
+                        display: none !important;
                     }
-                    .print-area {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 94mm;
+
+                    /* Center horizontally, align top */
+                    .print-container {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: flex-start;
+                        width: 100mm;
+                        min-height: 75mm;
+                        padding-top: 3mm;
                     }
 
                     .label-container {
+                        width: 94mm;
+                        max-height: 69mm;
+                        padding: 4mm;
+                        border: 1px solid #333;
+                        background: white;
+                        box-sizing: border-box;
                         page-break-after: always;
-                        page-break-inside: avoid;
-                        height: 69mm !important;
-                        max-height: 69mm !important;
                     }
 
                     .label-container:last-child {
@@ -134,22 +115,26 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                     }
 
                     /* Smaller text for print */
-                    .label-container .text-xl { font-size: 14px !important; }
-                    .label-container .text-sm { font-size: 10px !important; }
-                    .label-container .text-xs { font-size: 8px !important; }
-                    .label-container h1 { font-size: 14px !important; margin: 0 !important; }
+                    .label-container .text-xl { font-size: 12px !important; }
+                    .label-container .text-sm { font-size: 9px !important; }
+                    .label-container .text-xs { font-size: 7px !important; }
+                    .label-container h1 { font-size: 13px !important; margin: 0 !important; }
                     .label-container p { margin: 0 !important; }
                     .label-container .space-y-1 > * + * { margin-top: 2px !important; }
-                    .label-container .mb-2 { margin-bottom: 4px !important; }
+                    .label-container .mb-2 { margin-bottom: 3px !important; }
                 }
 
                 @media screen {
                     .label-container {
                         width: 100mm;
                         height: 75mm;
-                        border: 1px dashed #ccc;
+                        border: 1px solid #333;
                         margin: 10px auto;
+                        padding: 5mm;
                         background: white;
+                        box-sizing: border-box;
+                        /* Add shadow for better preview */
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                     }
                 }
             `}</style>
@@ -205,75 +190,65 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                                 </div>
                             </div>
 
-                            <div className="border rounded-lg divide-y max-h-60 overflow-y-auto">
+                            <div className="space-y-2 border rounded-md p-2 max-h-60 overflow-y-auto">
                                 {medicineItems.map(item => (
-                                    <label
-                                        key={item.id}
-                                        className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer"
-                                    >
+                                    <label key={item.id} className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
                                         <input
                                             type="checkbox"
                                             checked={selectedIds.has(item.id)}
                                             onChange={() => toggleItem(item.id)}
-                                            className="w-4 h-4"
+                                            className="mt-1"
                                         />
-                                        <div className="flex-1">
+                                        <div className="text-sm">
                                             <div className="font-medium">{item.medicine?.name}</div>
-                                            <div className="text-sm text-muted-foreground">
-                                                {item.quantity} {item.medicine?.unit}
-                                                {!item.dosage_instruction && (
-                                                    <span className="text-amber-600 ml-2">⚠️ ไม่มีวิธีใช้</span>
-                                                )}
+                                            <div className="text-muted-foreground">
+                                                จำนวน: {item.quantity} {item.medicine?.unit}
                                             </div>
+                                            {item.dosage_instruction ? (
+                                                <div className="text-green-600 text-xs mt-1">
+                                                    วิธีใช้: {item.dosage_instruction}
+                                                </div>
+                                            ) : item.note ? (
+                                                <div className="text-blue-600 text-xs mt-1">
+                                                    หมายเหตุ: {item.note}
+                                                </div>
+                                            ) : (
+                                                <div className="text-amber-600 text-xs mt-1">
+                                                    - ไม่มีวิธีใช้ -
+                                                </div>
+                                            )}
                                         </div>
                                     </label>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Page hint */}
-                        <p className="text-sm text-muted-foreground mb-4">
-                            🏷️ รายการยา {selectedIds.size} รายการ → พิมพ์ {selectedIds.size} แผ่น (10×7.5 ซม.)
-                        </p>
-
-                        {/* Actions */}
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handlePrint}
-                                disabled={selectedIds.size === 0}
-                                className="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                🖨️ พิมพ์ฉลากยา ({selectedIds.size} รายการ)
-                            </button>
+                        <div className="flex gap-4">
                             <button
                                 onClick={() => window.history.back()}
-                                className="px-4 py-3 border rounded-lg hover:bg-gray-50"
+                                className="px-4 py-2 border rounded hover:bg-gray-50"
                             >
                                 ← ย้อนกลับ
                             </button>
+                            <button
+                                onClick={handlePrint}
+                                disabled={selectedIds.size === 0}
+                                className="flex-1 bg-black text-white px-4 py-2 rounded hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                🖨️ พิมพ์ฉลากยา ({selectedItems.length} รายการ)
+                            </button>
+                        </div>
+
+                        <div className="mt-4 text-xs text-muted-foreground text-center">
+                            <p>💡 Tip: ตั้งค่ากระดาษเป็น 100mm x 75mm ในหน้าต่างพิมพ์</p>
                         </div>
                     </div>
-
-                    {/* Preview */}
-                    <h2 className="text-lg font-semibold mb-4 text-center">ตัวอย่างฉลาก</h2>
-                </div>
-
-                {/* Labels Preview */}
-                <div className="flex flex-col items-center gap-6 pb-10">
-                    {selectedItems.map(item => (
-                        <LabelTemplate
-                            key={item.id}
-                            item={item}
-                            patient={transaction.patient}
-                            paidAt={transaction.paid_at}
-                        />
-                    ))}
                 </div>
             </div>
 
-            {/* Print Area - Hidden on screen, visible on print */}
-            <div className="hidden print:block print-area">
-                {selectedItems.map(item => (
+            {/* Print Area */}
+            <div className="print-container">
+                {selectedItems.map((item) => (
                     <LabelTemplate
                         key={item.id}
                         item={item}
@@ -286,7 +261,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
     )
 }
 
-// Individual Label Template (matches the sample provided)
+// Individual Label Template
 function LabelTemplate({
     item,
     patient,
@@ -296,55 +271,69 @@ function LabelTemplate({
     patient?: { hn: string; name: string; name_en?: string | null; nationality?: string | null } | null
     paidAt: string
 }) {
-    // Get display name based on nationality
-    const displayName = patient ? getDisplayName({
-        name: patient.name || null,
-        name_en: patient.name_en || null,
-        nationality: patient.nationality || 'thai'
-    }) : '-'
-
     return (
-        <div className="label-container">
-            {/* Header - ชื่อคลินิกเป็นสีดำ */}
-            <div className="text-center mb-2">
-                <h1 className="text-xl font-bold text-gray-900">{CLINIC_CONFIG.name}</h1>
-                <p className="text-xs">({CLINIC_CONFIG.fullName})</p>
-                <p className="text-xs text-gray-600">{CLINIC_CONFIG.address}</p>
-                <p className="text-xs text-gray-600">โทรศัพท์ {CLINIC_CONFIG.phone}</p>
+        <div className="label-container relative">
+            {/* Header */}
+            <div className="border-b border-gray-300 pb-2 mb-2">
+                <div className="flex justify-between items-start">
+                    <div className="text-center w-full">
+                        <h1 className="text-xl font-bold text-slate-900">คลินิกตาใสใส</h1>
+                        <p className="text-[10px] text-gray-600 mt-0.5 font-medium">
+                            (ตาใสใสคลินิกเฉพาะทางด้านเวชกรรมสาขาจักษุวิทยา)
+                        </p>
+                        <p className="text-[9px] text-gray-500 leading-tight mt-0.5">
+                            186/153 ถนน เทศบาล34 ตำบลพลา อำเภอบ้านฉาง จังหวัดระยอง
+                        </p>
+                        <p className="text-[9px] text-gray-500">โทรศัพท์ 081-776-6936</p>
+                    </div>
+                </div>
             </div>
 
-            {/* Divider */}
-            <hr className="border-gray-300 mb-2" />
+            {/* Content */}
+            <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between items-baseline">
+                    <span className="font-bold text-slate-800 text-xs">
+                        {formatPatientId(patient?.hn || '')}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                        วันที่ {formatThaiDate(paidAt)}
+                    </span>
+                </div>
 
-            {/* Patient Info */}
-            <div className="flex justify-between text-sm mb-2">
-                <span>{formatPatientId(patient?.hn || '')}</span>
-                <span>วันที่ {formatThaiDate(paidAt)}</span>
+                <div>
+                    <span className="font-bold mr-1">ชื่อ :</span>
+                    <span>{patient ? getDisplayName({
+                        name: patient.name || null,
+                        name_en: patient.name_en || null,
+                        nationality: patient.nationality || 'thai'
+                    }) : '-'}</span>
+                </div>
+
+                <div>
+                    <span className="font-bold mr-1">ชื่อยา :</span>
+                    <span className="font-semibold">{item.medicine?.name}</span>
+                </div>
+
+                <div className="flex items-start">
+                    <span className="font-bold mr-1 whitespace-nowrap">วิธีใช้ :</span>
+                    <div className="dosage-text leading-tight">
+                        {item.dosage_instruction || item.note || '-'}
+                    </div>
+                </div>
+
+                {item.medicine?.description && (
+                    <div className="flex items-start text-xs text-gray-600 mt-1">
+                        <span className="font-bold mr-1 whitespace-nowrap">สรรพคุณ :</span>
+                        <div className="description-text leading-tight">
+                            {item.medicine.description}
+                        </div>
+                    </div>
+                )}
             </div>
-            <p className="text-sm mb-2">
-                ชื่อ : {displayName || '-'}
-            </p>
 
-            {/* Medicine Info */}
-            <div className="space-y-1">
-                <p className="text-sm">
-                    <span className="font-medium">ชื่อยา : </span>
-                    <span className="font-bold">{item.medicine?.name}</span>
-                </p>
-
-                <div className="text-sm">
-                    <span className="font-medium">วิธีใช้ : </span>
-                    <span className="dosage-text inline">{item.dosage_instruction || item.note || '-'}</span>
-                </div>
-
-                <div className="text-sm">
-                    <span className="font-medium">สรรพคุณ : </span>
-                    <span className="description-text inline">{item.medicine?.description || '-'}</span>
-                </div>
-
-                <p className="text-xs text-gray-600">
-                    {CLINIC_CONFIG.expiryNote}
-                </p>
+            {/* Footer - Qty */}
+            <div className="absolute bottom-2 right-4 text-xs text-gray-400">
+                #{item.quantity}
             </div>
         </div>
     )

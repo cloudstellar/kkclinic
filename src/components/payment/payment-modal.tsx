@@ -17,6 +17,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { formatCurrency } from '@/lib/utils'
 import { processPayment } from '@/app/(dashboard)/billing/actions'
 import { toast } from 'sonner'
+import { getDisplayName } from '@/lib/patient-utils'
+import { formatPatientId } from '@/lib/clinic-config'
 
 type PrescriptionItem = {
     id: string
@@ -40,6 +42,8 @@ type Prescription = {
         id: string
         hn: string
         name: string
+        name_en?: string | null
+        nationality?: string | null
     } | null
     items?: PrescriptionItem[]
 }
@@ -143,7 +147,11 @@ export function PaymentModal({ open, onOpenChange, prescription }: PaymentModalP
                         💳 ชำระเงิน
                     </DialogTitle>
                     <DialogDescription>
-                        {prescription.prescription_no} • {prescription.patient?.name} ({prescription.patient?.hn})
+                        {prescription.prescription_no} • {prescription.patient ? getDisplayName({
+                            name: prescription.patient.name || null,
+                            name_en: prescription.patient.name_en || null,
+                            nationality: prescription.patient.nationality || 'thai'
+                        }) : '-'} ({formatPatientId(prescription.patient?.hn || '')})
                     </DialogDescription>
                 </DialogHeader>
 

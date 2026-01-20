@@ -11,6 +11,8 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getDisplayName, hasValidName } from '@/lib/patient-utils'
+import { formatPatientId } from '@/lib/clinic-config'
 
 const statusLabels: Record<string, { label: string; className: string }> = {
     pending: { label: 'รอจ่ายยา', className: 'bg-yellow-100 text-yellow-700' },
@@ -64,7 +66,7 @@ export default async function PrescriptionsPage({
                         <div className="flex-1 min-w-[200px]">
                             <Input
                                 name="search"
-                                placeholder="ค้นหาเลขใบสั่งยา, TN, ชื่อผู้ป่วย..."
+                                placeholder="ค้นหาเลขใบสั่งยา..."
                                 defaultValue={params.search || ''}
                             />
                         </div>
@@ -148,9 +150,22 @@ export default async function PrescriptionsPage({
                                             </TableCell>
                                             <TableCell>
                                                 <div>
-                                                    <span className="font-medium">{rx.patient?.name}</span>
+                                                    <span className="font-medium">
+                                                        {rx.patient ? getDisplayName({
+                                                            name: rx.patient.name || null,
+                                                            name_en: rx.patient.name_en || null,
+                                                            nationality: rx.patient.nationality || 'thai'
+                                                        }) : '-'}
+                                                        {rx.patient && !hasValidName({
+                                                            name: rx.patient.name || null,
+                                                            name_en: rx.patient.name_en || null,
+                                                            nationality: rx.patient.nationality || 'thai'
+                                                        }) && (
+                                                                <span className="text-red-500 ml-1">⚠️</span>
+                                                            )}
+                                                    </span>
                                                     <span className="text-sm text-muted-foreground ml-2">
-                                                        ({rx.patient?.hn})
+                                                        ({formatPatientId(rx.patient?.hn || '')})
                                                     </span>
                                                 </div>
                                                 {rx.patient?.drug_allergies && (
