@@ -247,7 +247,7 @@ export async function searchPatients(query: string) {
     const { data, error } = await supabase
         .from('patients')
         .select('id, hn, name, name_en, nationality, drug_allergies')
-        .or(`hn.ilike.%${query}%,name.ilike.%${query}%`)
+        .or(`hn.ilike.%${query}%,name.ilike.%${query}%,name_en.ilike.%${query}%`)
         .limit(10)
 
     if (error) {
