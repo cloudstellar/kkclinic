@@ -78,26 +78,35 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         margin: 0;
                     }
 
-                    html, body {
-                        margin: 0;
-                        padding: 0;
-                        width: 100mm;
-                        height: 75mm;
+                    /* Hide everything by default (strips navbar, sidebar, etc) */
+                    body * {
+                        visibility: hidden;
                     }
 
-                    .no-print {
-                        display: none !important;
+                    /* Show only print container and its children */
+                    .print-container,
+                    .print-container * {
+                        visibility: visible;
                     }
 
-                    /* Center horizontally, align top */
+                    /* Position print container at top-left of page */
                     .print-container {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100mm;
+                        min-height: 75mm;
+                        padding-top: 3mm;
+                        
+                        /* Layout formatting */
                         display: flex;
                         flex-direction: column;
                         align-items: center;
                         justify-content: flex-start;
-                        width: 100mm;
-                        min-height: 75mm;
-                        padding-top: 3mm;
+                    }
+
+                    .no-print {
+                        display: none !important;
                     }
 
                     .label-container {
