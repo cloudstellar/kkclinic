@@ -74,6 +74,30 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
         <>
             {/* Print Styles - 10×7.5 cm Thermal Label (Sprint 3A) */}
             <style jsx global>{`
+                /* Shared styles for both screen and print */
+                .label-container {
+                    width: 94mm;
+                    max-height: 69mm;
+                    padding: 3mm;
+                    overflow: hidden !important;
+                    box-sizing: border-box;
+                }
+
+                .dosage-text {
+                    display: -webkit-box !important;
+                    -webkit-line-clamp: 2 !important;
+                    -webkit-box-orient: vertical !important;
+                    overflow: hidden !important;
+                    max-width: 100%;
+                }
+
+                .description-text {
+                    display: -webkit-box !important;
+                    -webkit-line-clamp: 1 !important;
+                    -webkit-box-orient: vertical !important;
+                    overflow: hidden !important;
+                }
+
                 @media print {
                     @page {
                         size: 100mm 75mm;
@@ -92,16 +116,28 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         position: absolute;
                         left: 0;
                         top: 0;
-                        width: 100mm;
+                        width: 94mm;
                     }
 
                     .label-container {
                         page-break-after: always;
+                        page-break-inside: avoid;
+                        height: 69mm !important;
+                        max-height: 69mm !important;
                     }
 
                     .label-container:last-child {
                         page-break-after: avoid;
                     }
+
+                    /* Smaller text for print */
+                    .label-container .text-xl { font-size: 14px !important; }
+                    .label-container .text-sm { font-size: 10px !important; }
+                    .label-container .text-xs { font-size: 8px !important; }
+                    .label-container h1 { font-size: 14px !important; margin: 0 !important; }
+                    .label-container p { margin: 0 !important; }
+                    .label-container .space-y-1 > * + * { margin-top: 2px !important; }
+                    .label-container .mb-2 { margin-bottom: 4px !important; }
                 }
 
                 @media screen {
@@ -110,17 +146,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         height: 75mm;
                         border: 1px dashed #ccc;
                         margin: 10px auto;
-                        padding: 3mm;
                         background: white;
-                        box-sizing: border-box;
-                    }
-                    /* Overflow fix - block element required for line-clamp */
-                    .dosage-text {
-                        display: -webkit-box;
-                        -webkit-line-clamp: 3;
-                        -webkit-box-orient: vertical;
-                        overflow: hidden;
-                        max-width: 100%;
                     }
                 }
             `}</style>
@@ -266,43 +292,43 @@ function LabelTemplate({
     return (
         <div className="label-container">
             {/* Header - ชื่อคลินิกเป็นสีดำ */}
-            <div className="text-center mb-4">
+            <div className="text-center mb-2">
                 <h1 className="text-xl font-bold text-gray-900">{CLINIC_CONFIG.name}</h1>
-                <p className="text-sm">({CLINIC_CONFIG.fullName})</p>
+                <p className="text-xs">({CLINIC_CONFIG.fullName})</p>
                 <p className="text-xs text-gray-600">{CLINIC_CONFIG.address}</p>
                 <p className="text-xs text-gray-600">โทรศัพท์ {CLINIC_CONFIG.phone}</p>
             </div>
 
             {/* Divider */}
-            <hr className="border-gray-300 mb-3" />
+            <hr className="border-gray-300 mb-2" />
 
             {/* Patient Info */}
-            <div className="flex justify-between text-sm mb-3">
+            <div className="flex justify-between text-sm mb-2">
                 <span>{formatPatientId(patient?.hn || '')}</span>
                 <span>วันที่ {formatThaiDate(paidAt)}</span>
             </div>
-            <p className="text-sm mb-4">
+            <p className="text-sm mb-2">
                 ชื่อ : {patient?.name || '-'}
             </p>
 
             {/* Medicine Info */}
-            <div className="space-y-3">
+            <div className="space-y-1">
                 <p className="text-sm">
                     <span className="font-medium">ชื่อยา : </span>
                     <span className="font-bold">{item.medicine?.name}</span>
                 </p>
 
-                <p className="text-sm">
+                <div className="text-sm">
                     <span className="font-medium">วิธีใช้ : </span>
-                    <div className="ml-4 dosage-text">{item.dosage_instruction || item.note || '-'}</div>
-                </p>
+                    <span className="dosage-text inline">{item.dosage_instruction || item.note || '-'}</span>
+                </div>
 
-                <p className="text-sm">
+                <div className="text-sm">
                     <span className="font-medium">สรรพคุณ : </span>
-                    {item.medicine?.description || '-'}
-                </p>
+                    <span className="description-text inline">{item.medicine?.description || '-'}</span>
+                </div>
 
-                <p className="text-sm text-gray-600">
+                <p className="text-xs text-gray-600">
                     {CLINIC_CONFIG.expiryNote}
                 </p>
             </div>
