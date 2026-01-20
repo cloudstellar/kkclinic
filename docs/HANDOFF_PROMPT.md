@@ -1,8 +1,8 @@
 # Handoff Prompt for AI Agent
 
-**Current State:** Sprint 3A Implementation Plan Approved  
+**Current State:** Sprint 3A Core Implementation Complete  
 **Last Updated:** 20 มกราคม 2569  
-**Version:** `v0.5.3-sprint3a-ready`
+**Version:** `v0.5.4-sprint3a-core`
 
 ---
 
@@ -23,7 +23,7 @@
 | Sprint 2A | ✅ Done | Billing, label printing, void |
 | Sprint 2B | ✅ Done | DosageSheet UX refactor |
 | Sprint 2C | ✅ Done | Workflow documentation |
-| **Sprint 3A** | 🚀 **In Progress** | TN, Patient Registry, Label |
+| **Sprint 3A** | ✅ **Core Done** | TN, Patient Registry, Label |
 | Sprint 3B | 🔲 Pending | Reserved Stock, EOD, AutoCalc |
 
 ---
