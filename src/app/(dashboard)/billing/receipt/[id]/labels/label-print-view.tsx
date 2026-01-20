@@ -149,8 +149,8 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
             `}</style>
 
             {/* Control Panel */}
-            <div className="no-print bg-gray-100 min-h-screen p-6">
-                <div className="max-w-2xl mx-auto">
+            <div className="bg-gray-100 min-h-screen p-6">
+                <div className="no-print max-w-2xl mx-auto">
                     <div className="bg-white rounded-lg shadow p-6 mb-6">
                         <h1 className="text-xl font-bold mb-4">🏷️ พิมพ์ฉลากยา</h1>
 
@@ -253,18 +253,18 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Print Area */}
-            <div className="print-container">
-                {selectedItems.map((item) => (
-                    <LabelTemplate
-                        key={item.id}
-                        item={item}
-                        patient={transaction.patient}
-                        paidAt={transaction.paid_at}
-                    />
-                ))}
+                {/* Print Area */}
+                <div className="print-container">
+                    {selectedItems.map((item) => (
+                        <LabelTemplate
+                            key={item.id}
+                            item={item}
+                            patient={transaction.patient}
+                            paidAt={transaction.paid_at}
+                        />
+                    ))}
+                </div>
             </div>
         </>
     )
