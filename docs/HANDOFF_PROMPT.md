@@ -1,27 +1,67 @@
 # Handoff Prompt for AI Agent
 
-**Current State:** Production-ready for basic clinic workflow  
-**Last Updated:** 19 มกราคม 2569  
-**Version:** `v0.5.1-workflow-docs`
+**Current State:** Sprint 3A Implementation Plan Approved  
+**Last Updated:** 20 มกราคม 2569  
+**Version:** `v0.5.3-sprint3a-ready`
 
 ---
 
 ## ⚠️ Before You Start — REQUIRED READING
 
 1. [docs/AI_RULES.md](AI_RULES.md) — กฎการทำงานกับ AI
-2. [docs/ROADMAP.md](ROADMAP.md) — Sprint overview + decision locks
-3. [docs/WORKFLOW.md](WORKFLOW.md) — Definition of Ready (DoR)
+2. [docs/ROADMAP.md](ROADMAP.md) — Sprint overview
+3. [docs/CHANGE_REQUEST_SPRINT3.md](CHANGE_REQUEST_SPRINT3.md) — **Sprint 3 details (APPROVED)**
+4. [.agent/skills/medical-ux/SKILL.md](../.agent/skills/medical-ux/SKILL.md) — **Engineering + UX Standards**
 
 ---
 
 ## 📊 Current Sprint Status
 
-| Sprint | Status | Tag |
-|--------|--------|-----|
+| Sprint | Status | Description |
+|--------|--------|-------------|
 | Sprint 1 | ✅ Done | Core foundation |
 | Sprint 2A | ✅ Done | Billing, label printing, void |
 | Sprint 2B | ✅ Done | DosageSheet UX refactor |
-| Sprint 3 | 🔲 Pending decision | See options below |
+| Sprint 2C | ✅ Done | Workflow documentation |
+| **Sprint 3A** | 🚀 **In Progress** | TN, Patient Registry, Label |
+| Sprint 3B | 🔲 Pending | Reserved Stock, EOD, AutoCalc |
+
+---
+
+## 🎯 Sprint 3A — Implementation Plan (APPROVED)
+
+### Decision Lock
+
+| Feature | Status |
+|---------|--------|
+| TN format validation | ✅ UI + Server |
+| TN DB constraint | ⏳ Deferred (after cleanup) |
+| Patient: nationality, postal_code, emergency | ✅ Do |
+| Prescription: df, dosage_raw, instruction_language | ✅ Do |
+| Label: 10×7.5 cm | ✅ Do |
+| Reserved Stock / EOD / AutoCalc | ❌ Sprint 3B only |
+
+### Execution Order
+
+1. Apply DB migration (Supabase Dashboard)
+2. Update `src/types/patients.ts`, `prescriptions.ts`
+3. Update `patient-form.tsx` + server validation
+4. Update `medicine-form.tsx`
+5. Update label CSS (10×7.5 cm)
+6. Update `DATABASE_SCHEMA.md`
+7. Test + verify
+
+---
+
+## 📋 Next Session Quick Start
+
+```markdown
+1. อ่าน docs/CHANGE_REQUEST_SPRINT3.md
+2. อ่าน .agent/skills/medical-ux/SKILL.md
+3. ดู implementation plan ที่ approved
+4. เริ่ม Apply DB migration
+5. ดำเนินการตาม Execution Order
+```
 
 ---
 
@@ -29,62 +69,37 @@
 
 | Feature | Status |
 |---------|--------|
-| Patient CRUD + search + drug allergies | ✅ |
+| Patient CRUD + drug allergies | ✅ |
 | Medicine/Inventory CRUD | ✅ |
-| Prescription creation with DosageSheet | ✅ |
-| Payment modal with cash calculation | ✅ |
+| Prescription with DosageSheet | ✅ |
+| Payment modal + cash calc | ✅ |
 | Receipt generation | ✅ |
 | Label printing (A6, 4 per row) | ✅ |
-| Void transactions with stock reversal | ✅ |
+| Void transactions | ✅ |
 | Daily billing summary | ✅ |
-| Frequently used medicines search | ✅ |
-| Recent dosage instructions (localStorage) | ✅ |
 
 ---
 
-## 🔲 Pending User Decision: Full Clinic Flow
-
-User กำลังพิจารณา flow:
-```
-ห้องตรวจ → เคาน์เตอร์ชำระเงิน → ห้องยา
-```
-
-**Options:**
-- **Option A:** ใช้ระบบปัจจุบัน (Prescription → Payment → Dispense)
-- **Option B:** เพิ่ม Service Charges (ค่าแพทย์, หัตถการ, Lab)
-- **Option C:** Full Flow (Visit + OPD Note + Services + Draft Charges)
-
-รอ user ตัดสินใจก่อนเริ่ม Sprint 3
-
----
-
-## 📁 Key Directories
+## 📁 Key Files for Sprint 3A
 
 ```
 docs/
-├── ROADMAP.md          # Sprint overview
-├── WORKFLOW.md         # Definition of Ready
-├── AI_RULES.md         # AI prompt policy
-├── ADR/                # Architecture Decision Records
-│   └── 0001-dosage-sheet-ux.md
-├── HANDOFF_PROMPT.md   # This file
-├── PRD.md              # Product requirements
-├── DATABASE_SCHEMA.md  # DB schema
-├── IMPLEMENTATION_PLAN.md
-├── KNOWLEDGE_BASE.md
-└── SPRINT_2A.md
+├── CHANGE_REQUEST_SPRINT3.md   # ⭐ Sprint 3 requirements
+├── DATABASE_SCHEMA.md          # Update after migration
 
 src/
-├── components/
-│   ├── prescription/
-│   │   ├── dosage-instruction-sheet.tsx  # ⭐ New in 2B
-│   │   └── dosage-display.tsx            # ⭐ New in 2B
-│   └── payment/
-│       └── payment-modal.tsx
-├── hooks/
-│   └── use-recent-instructions.ts        # ⭐ New in 2B
-└── lib/
-    └── clinic-config.ts
+├── app/(dashboard)/patients/
+│   └── actions.ts              # Add server validation
+├── components/forms/
+│   ├── patient-form.tsx        # Add TN, nationality, emergency
+│   └── medicine-form.tsx       # Add name_en
+├── types/
+│   ├── patients.ts             # Update type + schema
+│   └── prescriptions.ts        # Add df, dosage_raw
+└── (label CSS)                 # 10×7.5 cm
+
+.agent/skills/medical-ux/
+└── SKILL.md                    # Engineering + UX standards
 ```
 
 ---
@@ -98,22 +113,24 @@ src/
 
 ---
 
-## 📋 Quick Start for Next Session
-
-```markdown
-1. อ่าน docs/ROADMAP.md
-2. อ่าน docs/AI_RULES.md  
-3. ถาม user: "ตัดสินใจเรื่อง Full Clinic Flow แล้วหรือยัง?"
-4. ถ้า user ตัดสินใจแล้ว → สร้าง implementation plan ตาม Option ที่เลือก
-5. ถ้ายังไม่ตัดสินใจ → รอ หรือถามว่ามีงานอื่นที่ต้องทำไหม
-```
-
----
-
 ## 🏷️ Git Tags
 
 | Tag | Description |
 |-----|-------------|
-| `v0.5.1-workflow-docs` | Current - workflow documentation |
+| `v0.5.3-sprint3a-ready` | Sprint 3A plan approved, ready to implement |
+| `v0.5.2-sprint3-approved` | Sprint 3 CR approved |
+| `v0.5.1-workflow-docs` | Workflow documentation |
 | `v0.5.0-sprint2b-dosagesheet` | DosageSheet UX refactor |
-| `v0.4.0-sprint2a` | Billing, labels, void |
+
+---
+
+## ⚡ Key Decisions (Locked)
+
+| Decision | Choice |
+|----------|--------|
+| Sprint 3 approach | **Option B** (แบ่ง 3A + 3B) |
+| TN validation | UI + Server (DB constraint deferred) |
+| Nationality | thai / other (no fallback, hard stop) |
+| Label size | 10×7.5 cm (Thermal) |
+| 3A scope | Data prep only, no workflow change |
+| 3B scope | Reserved Stock + EOD + AutoCalc |

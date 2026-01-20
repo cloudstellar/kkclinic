@@ -1,6 +1,6 @@
 # KKClinic Roadmap
 
-> อัปเดตล่าสุด: 19 มกราคม 2569
+> อัปเดตล่าสุด: 20 มกราคม 2569
 
 ---
 
@@ -18,24 +18,62 @@
 | Sprint 2A | ✅ Done | Billing & Payment, Label Printing, Void Transactions | `v0.4.0-sprint2a` |
 | Sprint 2B | ✅ Done | DosageSheet UX Refactor | `v0.5.0-sprint2b-dosagesheet` |
 | Sprint 2C | ✅ Done | Workflow Documentation Setup | `v0.5.1-workflow-docs` |
-| Sprint 3 | ⏸️ Pending Decision | Options: A) Current flow, B) Service Charges, C) Full Clinic Flow | - |
-
-> **⚠️ Pending User Decision:** Sprint 3 รอ user ตัดสินใจเรื่อง Full Clinic Flow (Visit → Billing → Dispense)
-
----
-
-## 🔒 Decision Lock (Current)
-
-| Feature | Sprint | Status | ADR |
-|---------|--------|--------|-----|
-| DosageSheet bottom sheet | 2B | ✅ Shipped | [ADR-0001](ADR/0001-dosage-sheet-ux.md) |
-| Recent instructions (localStorage) | 2B | ✅ Shipped | [ADR-0001](ADR/0001-dosage-sheet-ux.md) |
-| Pinned instructions | - | ❌ Not planned | - |
-| Responsive card layout | 3 | 🔲 Planned | - |
+| **Sprint 3A** | 🚀 **In Progress** | TN, Patient Registry, Prescription, Label | `v0.5.3-sprint3a-ready` |
+| Sprint 3B | 🔲 Pending | Reserved Stock, EOD, AutoCalc, Payment | - |
 
 ---
 
-## 📅 Sprint Details
+## 🎯 Sprint 3A — In Progress
+
+> **Plan Approved:** 20 มกราคม 2569
+
+### Decision Lock
+
+| Feature | Status |
+|---------|--------|
+| TN format validation | ✅ UI + Server |
+| TN DB constraint | ⏳ Deferred |
+| Patient fields (nationality, postal, emergency) | ✅ Do |
+| Prescription fields (df, dosage_raw) | ✅ Do |
+| Label 10×7.5 cm | ✅ Do |
+| Reserved Stock / EOD | ❌ Sprint 3B |
+
+### Tasks
+- 🔲 Apply DB migration
+- 🔲 Update types (patients.ts, prescriptions.ts)
+- 🔲 Update patient-form + server validation
+- 🔲 Update medicine-form
+- 🔲 Update label CSS
+- 🔲 Test + verify
+
+---
+
+## 🎯 Sprint 3B — Pending
+
+> **ห้าม implement ก่อน Sprint 3A เสร็จ**
+
+- 🔲 Reserved Stock Model
+- 🔲 ใบสรุปค่าใช้จ่าย (Patient Statement)
+- 🔲 Auto Calculator
+- 🔲 Payment Status (3 สถานะ)
+- 🔲 End of Day (EOD)
+
+---
+
+## 🔒 Key Decisions (Locked)
+
+| Decision | Sprint | Choice |
+|----------|--------|--------|
+| DosageSheet bottom sheet | 2B | ✅ Shipped |
+| Sprint 3 approach | 3 | **Option B** (แบ่ง 3A + 3B) |
+| TN format | 3A | `TN` + 6 หลัก กรอกเอง |
+| TN validation | 3A | UI + Server (DB deferred) |
+| Nationality | 3A | thai / other (no fallback) |
+| Label size | 3A | 10×7.5 cm (Thermal) |
+
+---
+
+## 📅 Sprint History
 
 ### Sprint 1 - Core Foundation
 - ✅ Patient management (CRUD, search, drug allergies)
@@ -57,19 +95,11 @@
 - ✅ Character/line counter with badge
 - ✅ Keyboard shortcuts (Cmd+Enter, Esc)
 
-### Sprint 3 - Inventory & Reports (Planned)
-- 🔲 Low stock alerts and thresholds
-- 🔲 Barcode scanning for restock/dispense
-- 🔲 Monthly/weekly reports
-- 🔲 Export to Excel
-
 ---
 
 ## 🔗 Related Documents
 
-- [PRD](PRD.md) - Product Requirements Document
+- [Change Request Sprint 3](CHANGE_REQUEST_SPRINT3.md) - **Current focus**
+- [Handoff Prompt](HANDOFF_PROMPT.md) - Next session guide
 - [Database Schema](DATABASE_SCHEMA.md) - Complete schema documentation
-- [Implementation Plan](IMPLEMENTATION_PLAN.md) - Technical implementation details
-- [Knowledge Base](KNOWLEDGE_BASE.md) - Clinic domain knowledge
-- [Workflow](WORKFLOW.md) - Definition of Ready & development workflow
-- [AI Rules](AI_RULES.md) - Antigravity prompt policy
+- [SKILL.md](../.agent/skills/medical-ux/SKILL.md) - Engineering + UX standards
