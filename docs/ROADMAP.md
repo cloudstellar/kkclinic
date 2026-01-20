@@ -1,6 +1,6 @@
 # KKClinic Roadmap
 
-> อัปเดตล่าสุด: 20 มกราคม 2569
+> อัปเดตล่าสุด: 21 มกราคม 2569
 
 ---
 
@@ -23,9 +23,18 @@
 
 ---
 
-## 🎯 Sprint 3A — In Progress
+## 🎯 Sprint 3A+ — Ready for Implementation
 
-> **Plan Approved:** 20 มกราคม 2569
+> **Plan Finalized:** 21 มกราคม 2569  
+> **DoD Defined:** ✅
+
+### Definition of Done
+
+- [ ] `expiry_note_th/en` ใน medicines + types update
+- [ ] ฉลากยา TH/EN ตาม nationality
+- [ ] Medicine Summary Sheet 10×7.5 + Checkbox ON
+- [ ] Form `autoComplete`/`type` (Vercel best practice)
+- [ ] `npm run lint` + `npm run typecheck` ผ่าน
 
 ### Decision Lock
 
@@ -36,23 +45,36 @@
 | Patient fields (nationality, postal, emergency) | ✅ Do |
 | Prescription fields (df, dosage_raw) | ✅ Do |
 | Label 10×7.5 cm | ✅ Do |
-| Reserved Stock / EOD | ❌ Sprint 3B |
+| Medicine `name_en` | ❌ ตัดออก (ใช้ Brand name) |
+| Medicine `expiry_note_th/en` | ✅ Do |
+| Medicine Summary Sheet | ✅ Do |
+| Label Translations | ✅ `label-translations.ts` |
+| Form Quick Fixes | ✅ `autoComplete` + `type="tel"` |
+| **UX Phase 2** | ❌ **แยกไป Sprint 3B** |
 
 ### Tasks
-- 🔲 Apply DB migration
-- 🔲 Update types (patients.ts, prescriptions.ts)
-- ✅ Update patient-form + server validation
-- 🔲 Update medicine-form
-- ✅ Update label CSS (10x7.5cm Thermal)
-- ✅ Fix: Foreign patient name display & Search
-- 🔲 Test + verify
+- 🔲 DB migration (expiry_note) + Types update
+- 🔲 Label Translations Library
+- 🔲 Form Quick Fixes (Vercel best practice)
+- 🔲 Update medicine-form (+ expiry_note fields)
+- 🔲 Label Print Translation + expiry_note swap
+- 🔲 **Medicine Summary Sheet** (Internal Use thermal print)
+- 🔲 Integration + Checkbox
+- 🔲 Test + Verify
 
 ---
 
-## 🎯 Sprint 3B — Pending
+## 🎯 Sprint 3B — Pending (UX Phase 2 + Workflow)
 
-> **ห้าม implement ก่อน Sprint 3A เสร็จ**
+> **ห้าม implement ก่อน Sprint 3A+ เสร็จ**
 
+### UX Phase 2 (ย้ายมาจาก 3A+)
+- 🔲 Real-time filter (debounce 300ms, `?q=`)
+- 🔲 Sortable tables (`?sort=&order=`)
+- 🔲 Nav highlight (`?from=billing`)
+- 🔲 TN Standardization (HN → TN ทั้งระบบ)
+
+### Workflow Revolution
 - 🔲 Reserved Stock Model
 - 🔲 ใบสรุปค่าใช้จ่าย (Patient Statement)
 - 🔲 Auto Calculator
@@ -71,6 +93,13 @@
 | TN validation | 3A | UI + Server (DB deferred) |
 | Nationality | 3A | thai / other (no fallback) |
 | Label size | 3A | 10×7.5 cm (Thermal) |
+| Medicine name_en | 3A+ | ❌ ตัดออก — ใช้ Brand name |
+| Medicine expiry_note | 3A+ | ✅ `expiry_note_th` + `expiry_note_en` |
+| Medicine Summary | 3A+ | Thermal + Checkbox default ON |
+| Summary CSS | 3A+ | **directions ห้ามตัด** |
+| Label Translations | 3A+ | ✅ `label-translations.ts` |
+| Form autocomplete | 3A+ | ✅ camelCase `autoComplete` |
+| UX Phase 2 | 3A+ → 3B | ❌ แยกออก (กัน scope creep) |
 
 ---
 

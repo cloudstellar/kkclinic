@@ -2,10 +2,10 @@
 # ระบบบริหารจัดการคลินิก KKClinic
 
 **เลขที่:** CR-2026-003  
-**Version:** 4.0 (Option B — แบ่งเป็น Sprint 3A + 3B)  
-**วันที่:** 20 มกราคม 2569  
+**Version:** 5.0 (Sprint 3A+ Final — DoD Defined)  
+**วันที่:** 21 มกราคม 2569  
 **ผู้ขอ:** Owner  
-**สถานะ:** ✅ **Approved (Sprint 3A Ready)**
+**สถานะ:** ✅ **Approved — Sprint 3A+ Ready for Implementation**
 
 ---
 
@@ -23,8 +23,8 @@
 
 | Sprint | ขอบเขต | ประมาณเวลา | ผลลัพธ์ |
 |--------|--------|------------|---------|
-| **3A** | TN + Patient Registry + Label | 8-12 ชม. | ใช้งานได้เลย ไม่กระทบ workflow เดิม |
-| **3B** | Reserved Stock + Auto Calc + EOD + Payment | 25-35 ชม. | **ลดภาระ Owner จริงๆ** |
+| **3A+** | Label Translations + expiry_note + Summary Sheet + Form Fixes | ~4 ชม. | ฉลากยา 2 ภาษา + ใบสรุปรายการยา |
+| **3B** | UX Phase 2 + Reserved Stock + Auto Calc + EOD + Payment | 25-35 ชม. | **ลดภาระ Owner จริงๆ** |
 
 ---
 
@@ -106,13 +106,63 @@ ADD COLUMN dosage_raw TEXT;
 
 ---
 
-## 5️⃣ Medicine (ภาษาอังกฤษ)
+## 4.5️⃣ Medicine Summary Sheet (ใบสรุปรายการยา) — NEW
+
+> **วัตถุประสงค์:** Internal Use สำหรับแพทย์/staff ตรวจสอบรายการยาที่จ่าย
+
+| หัวข้อ | รายละเอียด |
+|--------|------------|
+| **ขนาด** | 10×7.5 cm (thermal เหมือน label) |
+| **Layout** | Compact — รองรับ ~10-11 รายการ |
+| **UX** | Checkbox "พิมพ์ใบสรุปฯ" default ON ใน label print UI |
+| **พิมพ์** | ต่อจากฉลากยาทั้งหมด (แผ่นสุดท้าย) |
+
+### ข้อมูลที่แสดง
+- TN, ชื่อผู้ป่วย, วันที่
+- รายการยา: ชื่อยา, จำนวน+หน่วย, วิธีใช้ภาษาหมอ (`dosage_raw`)
+- จำนวนรายการรวม
+
+### Layout (Compact)
+```
+┌───────────────────────────────────────────────┐
+│ TN250429  นายสมชาย ใจดี       21/01/69        │
+├───────────────────────────────────────────────┤
+│ 1. Vigamox 5ml ×1 ขวด                         │
+│    → 1 gtt OU qid pc                          │
+│ 2. Pred Forte 5ml ×2 ขวด                      │
+│    → 2 gtt OS bid ac                          │
+│ 3. Paracetamol 500mg ×100 เม็ด                │
+│    → 2 tab tid pc                             │
+├───────────────────────────────────────────────┤
+│ รวม 3 รายการ                   คลินิกตาใสใส  │
+└───────────────────────────────────────────────┘
+```
+
+---
+
+## 5️⃣ Medicine (Expiry Note)
+
+> **เปลี่ยนแปลง:** ตัด `name_en`/`description_en` ออก — ยาส่วนใหญ่เป็น Brand name (อังกฤษอยู่แล้ว)  
+> **เพิ่ม:** `expiry_note` สำหรับบอกตำแหน่งวันหมดอายุบนฉลาก (รองรับ 2 ภาษา)
 
 ```sql
 ALTER TABLE medicines 
-ADD COLUMN name_en TEXT,
-ADD COLUMN description_en TEXT;
+ADD COLUMN expiry_note_th TEXT DEFAULT 'ดูวันหมดอายุที่ฉลากข้างกล่อง',
+ADD COLUMN expiry_note_en TEXT DEFAULT 'See expiry date on the box';
 ```
+
+### ตัวอย่างข้อมูล
+
+| ยา | expiry_note_th | expiry_note_en |
+|----|----------------|----------------|
+| Vigamox | ดูวันหมดอายุที่ข้างขวด | See expiry on the bottle |
+| Pred Forte | ดูวันหมดอายุที่ก้นกล่อง | See expiry on bottom of box |
+| Paracetamol | ดูวันหมดอายุที่แผงยา | See expiry on blister pack |
+
+### แสดงบนฉลาก
+
+- คนไข้ไทย (`nationality = 'thai'`): แสดง `expiry_note_th`
+- คนไข้ต่างชาติ (`nationality = 'other'`): แสดง `expiry_note_en`
 
 ---
 

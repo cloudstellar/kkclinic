@@ -245,3 +245,144 @@ if (e.key === 'Escape') handleClose();
 - **Validation:** Zod
 - **Icons:** Emoji (primary, UI text & badges)
 - **Database:** Supabase (PostgreSQL)
+
+---
+
+## 🌐 Web Interface Guidelines (Vercel Best Practices)
+
+> 📖 **Source:** [vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines)
+> อัปเดตล่าสุด: 21 มกราคม 2569
+
+### 🎯 Focus States
+- Interactive elements ต้องมี visible focus: `focus-visible:ring-*`
+- ❌ ห้าม `outline-none` โดยไม่มี focus replacement
+- ใช้ `:focus-visible` แทน `:focus` (หลีกเลี่ยง focus ring on click)
+
+### 📝 Forms (สำคัญมากสำหรับ Medical)
+- Inputs ต้องมี `autocomplete` และ `name` ที่สื่อความหมาย
+- ใช้ `type` ที่ถูกต้อง: `email`, `tel`, `number`
+- ❌ ห้าม block paste (`onPaste` + `preventDefault`)
+- Labels ต้อง clickable (`htmlFor` หรือ wrap control)
+- ปิด spellcheck สำหรับ emails, codes, usernames: `spellCheck={false}`
+- Submit button enabled จนกว่า request เริ่ม → spinner ระหว่าง request
+- Errors inline ข้างๆ fields; focus ที่ error แรกเมื่อ submit
+- Placeholders ลงท้ายด้วย `…` และแสดงตัวอย่าง pattern
+- Warn ก่อน navigate ถ้ามี unsaved changes (`beforeunload`)
+
+### 🎬 Animation
+- Honor `prefers-reduced-motion` (ให้ reduced variant หรือ disable)
+- Animate `transform`/`opacity` เท่านั้น (compositor-friendly)
+- ❌ ห้าม `transition: all` — list properties เฉพาะเจาะจง
+
+### 🔤 Typography
+- ใช้ `…` ไม่ใช่ `...`
+- ใช้ curly quotes `"` `"` ไม่ใช่ straight `"`
+- Loading states ลงท้ายด้วย `…`: `"กำลังบันทึก…"`, `"กำลังโหลด…"`
+- ใช้ `font-variant-numeric: tabular-nums` สำหรับ **ตัวเลขยา/ราคา**
+- ใช้ `text-wrap: balance` หรือ `text-pretty` สำหรับ headings
+
+### 📦 Content Handling
+- Text containers จัดการ long content: `truncate`, `line-clamp-*`, `break-words`
+- Flex children ต้องมี `min-w-0` เพื่อให้ text truncation ทำงาน
+- Handle empty states — อย่า render broken UI สำหรับ empty strings/arrays
+
+### 🖼️ Images
+- `<img>` ต้องมี `width` และ `height` เสมอ (ป้องกัน CLS)
+- Below-fold images: `loading="lazy"`
+- Above-fold critical images: `priority` หรือ `fetchpriority="high"`
+
+### ⚡ Performance
+- Large lists (>50 items): virtualize (`virtua`, `content-visibility: auto`)
+- ❌ ห้าม layout reads in render (`getBoundingClientRect`, `offsetHeight`)
+- Prefer uncontrolled inputs; controlled inputs ต้อง cheap per keystroke
+- เพิ่ม `<link rel="preconnect">` สำหรับ CDN/asset domains
+
+### 🌍 Locale & i18n (สำคัญสำหรับคนไข้ต่างชาติ)
+- วันที่/เวลา: ใช้ `Intl.DateTimeFormat` ไม่ hardcode formats
+- ตัวเลข/สกุลเงิน: ใช้ `Intl.NumberFormat` ไม่ hardcode formats
+- ตรวจจับภาษาผ่าน `Accept-Language` / `navigator.languages` ไม่ใช่ IP
+
+### 📱 Touch & Interaction
+- `touch-action: manipulation` (ป้องกัน double-tap zoom delay)
+- `overscroll-behavior: contain` ใน modals/drawers/sheets
+- `autoFocus` ใช้อย่างระวัง — desktop only, single primary input
+
+### 🌙 Dark Mode & Theming
+- `color-scheme: dark` บน `<html>` สำหรับ dark themes
+- `<meta name="theme-color">` ตรงกับ page background
+- Native `<select>`: explicit `background-color` และ `color`
+
+---
+
+## 🚫 Anti-patterns (ต้อง flag)
+
+| Pattern | ปัญหา |
+|---------|-------|
+| `user-scalable=no` | ปิดการ zoom ของ user |
+| `onPaste` + `preventDefault` | Block paste in forms |
+| `transition: all` | Performance issue |
+| `outline-none` โดยไม่มี focus-visible | Accessibility issue |
+| `onClick` navigation ไม่มี `<Link>` | ไม่รองรับ Cmd/Ctrl+click |
+| `<div>` หรือ `<span>` with click handlers | ควรเป็น `<button>` |
+| Images ไม่มี dimensions | Layout shift (CLS) |
+| Large arrays `.map()` ไม่มี virtualization | Performance issue |
+| Form inputs ไม่มี labels | Accessibility issue |
+| Icon buttons ไม่มี `aria-label` | Screen reader issue |
+| Hardcoded date/number formats | i18n issue |
+
+---
+
+## ⚡ React Performance Rules (Vercel)
+
+> 📖 **Source:** [vercel-labs/agent-skills/react-best-practices](https://github.com/vercel-labs/agent-skills)
+
+### CRITICAL: Eliminating Waterfalls
+```typescript
+// ❌ Bad - Waterfall
+const patients = await getPatients()
+const medicines = await getMedicines()
+
+// ✅ Good - Parallel
+const [patients, medicines] = await Promise.all([
+  getPatients(),
+  getMedicines()
+])
+```
+
+### CRITICAL: Bundle Size
+```typescript
+// ❌ Bad - Barrel import
+import { Button, Dialog } from '@/components/ui'
+
+// ✅ Good - Direct import
+import { Button } from '@/components/ui/button'
+import { Dialog } from '@/components/ui/dialog'
+
+// ✅ Good - Dynamic import for heavy components
+const PaymentModal = dynamic(() => import('./payment-modal'))
+```
+
+### HIGH: Server-Side Performance
+- ใช้ `React.cache()` สำหรับ per-request deduplication
+- Minimize data passed to client components
+
+---
+
+## 📋 Enhanced Checklist for New Pages
+
+- [ ] Page header with emoji + title
+- [ ] Summary cards if applicable
+- [ ] Empty state with emoji
+- [ ] Tip text at bottom
+- [ ] Drug allergy always visible (red)
+- [ ] Format all money with `Intl.NumberFormat` or `formatCurrency()`
+- [ ] Format all dates with `Intl.DateTimeFormat`
+- [ ] Loading states for buttons (spinner, `…`)
+- [ ] Thai error messages with fix/next step
+- [ ] Focus states visible (`focus-visible:ring-*`)
+- [ ] Form inputs have labels and correct `type`
+- [ ] Icon buttons have `aria-label`
+- [ ] Images have `width` and `height`
+- [ ] No `transition: all`
+- [ ] Direct imports (no barrel files)
+- [ ] `npm run lint` + `npm run typecheck` pass
