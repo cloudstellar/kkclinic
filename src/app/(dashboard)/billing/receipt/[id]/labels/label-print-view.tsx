@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { formatPatientId, formatThaiDate } from '@/lib/clinic-config'
 import { getDisplayName } from '@/lib/patient-utils'
+import { getLabelLang, LABEL_TRANSLATIONS, DEFAULT_EXPIRY_NOTE } from '@/lib/label-translations'
 
 type LabelItem = {
     id: string
@@ -11,8 +12,12 @@ type LabelItem = {
     note: string | null  // แพทย์พิมพ์วิธีใช้
     medicine?: {
         name: string
+        name_en?: string | null
         unit: string
         description?: string | null
+        description_en?: string | null
+        expiry_note_th?: string | null
+        expiry_note_en?: string | null
     } | null
 }
 
@@ -280,20 +285,30 @@ function LabelTemplate({
     patient?: { hn: string; name: string; name_en?: string | null; nationality?: string | null } | null
     paidAt: string
 }) {
+    // Determine language based on patient nationality
+    const lang = getLabelLang(patient?.nationality)
+    const t = LABEL_TRANSLATIONS[lang]
+
     return (
         <div className="label-container relative">
             {/* Header */}
             <div className="border-b border-gray-300 pb-2 mb-2">
                 <div className="flex justify-between items-start">
                     <div className="text-center w-full">
-                        <h1 className="text-xl font-bold text-slate-900">คลินิกตาใสใส</h1>
+                        <h1 className="text-xl font-bold text-slate-900">{t.clinicName}</h1>
                         <p className="text-[10px] text-gray-600 mt-0.5 font-medium">
-                            (ตาใสใสคลินิกเฉพาะทางด้านเวชกรรมสาขาจักษุวิทยา)
+                            {lang === 'th'
+                                ? '(ตาใสใสคลินิกเฉพาะทางด้านเวชกรรมสาขาจักษุวิทยา)'
+                                : '(Ophthalmology Clinic)'}
                         </p>
                         <p className="text-[9px] text-gray-500 leading-tight mt-0.5">
-                            186/153 ถนน เทศบาล34 ตำบลพลา อำเภอบ้านฉาง จังหวัดระยอง
+                            {lang === 'th'
+                                ? '186/153 ถนน เทศบาล34 ตำบลพลา อำเภอบ้านฉาง จังหวัดระยอง'
+                                : '186/153 Thetsaban 34 Rd, Phla, Ban Chang, Rayong 21130'}
                         </p>
-                        <p className="text-[9px] text-gray-500">โทรศัพท์ 081-776-6936</p>
+                        <p className="text-[9px] text-gray-500">
+                            {lang === 'th' ? 'โทรศัพท์' : 'Tel'} 081-776-6936
+                        </p>
                     </div>
                 </div>
             </div>
@@ -305,12 +320,12 @@ function LabelTemplate({
                         {formatPatientId(patient?.hn || '')}
                     </span>
                     <span className="text-xs text-gray-500">
-                        วันที่ {formatThaiDate(paidAt)}
+                        {t.date} {formatThaiDate(paidAt)}
                     </span>
                 </div>
 
                 <div>
-                    <span className="font-bold mr-1">ชื่อ :</span>
+                    <span className="font-bold mr-1">{t.patientName} :</span>
                     <span>{patient ? getDisplayName({
                         name: patient.name || null,
                         name_en: patient.name_en || null,
@@ -319,12 +334,12 @@ function LabelTemplate({
                 </div>
 
                 <div>
-                    <span className="font-bold mr-1">ชื่อยา :</span>
+                    <span className="font-bold mr-1">{t.medicineName} :</span>
                     <span className="font-semibold">{item.medicine?.name}</span>
                 </div>
 
                 <div className="flex items-start">
-                    <span className="font-bold mr-1 whitespace-nowrap">วิธีใช้ :</span>
+                    <span className="font-bold mr-1 whitespace-nowrap">{t.directions} :</span>
                     <div className="dosage-text leading-tight">
                         {item.dosage_instruction || item.note || '-'}
                     </div>
@@ -332,12 +347,24 @@ function LabelTemplate({
 
                 {item.medicine?.description && (
                     <div className="flex items-start text-xs text-gray-600 mt-1">
-                        <span className="font-bold mr-1 whitespace-nowrap">สรรพคุณ :</span>
+                        <span className="font-bold mr-1 whitespace-nowrap">{t.indication} :</span>
                         <div className="description-text leading-tight">
-                            {item.medicine.description}
+                            {lang === 'en' && item.medicine.description_en
+                                ? item.medicine.description_en
+                                : item.medicine.description}
                         </div>
                     </div>
                 )}
+
+                {/* Expiry Note */}
+                <div className="flex items-start text-xs text-gray-500 mt-1">
+                    <span className="font-bold mr-1 whitespace-nowrap">{t.expiry} :</span>
+                    <span>
+                        {lang === 'en'
+                            ? (item.medicine?.expiry_note_en || DEFAULT_EXPIRY_NOTE.en)
+                            : (item.medicine?.expiry_note_th || DEFAULT_EXPIRY_NOTE.th)}
+                    </span>
+                </div>
             </div>
 
             {/* Footer - Qty */}
