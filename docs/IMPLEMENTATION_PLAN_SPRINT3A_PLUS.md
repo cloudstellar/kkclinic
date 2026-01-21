@@ -231,6 +231,12 @@ const remainingCount = items.length - MAX_ITEMS
 - "...และอีก X รายการ" (ถ้าเกิน) — **อยู่ก่อน footer**
 - Footer: "รวม X รายการ" + ชื่อคลินิก — **ติดขอบล่าง (sticky bottom)**
 
+**Display Name Priority:**
+```typescript
+// ใช้ชื่อตามลำดับนี้ (ระบบไม่มี short_name จึงใช้ name)
+const displayName = medicine.name
+```
+
 **Layout Structure (Flex):**
 ```tsx
 <div className="flex flex-col h-full">
@@ -290,7 +296,7 @@ const remainingCount = items.length - MAX_ITEMS
 
 ### Component 7: Integration — Checkbox + Print Pipeline
 
-#### [MODIFY] [label-print-view.tsx](file:///Users/cloud/Library/CloudStorage/OneDrive-Personal/Antigravity/kkclinic/src/app/(dashboard)/billing/receipt/[id]/labels/label-print-view.tsx)
+#### [MODIFY] `src/app/(dashboard)/billing/receipt/[id]/labels/label-print-view.tsx`
 
 1. เพิ่ม Checkbox "☑️ พิมพ์ใบสรุปรายการยาด้วย" (default ON)
 2. State: `const [printSummary, setPrintSummary] = useState(true)`
@@ -335,7 +341,7 @@ npm run typecheck
 #### 4. Medicine Summary Sheet
 - [ ] Checkbox default ON
 - [ ] พิมพ์แล้วได้ label + summary ต่อท้ายในครั้งเดียว
-- [ ] ทดสอบ 11 รายการ: ไม่ล้นเกินกระดาษ (ชื่อยาตัดได้ แต่ directions ครบ)
+- [ ] ทดสอบ 11 รายการ: ไม่ล้นเกินกระดาษ (ชื่อยาไม่ตัด ใช้ชื่อย่อถ้ามี, directions ครบ)
 
 #### 5. Form Quick Fixes
 - [ ] มือถือ: ช่อง tel ขึ้น numpad
