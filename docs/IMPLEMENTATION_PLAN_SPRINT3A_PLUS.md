@@ -227,7 +227,7 @@ const remainingCount = items.length - MAX_ITEMS
 
 **ข้อมูลที่แสดง:**
 - TN, ชื่อผู้ป่วย, วันที่
-- รายการยา: index, ชื่อยา (ตัดได้), จำนวน+หน่วย, วิธีใช้ภาษาหมอ (**ห้ามตัด**)
+- รายการยา: index, **ชื่อยา: ใช้ชื่อย่อ (ถ้ามี), ห้ามตัด**, จำนวน+หน่วย, วิธีใช้ภาษาหมอ (**ห้ามตัด**)
 - "...และอีก X รายการ" (ถ้าเกิน) — **อยู่ก่อน footer**
 - Footer: "รวม X รายการ" + ชื่อคลินิก — **ติดขอบล่าง (sticky bottom)**
 
@@ -255,12 +255,10 @@ const remainingCount = items.length - MAX_ITEMS
   overflow: hidden;
 }
 
-/* ชื่อยา: ตัดได้ถ้ายาว */
+/* ชื่อยา: ห้ามตัด! ใช้ชื่อย่อแทน (เชิงคลินิก: หมอจำชื่อย่อได้ดีกว่า) */
 .medicine-name { 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 60%;
+  white-space: normal;
+  word-break: break-word;
 }
 
 /* วิธีใช้ภาษาหมอ: ห้ามตัด! */
