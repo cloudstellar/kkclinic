@@ -44,3 +44,26 @@ export function formatThaiDate(dateStr: string): string {
     const buddhistYear = date.getFullYear() + 543
     return `${day} ${month} ${buddhistYear}`
 }
+
+/**
+ * Format date in English
+ * @example formatEnglishDate('2026-01-18') => 'Jan 18, 2026'
+ */
+export function formatEnglishDate(dateStr: string): string {
+    const date = new Date(dateStr)
+    const enMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const day = date.getDate()
+    const month = enMonths[date.getMonth()]
+    const year = date.getFullYear()
+    return `${month} ${day}, ${year}`
+}
+
+/**
+ * Format date based on language
+ * @example formatDate('2026-01-18', 'th') => '18 ม.ค. 2569'
+ * @example formatDate('2026-01-18', 'en') => 'Jan 18, 2026'
+ */
+export function formatDate(dateStr: string, lang: 'th' | 'en' = 'th'): string {
+    return lang === 'en' ? formatEnglishDate(dateStr) : formatThaiDate(dateStr)
+}

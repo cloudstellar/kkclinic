@@ -1,14 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { formatPatientId, formatThaiDate } from '@/lib/clinic-config'
+import { formatPatientId, formatDate } from '@/lib/clinic-config'
 import { getDisplayName } from '@/lib/patient-utils'
 import { getLabelLang, LABEL_TRANSLATIONS, DEFAULT_EXPIRY_NOTE } from '@/lib/label-translations'
 
 type LabelItem = {
     id: string
     quantity: number
-    dosage_instruction: string | null
+    dosage_instruction: string | null     // TH dosage
+    dosage_instruction_en: string | null  // EN dosage - Sprint 3A+
+    instruction_language: 'thai' | 'english' | null  // ภาษาที่หมอเลือก (override nationality)
     note: string | null  // แพทย์พิมพ์วิธีใช้
     medicine?: {
         name: string
@@ -46,8 +48,10 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
         new Set(medicineItems.map(item => item.id))
     )
 
-    // Items without dosage instruction (warning)
-    const itemsWithoutDosage = medicineItems.filter(item => !item.dosage_instruction && !item.note)
+    // Items without dosage instruction (warning) - check both TH and EN
+    const itemsWithoutDosage = medicineItems.filter(item =>
+        !item.dosage_instruction && !item.dosage_instruction_en && !item.note
+    )
 
     const toggleItem = (id: string) => {
         const newSelected = new Set(selectedIds)
@@ -218,9 +222,12 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                                             <div className="text-muted-foreground">
                                                 จำนวน: {item.quantity} {item.medicine?.unit}
                                             </div>
-                                            {item.dosage_instruction ? (
+                                            {item.dosage_instruction || item.dosage_instruction_en ? (
                                                 <div className="text-green-600 text-xs mt-1">
-                                                    วิธีใช้: {item.dosage_instruction}
+                                                    วิธีใช้: {item.dosage_instruction || item.dosage_instruction_en}
+                                                    {item.dosage_instruction_en && !item.dosage_instruction && (
+                                                        <span className="ml-1 px-1 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px]">EN</span>
+                                                    )}
                                                 </div>
                                             ) : item.note ? (
                                                 <div className="text-blue-600 text-xs mt-1">
@@ -285,8 +292,11 @@ function LabelTemplate({
     patient?: { hn: string; name: string; name_en?: string | null; nationality?: string | null } | null
     paidAt: string
 }) {
-    // Determine language based on patient nationality
-    const lang = getLabelLang(patient?.nationality)
+    // Determine language: item.instruction_language takes priority, fallback to patient nationality
+    // instruction_language: 'thai' -> 'th', 'english' -> 'en', null/undefined -> use getLabelLang
+    const lang = item.instruction_language
+        ? (item.instruction_language === 'english' ? 'en' : 'th')
+        : getLabelLang(patient?.nationality)
     const t = LABEL_TRANSLATIONS[lang]
 
     return (
@@ -320,7 +330,7 @@ function LabelTemplate({
                         {formatPatientId(patient?.hn || '')}
                     </span>
                     <span className="text-xs text-gray-500">
-                        {t.date} {formatThaiDate(paidAt)}
+                        {t.date} {formatDate(paidAt, lang)}
                     </span>
                 </div>
 
@@ -341,7 +351,9 @@ function LabelTemplate({
                 <div className="flex items-start">
                     <span className="font-bold mr-1 whitespace-nowrap">{t.directions} :</span>
                     <div className="dosage-text leading-tight">
-                        {item.dosage_instruction || item.note || '-'}
+                        {lang === 'en'
+                            ? (item.dosage_instruction_en || item.dosage_instruction || item.note || '-')
+                            : (item.dosage_instruction || item.note || '-')}
                     </div>
                 </div>
 

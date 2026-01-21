@@ -268,13 +268,13 @@ export async function getTransaction(id: string) {
         return { data: null, error: error.message }
     }
 
-    // Get prescription items (with dosage_instruction)
+    // Get prescription items (with dosage_instruction for bilingual labels)
     if (data?.prescription?.id) {
         const { data: items } = await supabase
             .from('prescription_items')
             .select(`
                 *,
-                medicine:medicines(code, name, unit, description)
+                medicine:medicines(code, name, name_en, unit, description, description_en, expiry_note_th, expiry_note_en)
             `)
             .eq('prescription_id', data.prescription.id)
             .order('created_at', { ascending: true })

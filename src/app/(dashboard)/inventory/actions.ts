@@ -59,11 +59,15 @@ export async function createMedicine(formData: MedicineFormData) {
         .insert({
             code: formData.code,
             name: formData.name,
+            name_en: formData.name_en || null,
             unit: formData.unit,
             price: formData.price,
             stock_qty: formData.stock_qty || 0,
             min_stock: formData.min_stock || 10,
             description: formData.description || null,
+            description_en: formData.description_en || null,
+            expiry_note_th: formData.expiry_note_th || null,
+            expiry_note_en: formData.expiry_note_en || null,
         })
         .select()
         .single()
@@ -89,10 +93,14 @@ export async function updateMedicine(id: string, formData: MedicineFormData) {
         .update({
             code: formData.code,
             name: formData.name,
+            name_en: formData.name_en || null,
             unit: formData.unit,
             price: formData.price,
             min_stock: formData.min_stock || 10,
             description: formData.description || null,
+            description_en: formData.description_en || null,
+            expiry_note_th: formData.expiry_note_th || null,
+            expiry_note_en: formData.expiry_note_en || null,
         })
         .eq('id', id)
         .select()

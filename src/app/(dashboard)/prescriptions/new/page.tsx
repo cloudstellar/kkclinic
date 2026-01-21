@@ -49,7 +49,9 @@ type PrescriptionItem = {
     price: number
     quantity: number
     stock_qty: number  // เก็บไว้เตือน Soft warn
-    dosage_instruction: string  // วิธีใช้ยา (สำหรับฉลาก)
+    dosage_instruction: string     // วิธีใช้ยา (TH)
+    dosage_instruction_en: string  // วิธีใช้ยา (EN) - Sprint 3A+
+    label_language: 'auto' | 'th' | 'en'  // ภาษาพิมพ์ฉลาก (auto = ตามสัญชาติ)
 }
 
 export default function NewPrescriptionPage() {
@@ -112,6 +114,8 @@ export default function NewPrescriptionPage() {
             stock_qty: medicine.stock_qty,
             quantity: 1,
             dosage_instruction: '',
+            dosage_instruction_en: '',
+            label_language: 'auto',  // ค่าเริ่มต้น: ตามสัญชาติผู้ป่วย
         }])
         setMedicineSearch('')
         setShowMedicineDropdown(false)
@@ -123,9 +127,11 @@ export default function NewPrescriptionPage() {
         setItems(newItems)
     }
 
-    function updateItemDosage(index: number, dosage: string) {
+    function updateItemDosage(index: number, dosageTh: string, dosageEn: string, labelLang: 'auto' | 'th' | 'en') {
         const newItems = [...items]
-        newItems[index].dosage_instruction = dosage
+        newItems[index].dosage_instruction = dosageTh
+        newItems[index].dosage_instruction_en = dosageEn
+        newItems[index].label_language = labelLang
         setItems(newItems)
     }
 
@@ -150,11 +156,26 @@ export default function NewPrescriptionPage() {
         try {
             const result = await createPrescription(
                 selectedPatient.id,
-                items.map(i => ({
-                    medicine_id: i.medicine_id,
-                    quantity: i.quantity,
-                    dosage_instruction: i.dosage_instruction || undefined,
-                })),
+                items.map(i => {
+                    // Convert label_language to instruction_language
+                    // 'auto' -> ตามสัญชาติ, 'th' -> thai, 'en' -> english
+                    let instructionLang: 'thai' | 'english' | undefined
+                    if (i.label_language === 'th') {
+                        instructionLang = 'thai'
+                    } else if (i.label_language === 'en') {
+                        instructionLang = 'english'
+                    } else {
+                        // auto: ตามสัญชาติผู้ป่วย
+                        instructionLang = selectedPatient.nationality === 'other' ? 'english' : 'thai'
+                    }
+                    return {
+                        medicine_id: i.medicine_id,
+                        quantity: i.quantity,
+                        dosage_instruction: i.dosage_instruction || undefined,
+                        dosage_instruction_en: i.dosage_instruction_en || undefined,
+                        instruction_language: instructionLang,
+                    }
+                }),
                 note || undefined
             )
 
@@ -326,7 +347,8 @@ export default function NewPrescriptionPage() {
                                         </TableCell>
                                         <TableCell>
                                             <DosageDisplay
-                                                instruction={item.dosage_instruction}
+                                                instructionTh={item.dosage_instruction}
+                                                instructionEn={item.dosage_instruction_en}
                                                 onClick={() => setOpenSheetItemId(item.medicine_id)}
                                             />
                                         </TableCell>
@@ -395,19 +417,24 @@ export default function NewPrescriptionPage() {
                 const openItemIndex = items.findIndex(i => i.medicine_id === openSheetItemId)
                 const openItem = openItemIndex !== -1 ? items[openItemIndex] : null
                 const previousItem = openItemIndex > 0 ? items[openItemIndex - 1] : null
+                const isForeignPatient = selectedPatient?.nationality === 'other'
 
                 return (
                     <DosageInstructionSheet
                         open={!!openItem}
-                        instruction={openItem?.dosage_instruction ?? ''}
+                        instructionTh={openItem?.dosage_instruction ?? ''}
+                        instructionEn={openItem?.dosage_instruction_en ?? ''}
+                        labelLanguage={openItem?.label_language ?? 'auto'}
                         medicineName={openItem?.medicine_name}
-                        onSave={(text) => {
+                        isForeignPatient={isForeignPatient}
+                        onSave={(textTh, textEn, labelLang) => {
                             if (openItem) {
-                                updateItemDosage(openItemIndex, text)
+                                updateItemDosage(openItemIndex, textTh, textEn, labelLang)
                             }
                         }}
                         onClose={() => setOpenSheetItemId(null)}
-                        previousInstructionText={previousItem?.dosage_instruction ?? ''}
+                        previousInstructionTh={previousItem?.dosage_instruction ?? ''}
+                        previousInstructionEn={previousItem?.dosage_instruction_en ?? ''}
                     />
                 )
             })()}

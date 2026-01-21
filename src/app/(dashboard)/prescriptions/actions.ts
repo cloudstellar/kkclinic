@@ -147,7 +147,9 @@ export async function createPrescription(
         medicine_id: item.medicine_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        dosage_instruction: item.dosage_instruction || null,  // วิธีใช้ยา
+        dosage_instruction: item.dosage_instruction || null,       // วิธีใช้ยา (TH)
+        dosage_instruction_en: item.dosage_instruction_en || null, // วิธีใช้ยา (EN)
+        instruction_language: item.instruction_language || 'thai', // ค่าเริ่มต้น: thai (ตาม default ใน DB)
         note: item.note || null,
     }))
 

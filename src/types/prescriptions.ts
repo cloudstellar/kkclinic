@@ -46,18 +46,19 @@ export type PrescriptionItem = {
     quantity: number
     unit_price: number
     price_override: number | null
-    dosage_instruction: string | null  // วิธีใช้ยา (สำหรับฉลาก)
-    dosage_raw: string | null          // Sprint 3A: ภาษาหมอ (เช่น 1 gtt OU qid)
+    dosage_instruction: string | null    // วิธีใช้ยา (TH สำหรับฉลาก)
+    dosage_instruction_en: string | null // วิธีใช้ยา (EN สำหรับ foreign patients)
+    dosage_raw: string | null            // Sprint 3A: ภาษาหมอ (เช่น 1 gtt OU qid)
     instruction_language: InstructionLanguage  // Sprint 3A: ภาษาที่ใช้พิมพ์ฉลาก
-    df: number                          // Sprint 3A: Doctor's Fee
-    df_note: string | null              // Sprint 3A: หมายเหตุ DF
+    df: number                            // Sprint 3A: Doctor's Fee
+    df_note: string | null                // Sprint 3A: หมายเหตุ DF
     note: string | null
     created_at: string
     medicine?: {
         id: string
         code: string
         name: string
-        name_en: string | null          // Sprint 3A: ชื่อยา EN
+        name_en: string | null            // Sprint 3A: ชื่อยา EN
         unit: string
         stock_qty: number
     }
@@ -67,7 +68,9 @@ export type PrescriptionItem = {
 export type PrescriptionItemFormData = {
     medicine_id: string
     quantity: number
-    dosage_instruction?: string  // วิธีใช้ยา
+    dosage_instruction?: string       // วิธีใช้ยา (TH)
+    dosage_instruction_en?: string    // วิธีใช้ยา (EN) - Sprint 3A+
+    instruction_language?: 'thai' | 'english'  // ภาษาพิมพ์ฉลาก
     note?: string
 }
 
@@ -75,7 +78,9 @@ export type PrescriptionItemFormData = {
 export const prescriptionItemSchema = z.object({
     medicine_id: z.string().min(1, 'กรุณาเลือกยา'),
     quantity: z.coerce.number().int().min(1, 'จำนวนต้องมากกว่า 0'),
-    dosage_instruction: z.string().optional(),  // วิธีใช้ยา
+    dosage_instruction: z.string().optional(),       // วิธีใช้ยา (TH)
+    dosage_instruction_en: z.string().optional(),    // วิธีใช้ยา (EN)
+    instruction_language: z.enum(['thai', 'english']).optional(),  // ภาษาฉลาก
     note: z.string().optional(),
 })
 
