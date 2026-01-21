@@ -147,17 +147,27 @@ export function getLabelLang(nationality: string | null): LabelLanguage {
 - ใช้ **placeholder** แสดง default value (ไม่เพิ่มปุ่ม Reset)
 - ปล่อยว่างได้ (DB มี default)
 - ถ้า edit record เก่าที่ค่าเป็น null → ใช้ placeholder เป็น hint
+- เพิ่ม **helper text** ใต้ input: "ถ้าเว้นว่าง ระบบจะใช้ข้อความมาตรฐาน"
 
 ```tsx
-<Input 
-  placeholder="ดูวันหมดอายุที่ฉลากข้างกล่อง" 
-  {...register('expiry_note_th')}
-/>
-<Input 
-  placeholder="See expiry date on the box" 
-  {...register('expiry_note_en')}
-/>
+<div className="space-y-2">
+  <Label>ข้อความวันหมดอายุ (TH)</Label>
+  <Input 
+    placeholder="ดูวันหมดอายุที่ฉลากข้างกล่อง" 
+    {...register('expiry_note_th')}
+  />
+  <p className="text-xs text-muted-foreground">
+    💡 ถ้าเว้นว่าง ระบบจะใช้ข้อความมาตรฐาน
+  </p>
+</div>
 ```
+
+> [!IMPORTANT]
+> **Server-side:** ต้องแปลง empty string `''` → `null` เพื่อให้ DB default ทำงาน
+> ```typescript
+> expiry_note_th: data.expiry_note_th || null,
+> expiry_note_en: data.expiry_note_en || null,
+> ```
 
 ---
 
@@ -172,9 +182,14 @@ export function getLabelLang(nationality: string | null): LabelLanguage {
 ```typescript
 const lang = getLabelLang(patient.nationality)
 const t = LABEL_TRANSLATIONS[lang]
-const expiryNote = lang === 'th' 
+
+// Fallback กัน undefined/null (defense in depth)
+const expiryNote = (lang === 'th' 
   ? medicine.expiry_note_th 
-  : medicine.expiry_note_en
+  : medicine.expiry_note_en)
+  ?? (lang === 'th' 
+    ? 'ดูวันหมดอายุที่ฉลากข้างกล่อง' 
+    : 'See expiry date on the box')
 ```
 
 ---
@@ -186,7 +201,18 @@ const expiryNote = lang === 'th'
 **Layout Spec:**
 - ขนาด: 10×7.5 cm (100mm × 75mm)
 - Font: 9-10pt, line-height 1.1-1.2
-- Compact: รองรับ ~10-11 รายการ
+- **maxItems: 11** (ถ้าเกิน แสดง "...และอีก X รายการ")
+
+```typescript
+const MAX_ITEMS = 11
+const displayItems = items.slice(0, MAX_ITEMS)
+const remainingCount = items.length - MAX_ITEMS
+
+// แสดง "...และอีก X รายการ" ถ้าเกิน
+{remainingCount > 0 && (
+  <p className="text-xs">...และอีก {remainingCount} รายการ</p>
+)}
+```
 
 **ข้อมูลที่แสดง:**
 - TN, ชื่อผู้ป่วย, วันที่
@@ -196,6 +222,18 @@ const expiryNote = lang === 'th'
 **CSS Rules (สำคัญ):**
 
 ```css
+/* Print margin: ล็อกไว้ป้องกัน browser ใส่ margin เอง */
+@media print {
+  @page { margin: 0; }
+  body { margin: 0; }
+}
+
+.print-page {
+  width: 100mm;
+  height: 75mm;
+  overflow: hidden;
+}
+
 /* ชื่อยา: ตัดได้ถ้ายาว */
 .medicine-name { 
   white-space: nowrap;
@@ -210,6 +248,9 @@ const expiryNote = lang === 'th'
   word-wrap: break-word;
 }
 ```
+
+> [!WARNING]
+> **ตรวจสอบ Print Margin:** ดู `label-print-view.tsx` ว่ามี `@page { margin: 0 }` หรือยัง
 
 **Layout:**
 ```
@@ -306,11 +347,15 @@ npm run typecheck
 | Medicine `name_en` | ❌ ตัดออก |
 | Medicine `expiry_note` | ✅ `expiry_note_th` + `expiry_note_en` |
 | Label Translations | ✅ Centralized in `label-translations.ts` |
-| Summary Sheet | Thermal 10×7.5, Checkbox default ON |
-| Summary Layout | Compact 2 lines/item, **directions ห้ามตัด** |
+| Summary Sheet | Thermal 10×7.5, Checkbox default ON, **maxItems=11** |
+| Summary CSS | **directions ห้ามตัด**, print margin locked |
+| expiry_note Fallback | ✅ Client-side fallback กัน undefined |
+| Form Helper Text | ✅ แสดง "ถ้าเว้นว่าง..." + Server แปลง `''` → `null` |
 | UX Phase 2 | ❌ แยกไป Sprint 3B |
 | Form autocomplete | ✅ camelCase `autoComplete` (React) |
+| DB Backfill | ❌ ไม่จำเป็น — PostgreSQL ADD COLUMN + DEFAULT ใส่ให้อัตโนมัติ |
 
 ---
 
-*Plan Finalized: 21 มกราคม 2569 @ 03:08*
+*Plan Updated: 21 มกราคม 2569 @ 08:41*
+*Recommendations analyzed and incorporated*
