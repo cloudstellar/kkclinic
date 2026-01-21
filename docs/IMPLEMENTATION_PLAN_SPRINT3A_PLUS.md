@@ -72,7 +72,7 @@ export type Medicine = {
 
 ### Component 2: Label Translations Library
 
-#### [NEW] [label-translations.ts](file:///Users/cloud/Library/CloudStorage/OneDrive-Personal/Antigravity/kkclinic/src/lib/label-translations.ts)
+#### [NEW] `src/lib/label-translations.ts`
 
 ```typescript
 export const LABEL_TRANSLATIONS = {
@@ -108,6 +108,12 @@ export type LabelLanguage = 'th' | 'en'
 export function getLabelLang(nationality: string | null): LabelLanguage {
   return nationality === 'other' ? 'en' : 'th'
 }
+
+// ✅ Constant เดียวสำหรับ fallback (กัน drift)
+export const DEFAULT_EXPIRY_NOTE = {
+  th: 'ดูวันหมดอายุที่ฉลากข้างกล่อง',
+  en: 'See expiry date on the box',
+} as const
 ```
 
 ---
@@ -137,7 +143,7 @@ export function getLabelLang(nationality: string | null): LabelLanguage {
 
 ### Component 4: Medicine Form Update
 
-#### [MODIFY] [medicine-form.tsx](file:///Users/cloud/Library/CloudStorage/OneDrive-Personal/Antigravity/kkclinic/src/components/forms/medicine-form.tsx)
+#### [MODIFY] `src/components/forms/medicine-form.tsx`
 
 เพิ่ม fields:
 - `expiry_note_th` — ข้อความวันหมดอายุ (TH)
@@ -163,40 +169,45 @@ export function getLabelLang(nationality: string | null): LabelLanguage {
 ```
 
 > [!IMPORTANT]
-> **Server-side:** ต้องแปลง empty string `''` → `null` เพื่อให้ DB default ทำงาน
+> **Server-side:** ต้องใช้ trim-based normalize (ไม่ใช่ `|| null`)
 > ```typescript
-> expiry_note_th: data.expiry_note_th || null,
-> expiry_note_en: data.expiry_note_en || null,
+> const normalizeNote = (v?: string | null) => {
+>   const s = (v ?? '').trim()
+>   return s.length ? s : null
+> }
+> 
+> expiry_note_th: normalizeNote(data.expiry_note_th),
+> expiry_note_en: normalizeNote(data.expiry_note_en),
 > ```
 
 ---
 
 ### Component 5: Label Print View Update
 
-#### [MODIFY] [label-print-view.tsx](file:///Users/cloud/Library/CloudStorage/OneDrive-Personal/Antigravity/kkclinic/src/app/(dashboard)/billing/receipt/[id]/labels/label-print-view.tsx)
+#### [MODIFY] `src/app/(dashboard)/billing/receipt/[id]/labels/label-print-view.tsx`
 
 1. Import `LABEL_TRANSLATIONS` และ `getLabelLang`
 2. แปลข้อความบนฉลากตาม `patient.nationality`
 3. ใช้ `medicine.expiry_note_th/en` แทนข้อความ hardcode
 
 ```typescript
+import { LABEL_TRANSLATIONS, getLabelLang, DEFAULT_EXPIRY_NOTE } from '@/lib/label-translations'
+
 const lang = getLabelLang(patient.nationality)
 const t = LABEL_TRANSLATIONS[lang]
 
-// Fallback กัน undefined/null (defense in depth)
+// Fallback ใช้ constant เดียวกัน (กัน drift)
 const expiryNote = (lang === 'th' 
   ? medicine.expiry_note_th 
   : medicine.expiry_note_en)
-  ?? (lang === 'th' 
-    ? 'ดูวันหมดอายุที่ฉลากข้างกล่อง' 
-    : 'See expiry date on the box')
+  ?? DEFAULT_EXPIRY_NOTE[lang]
 ```
 
 ---
 
 ### Component 6: Medicine Summary Sheet
 
-#### [NEW] [medicine-summary-template.tsx](file:///Users/cloud/Library/CloudStorage/OneDrive-Personal/Antigravity/kkclinic/src/app/(dashboard)/billing/receipt/[id]/labels/medicine-summary-template.tsx)
+#### [NEW] `src/app/(dashboard)/billing/receipt/[id]/labels/medicine-summary-template.tsx`
 
 **Layout Spec:**
 - ขนาด: 10×7.5 cm (100mm × 75mm)
@@ -217,7 +228,17 @@ const remainingCount = items.length - MAX_ITEMS
 **ข้อมูลที่แสดง:**
 - TN, ชื่อผู้ป่วย, วันที่
 - รายการยา: index, ชื่อยา (ตัดได้), จำนวน+หน่วย, วิธีใช้ภาษาหมอ (**ห้ามตัด**)
-- Footer: "รวม X รายการ" + ชื่อคลินิก
+- "...และอีก X รายการ" (ถ้าเกิน) — **อยู่ก่อน footer**
+- Footer: "รวม X รายการ" + ชื่อคลินิก — **ติดขอบล่าง (sticky bottom)**
+
+**Layout Structure (Flex):**
+```tsx
+<div className="flex flex-col h-full">
+  <header>...</header>
+  <div className="flex-1">รายการยา + ...และอีก X</div>
+  <footer className="mt-auto">รวม X รายการ</footer>
+</div>
+```
 
 **CSS Rules (สำคัญ):**
 
@@ -250,7 +271,8 @@ const remainingCount = items.length - MAX_ITEMS
 ```
 
 > [!WARNING]
-> **ตรวจสอบ Print Margin:** ดู `label-print-view.tsx` ว่ามี `@page { margin: 0 }` หรือยัง
+> **Print CSS Location:** ควรอยู่ใน `src/app/globals.css` หรือ print stylesheet ที่มีอยู่
+> ไม่ใช่ใน component เพราะจะซ้ำซ้อน — ตรวจสอบ `@page { margin: 0 }` ก่อน implement
 
 **Layout:**
 ```
@@ -439,9 +461,9 @@ npm run typecheck
 | Form Helper Text | ✅ แสดง "ถ้าเว้นว่าง..." + Server แปลง `''` → `null` |
 | UX Phase 2 | ❌ แยกไป Sprint 3B |
 | Form autocomplete | ✅ camelCase `autoComplete` (React) |
-| DB Backfill | ❌ ไม่จำเป็น — PostgreSQL ADD COLUMN + DEFAULT ใส่ให้อัตโนมัติ |
+| DB Backfill | ❌ ไม่ทำ — ยอมรับ NULL + ใช้ client fallback + server normalize กันข้อมูลผิด |
 
 ---
 
-*Plan Updated: 21 มกราคม 2569 @ 08:41*
-*Recommendations analyzed and incorporated*
+*Plan Updated: 21 มกราคม 2569 @ 11:45*
+*Applied 6 refinements from final review*
