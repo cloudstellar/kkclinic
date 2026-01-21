@@ -486,3 +486,45 @@ npm run typecheck
 
 *Plan Updated: 21 มกราคม 2569 @ 11:45*
 *Applied 6 refinements from final review*
+
+---
+
+## ✅ Milestone 4: Dual Dosage Input (Sprint 3A+ Plus)
+
+**Goal**: Support English dosage instructions for foreign patients & bilingual labels.
+
+### Checklist
+- [x] **Database & Types**
+    - [x] Add `dosage_instruction_en` to `PrescriptionItem` interface
+    - [x] Add `instruction_language` to `PrescriptionItem` interface
+- [x] **Server Actions**
+    - [x] Update `createPrescription` to handle `dosage_instruction_en`
+    - [x] Update `createPrescription` to save `instruction_language`
+- [x] **UI Implementation**
+    - [x] Update `PrescriptionItemFormData`
+    - [x] Enhance `DosageInstructionSheet` to support 2 languages
+    - [x] Add Language Selector (Auto/TH/EN) for doctor override
+    - [x] Modify `addMedicine` to init empty EN instruction
+    - [x]  Update `DosageDisplay` to show TH/EN status
+- [x] **Label Printing**
+    - [x] Update `LabelItem` type
+    - [x] Modify `LabelTemplate` to use English dosage when `lang='en'`
+    - [x] Implement logic: `item.instruction_language` > `patient.nationality`
+- [x] **Verification**
+    - [x] Test creation with TH only (Thai patient)
+    - [x] Test creation with EN only (Foreign patient)
+    - [x] Test creating with both languages
+    - [x] Verify Label Print Preview for correct language selection
+
+---
+
+## ⏭️ Milestone 5 & 6: Summary Sheet & Final Verification (MOVED)
+**Decision**: Moved to **Sprint 3B** to utilize the new Smart Dosage System.
+The Medicine Summary Sheet will be implemented once the "Patient-Friendly Instruction" engine is ready.
+
+---
+
+# 🚀 Sprint 3A+ Status: PARTIALLY COMPLETE (Closed)
+- **Delivered**: M1, M2, M3, M4 (Dual Dosage Input & Label Printing)
+- **Moved**: M5, M6 (Summary Sheet) -> Sprint 3B
+- **Next Phase**: Sprint 3B - Smart Dosage System (See `IMPLEMENTATION_PLAN_SPRINT3B.md`)
