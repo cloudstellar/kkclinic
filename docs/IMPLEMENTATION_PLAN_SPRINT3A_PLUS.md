@@ -323,20 +323,106 @@ npm run typecheck
 
 ---
 
-## Task Order
+## 🚀 Milestone Approach (Incremental)
 
-| ลำดับ | งาน | ประมาณเวลา |
-|------|-----|-----------|
-| 1 | DB Migration (expiry_note) | 10 นาที |
-| 1.2 | **Types Update** (medicines.ts) | 5 นาที |
-| 2 | Label Translations Library | 15 นาที |
-| 3 | Form Quick Fixes | 15 นาที |
-| 4 | Medicine Form Update | 30 นาที |
-| 5 | Label Print Translation + expiry_note | 45 นาที |
-| 6 | Medicine Summary Template | 1 ชม. |
-| 7 | Integration + Checkbox | 30 นาที |
-| 8 | Test + Verify | 30 นาที |
-| **รวม** | | **~4 ชม.** |
+> **แนวทาง:** ค่อยๆ ทำ + test ไป — ไม่ทำรวดเลย
+
+### Milestone 1: Database + Types (15 นาที)
+
+**Tasks:**
+- [ ] 1.1 Run DB Migration (expiry_note_th, expiry_note_en)
+- [ ] 1.2 Update `src/types/medicines.ts`
+
+**Test:**
+- [ ] ดู Supabase Table Editor: มี 2 columns + default ถูกต้อง
+- [ ] `npm run typecheck` ผ่าน
+
+**Commit:** `feat: add expiry_note fields to medicines table`
+
+---
+
+### Milestone 2: Translations + Form Fixes (30 นาที)
+
+**Tasks:**
+- [ ] 2.1 สร้าง `src/lib/label-translations.ts`
+- [ ] 2.2 เพิ่ม `type="tel"` + `autoComplete` ใน `patient-form.tsx`
+
+**Test:**
+- [ ] `npm run lint` ผ่าน
+- [ ] `npm run typecheck` ผ่าน
+
+**Commit:** `feat: add label translations and form quick fixes`
+
+---
+
+### Milestone 3: Medicine Form (30 นาที)
+
+**Tasks:**
+- [ ] 3.1 เพิ่ม expiry_note_th/en fields ใน form
+- [ ] 3.2 เพิ่ม helper text "ถ้าเว้นว่าง..."
+- [ ] 3.3 Server-side: แปลง `''` → `null`
+
+**Test:**
+- [ ] Create ยาใหม่ → ดู record ใน DB
+- [ ] Edit ยาเก่า → ค่าบันทึกถูกต้อง
+
+**Commit:** `feat: add expiry_note fields to medicine form`
+
+---
+
+### Milestone 4: Label Print Translation (45 นาที)
+
+**Tasks:**
+- [ ] 4.1 Import LABEL_TRANSLATIONS + getLabelLang
+- [ ] 4.2 แปลข้อความตาม nationality
+- [ ] 4.3 ใช้ medicine.expiry_note_th/en + fallback
+
+**Test:**
+- [ ] พิมพ์ฉลากคนไข้ไทย → ข้อความ TH
+- [ ] พิมพ์ฉลากคนไข้ต่างชาติ → ข้อความ EN
+
+**Commit:** `feat: bilingual label printing`
+
+---
+
+### Milestone 5: Summary Sheet + Integration (1.5 ชม.)
+
+**Tasks:**
+- [ ] 5.1 สร้าง MedicineSummaryTemplate (maxItems=11)
+- [ ] 5.2 เพิ่ม Checkbox "พิมพ์ใบสรุปฯ" (default ON)
+- [ ] 5.3 รวม Summary ใน print container
+
+**Test:**
+- [ ] Checkbox default ON
+- [ ] พิมพ์ได้ใน print dialog เดียว
+- [ ] ทดสอบ 11 รายการ: ไม่ล้น
+
+**Commit:** `feat: add medicine summary sheet`
+
+---
+
+### Milestone 6: Final Verification (30 นาที)
+
+**Tasks:**
+- [ ] ทดสอบ DoD ทุกข้อ
+- [ ] `npm run lint` + `npm run typecheck`
+- [ ] ตรวจสอบ print margin
+
+**Final Commit:** `feat: complete Sprint 3A+ label and summary features`
+
+---
+
+## ⏱️ เวลารวม
+
+| Milestone | เวลา |
+|-----------|------|
+| M1: Database + Types | 15 นาที |
+| M2: Translations + Form Fixes | 30 นาที |
+| M3: Medicine Form | 30 นาที |
+| M4: Label Print | 45 นาที |
+| M5: Summary + Integration | 1.5 ชม. |
+| M6: Verification | 30 นาที |
+| **รวม** | **~4 ชม.** |
 
 ---
 
