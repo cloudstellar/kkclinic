@@ -61,6 +61,8 @@ export function MedicineForm({ medicine, onSubmit, isSubmitting }: MedicineFormP
             min_stock: medicine?.min_stock || 10,
             description: medicine?.description || '',
             description_en: medicine?.description_en || '',
+            expiry_note_th: medicine?.expiry_note_th || '',
+            expiry_note_en: medicine?.expiry_note_en || '',
         },
     })
 
@@ -340,6 +342,36 @@ export function MedicineForm({ medicine, onSubmit, isSubmitting }: MedicineFormP
                     <p className="text-xs text-muted-foreground">
                         ข้อมูลนี้จะแสดงบนฉลากยา
                     </p>
+                </CardContent>
+            </Card>
+
+            {/* Expiry Note Section - Sprint 3A+ */}
+            <Card>
+                <CardContent className="pt-6 space-y-4">
+                    <h3 className="font-semibold text-lg mb-4">📅 ข้อความวันหมดอายุ</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                        ถ้าเว้นว่าง ระบบจะใช้ข้อความมาตรฐาน
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="expiry_note_th">ข้อความวันหมดอายุ (TH)</Label>
+                            <Input
+                                id="expiry_note_th"
+                                {...register('expiry_note_th')}
+                                placeholder="เช่น ควรใช้ภายใน 1 เดือนหลังเปิดใช้"
+                                disabled={isSubmitting}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="expiry_note_en">Expiry Note (EN)</Label>
+                            <Input
+                                id="expiry_note_en"
+                                {...register('expiry_note_en')}
+                                placeholder="e.g., Use within 1 month after opening"
+                                disabled={isSubmitting}
+                            />
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 
