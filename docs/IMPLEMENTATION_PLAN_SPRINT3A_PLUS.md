@@ -238,16 +238,17 @@ const remainingCount = items.length - MAX_ITEMS
 > |------|-----------|
 > | **ห้ามตัด** | ไม่ใช้ ellipsis/truncate เด็ดขาด |
 > | **ค่าเริ่มต้น** | ใช้ชื่อเต็ม `medicine.name` |
-> | **ถ้าเสี่ยงล้น + มีชื่อย่อ** | → ใช้ชื่อย่อแทน |
-> | **ถ้าไม่มีชื่อย่อ** | → ยอมใช้ชื่อเต็ม แม้จะกินพื้นที่ |
 > | **ล้นหน้า** | ตัดสินจาก layout constraint (maxItems=11) ไม่ใช่การตัด string |
 > | **directions** | ห้ามตัดเสมอ (ข้อมูลหลัก) |
+> 
+> ⚠️ **Sprint 3A+ ไม่มี short_name field** — ใช้ `medicine.name` เท่านั้น
+> (หากต้องการชื่อย่อในอนาคต ต้องเพิ่ม field ใหม่ใน Sprint ถัดไป)
 > 
 > **Scope:** เฉพาะ Medicine Summary Sheet (Internal Use) ไม่กระทบ label คนไข้
 
 **Display Name Logic:**
 ```typescript
-// ระบบปัจจุบันไม่มี short_name จึงใช้ name
+// Sprint 3A+: ใช้ name เท่านั้น (ไม่มี short_name)
 const displayName = medicine.name
 ```
 
