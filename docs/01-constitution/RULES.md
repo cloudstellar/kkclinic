@@ -10,12 +10,32 @@
 
 ---
 
+## 🛑 0. Golden Rule: User Confirmation (กฎเหล็ก)
+
+**"Never Start Without Approval"**
+
+1.  **Stop**: ก่อนเริ่มงานใหม่, เปลี่ยน Milestone, หรือข้าม Task boundary
+2.  **Ask**: ต้องถาม User เสมอว่า "ให้เริ่มทำ [Task X] เลยไหมครับ?"
+3.  **Wait**: ห้าม assume หรือ auto-proceed (แม้ว่าแผนจะชัดเจนแล้วก็ตาม) ต้องรอ User พิมพ์ "Start", "Ok", "ลุย" ก่อนเท่านั้น
+
+## 🧱 0.1 Tech Stack Compliance
+
+1.  **Strict Adherence**: All code must comply with `docs/01-constitution/TECH_STACK.md`.
+2.  **Precedence**: If a conflict exists between a Feature Spec and the Tech Stack, **TECH_STACK.md takes precedence**.
+
+## 💀 0.2 Lessons Learned Compliance
+
+1.  **Non-Negotiable**: `docs/01-constitution/LESSONS_LEARNED.md` defines non-negotiable constraints derived from past failures.
+2.  **Zero Violation**: Violations of these rules are **NOT ALLOWED** under any circumstances.
+
+---
+
 ## 📋 Mandatory Steps (ทำทุกครั้ง)
 
 ### 1. Context Summary
-- อ่าน `docs/ROADMAP.md` เพื่อเข้าใจสถานะปัจจุบัน
+- อ่าน `docs/05-reference/ROADMAP.md` เพื่อเข้าใจสถานะปัจจุบัน
 - อ่าน `docs/HANDOFF_PROMPT.md` สำหรับ context ล่าสุด
-- ตรวจสอบ ADR ที่เกี่ยวข้องใน `docs/ADR/`
+- ตรวจสอบ ADR ที่เกี่ยวข้องใน `docs/02-architecture/ADR/`
 
 ### 2. Definition of Ready (DoR)
 ก่อนเขียนโค้ด ต้องมี:
@@ -27,8 +47,8 @@
 - [ ] Verification plan
 
 ### 3. Documentation Updates
-- อัปเดต `docs/ROADMAP.md` (status, decision lock)
-- สร้าง ADR ถ้ามี design decision ใหม่
+- อัปเดต `docs/05-reference/ROADMAP.md` (status, decision lock)
+- สร้าง ADR ถ้ามี design decision ใหม่ใน `docs/02-architecture/ADR/`
 - อัปเดต `docs/HANDOFF_PROMPT.md` หลังเสร็จงาน
 
 ### 4. Commit Properly
@@ -117,6 +137,6 @@ PLANNING → EXECUTION → VERIFICATION
 
 ## 📚 Related
 
-- [ROADMAP.md](ROADMAP.md)
-- [WORKFLOW.md](WORKFLOW.md)
-- [ADR/](ADR/)
+- [ROADMAP.md](../05-reference/ROADMAP.md)
+- [WORKFLOW.md](../02-architecture/WORKFLOW.md)
+- [ADR/](../02-architecture/ADR/)

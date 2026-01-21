@@ -1,109 +1,98 @@
 # Handoff Prompt for AI Agent
 
-**Current State:** Sprint 3A+ Ready for Implementation  
-**Last Updated:** 21 มกราคม 2569 @ 03:08  
-**Version:** `feature/sprint-3a+` — Final plan approved, DoD defined
+**Current State:** Sprint 3B M1 Ready to Start
+**Last Updated:** 22 มกราคม 2569 @ 03:05
+**Version:** `feature/sprint-3b` — Plan finalized with 8 critical fixes
 
 ---
 
-## ⚠️ CRITICAL: TN Standardization
+## ⚠️ CRITICAL: Read These First (In Order)
 
-**Patient Identifier = TN only**
-- ❌ ไม่ใช้ HN ในที่ใดเลย
-- DB column ยังเป็น `hn` ได้ชั่วคราว
-- UI / URL / sort / search / print = **TN**
-
----
-
-
-## 📊 Sprint Status
-
-| Sprint | Status |
-|--------|--------|
-| Sprint 3A | ✅ Done |
-| **Sprint 3A+** | 🟡 In Progress (M1, M2 Done) |
-| Sprint 3B | 🔲 Pending (UX Phase 2) |
+1. `docs/01-constitution/RULES.md` — AI workflow rules + User Confirmation requirement
+2. `docs/01-constitution/TECH_STACK.md` — Authoritative tech stack
+3. `docs/01-constitution/LESSONS_LEARNED.md` — Hard constraints from past failures
+4. `docs/05-reference/GLOSSARY.md` — Term definitions (TN, Snapshot, etc.)
 
 ---
 
-## ✅ Definition of Done (Sprint 3A+)
+## 🎯 NEXT ACTION: Start Sprint 3B M1
 
-> Sprint เสร็จเมื่อ:
+**Task:** Database Migration + Types
 
-- [x] Create `expiry_note_th`, `expiry_note_en` & Types (M1)
-- [x] ฟอร์มมี `autoComplete`/`type` ตาม Vercel best practice (M2)
-- [x] Label translations library created (M2)
-- [ ] `medicine-form` รองรับ input ทั้ง 2 ภาษา (M3)
-- [ ] ฉลากยาแสดงภาษา TH/EN ตาม `patient.nationality` (M4)
-- [ ] ข้อความ "วันหมดอายุ" ใช้ `medicine.expiry_note_th/en` (M4)
-- [ ] Medicine Summary Sheet 10×7.5 cm + Checkbox default ON (M5)
-- [ ] ผ่าน `npm run lint` + `npm run typecheck` (M6)
+**What to do:**
+1. Run migration on Supabase to add columns to `prescription_items`:
+   - `dosage_original` (text, nullable)
+   - `dictionary_version` (text, nullable)
+2. Add DB CHECK constraint for data integrity (see PLAN.md)
+3. Backfill existing data: copy `dosage_instruction` → `dosage_original`, set `dictionary_version = 'legacy'`
+4. Update `src/types/prescriptions.ts` with new fields
+5. Run `npm run typecheck` to verify
 
----
+**Key Documents:**
+- `docs/04-features/sprint-3b-dosage/SPEC.md` — Full specification
+- `docs/04-features/sprint-3b-dosage/PLAN.md` — Implementation plan with DoD (JUST UPDATED)
 
-## 🎯 Sprint 3A+ Tasks
-
-### Part 1: Completed Tasks ✅
-
-**Milestone 1: Database + Types**
-- [x] DB Migration: Added `expiry_note_th`, `expiry_note_en` columns
-- [x] Updated `src/types/medicines.ts`
-
-**Milestone 2: Translations + Form Fixes**
-- [x] Create `src/lib/label-translations.ts`
-- [x] Add `type="tel"`, `inputMode="numeric"` and `autoComplete` to `patient-form.tsx`
-
-### Part 2: Next Steps (PENDING) 🚀
-
-**Milestone 3: Medicine Form Update** (START HERE)
-- [ ] Add `expiry_note_th`, `expiry_note_en` fields to `medicine-form.tsx`
-- [ ] Add helper text using `DEFAULT_EXPIRY_NOTE` from `src/lib/label-translations.ts`
-
-**Milestone 4: Label Print Translation**
-- [ ] Update labels to use translation logic based on nationality
-- [ ] Display correct `expiry_note`
-
-**Milestone 5: Medicine Summary Sheet**
-- [ ] Thermal 10x7.5cm layout
-- [ ] **CSS Rule:** Directions must NOT be truncated
+**Done When:**
+- ✅ Migration applied successfully
+- ✅ CHECK constraint active
+- ✅ `npm run typecheck` passes
 
 ---
 
-## 📋 Next Session Instructions
+## 📊 Sprint 3B Milestones
 
-```
-1. อ่าน HANDOFF_PROMPT.md (ฉบับนี้)
-2. ดู implementation_plan.md ใน artifacts (หรือ docs/IMPLEMENTATION_PLAN_SPRINT3A_PLUS.md)
-3. เริ่มทำ Milestone 3 ต่อทันที:
-   - เปิด `src/components/forms/medicine-form.tsx`
-   - เพิ่ม field expiry_note_th/en
-   - **Note:** อย่าลืมใช้ DEFAULT_EXPIRY_NOTE จาก library ที่สร้างไว้แล้วใน M2
-4. ทำต่อ Milestone 4 -> 5 -> 6 ตามลำดับ
-5. ทดสอบทุก Milestone ตามที่ระบุใน plan
-```
+| M | Task | Status |
+|---|------|--------|
+| **M1** | Database Migration + Types | 🟡 **START HERE** |
+| M2 | Tokenizer Implementation | 🔲 Pending |
+| M3 | Dictionary V1 (Frozen) | 🔲 Pending |
+| M4 | Translation Engine | 🔲 Pending |
+| M5 | UI 2-Pane Preview | 🔲 Pending |
+| M6 | Integration (Save/Load) | 🔲 Pending |
+| M7 | Medicine Summary Sheet | 🔲 Pending |
 
 ---
 
-## ⚡ Decision Lock
+## ⚡ Decision Lock (Important for M1)
 
 | Decision | Choice |
 |----------|--------|
-| Patient ID | **TN only** |
-| Medicine `name_en` | ❌ ตัดออก — ใช้ Brand name |
-| Medicine `expiry_note` | ✅ `expiry_note_th` + `expiry_note_en` |
-| Label Translations | ✅ `label-translations.ts` — TH/EN ตาม nationality |
-| Summary Sheet | Thermal 10×7.5, Checkbox default ON |
-| Summary CSS | **directions ห้ามตัด** (ชื่อยาตัดได้) |
-| Form autocomplete | ✅ camelCase `autoComplete` (React) |
-| UX Phase 2 | ❌ แยกไป Sprint 3B |
+| Patient ID | **TN only** (DB column still `hn`) |
+| `dictionary_version` values | `NULL` (no instruction), `'legacy'`, `'1.0'` |
+| Empty dosage rule | Both fields NULL + version NULL |
+| Constraint enforcement | **DB-level CHECK** + Server-side assertion |
+| Snapshot Policy | Frozen at save time, never re-translate |
 
 ---
 
-## 📁 Key Files
+## 🔧 Recent Changes (This Session)
+
+1. ✅ Restructured `docs/` folder (constitution, architecture, features, reference)
+2. ✅ Created `TECH_STACK.md`, `LESSONS_LEARNED.md`, `GLOSSARY.md`
+3. ✅ Fixed all broken links and outdated content
+4. ✅ Updated PLAN.md with 8 critical fixes:
+   - Unknown token preservation (no case change)
+   - Dictionary version rule (NULL/legacy/1.0 clear)
+   - DB-level CHECK constraint added
+   - Tokenizer supports joined patterns (x7d)
+   - Highlight in Preview, not Editor
+   - Fail = exception only, garbage = OK
+   - Added test cases (case-insensitive, whitespace)
+   - Fixed SPEC filename reference
+
+---
+
+## 📁 Key Files for M1
 
 | File | Purpose |
 |------|---------|
-| `implementation_plan.md` | แผนการทำงานละเอียด (artifacts) |
-| `.agent/skills/medical-ux/SKILL.md` | Vercel Best Practices + Medical UX |
-| `docs/ROADMAP.md` | Sprint overview |
-| `docs/CHANGE_REQUEST_SPRINT3.md` | Full spec |
+| `docs/04-features/sprint-3b-dosage/PLAN.md` | Full plan with M1 details |
+| `src/types/prescriptions.ts` | Update with new fields |
+| Supabase Dashboard | Run migration SQL |
+
+---
+
+## 🛑 REMEMBER: Golden Rule
+
+**NEVER start work without User approval.**
+Ask: "ให้เริ่มทำ [Task] เลยไหมครับ?" and wait for confirmation.

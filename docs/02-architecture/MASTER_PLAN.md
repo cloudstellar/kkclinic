@@ -1,25 +1,21 @@
 # Implementation Plan
 # KKClinic MVP - ระบบบริหารจัดการคลินิก
 
-**Version:** 1.2  
-**Last Updated:** 19 มกราคม 2569  
-**Supabase Project:** kkclinic (`xlgztefpllpurbowibvz`)  
-**API URL:** `https://xlgztefpllpurbowibvz.supabase.co`  
+> [!WARNING]
+> **This document is for historical reference only.**
+> For the authoritative Tech Stack, see `docs/01-constitution/TECH_STACK.md`.
+> For current sprint work, see `docs/04-features/`.
+
+**Version:** 1.2
+**Last Updated:** 19 มกราคม 2569
+**Supabase Project:** kkclinic (`xlgztefpllpurbowibvz`)
+**API URL:** `https://xlgztefpllpurbowibvz.supabase.co`
 
 ---
 
 ## Tech Stack
 
-| Category | Technology | Notes |
-|----------|------------|-------|
-| **Framework** | Next.js 15 (App Router) | React Server Components |
-| **Language** | TypeScript | Strict mode |
-| **Styling** | Tailwind CSS 4 | Utility-first |
-| **UI Components** | shadcn/ui | Radix-based |
-| **Font** | Noto Sans Thai | Google Fonts |
-| **Backend** | Supabase | PostgreSQL + Auth + REST API |
-| **Deployment** | Vercel | Auto-deploy from GitHub |
-| **Barcode** | QuaggaJS หรือ @ericblade/quagga2 | Phase 3 |
+👉 **See**: [docs/01-constitution/TECH_STACK.md](../01-constitution/TECH_STACK.md)
 
 ---
 
