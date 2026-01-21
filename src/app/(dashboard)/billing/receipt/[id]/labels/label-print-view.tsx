@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CLINIC_CONFIG, formatPatientId, formatThaiDate } from '@/lib/clinic-config'
+import { formatPatientId, formatThaiDate } from '@/lib/clinic-config'
 import { getDisplayName } from '@/lib/patient-utils'
 
 type LabelItem = {

@@ -34,6 +34,8 @@ export type TransactionWithRelations = Transaction & {
         id: string
         hn: string
         name: string
+        name_en?: string | null
+        nationality?: string | null
         phone?: string
     }
     prescription?: {

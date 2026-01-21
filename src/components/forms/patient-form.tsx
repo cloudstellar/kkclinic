@@ -31,6 +31,7 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
         watch,
         formState: { errors },
     } = useForm<PatientFormValues>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Known zod v4 + react-hook-form compatibility issue
         resolver: zodResolver(patientFormSchema) as any,
         defaultValues: {
             hn: patient?.hn || '',

@@ -64,6 +64,7 @@ export function DosageInstructionSheet({
     // Reset draft when sheet opens with new instruction
     useEffect(() => {
         if (open) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: sync draft from props when sheet opens
             setDraft(instruction)
             // Focus textarea after sheet animation
             setTimeout(() => {
@@ -71,6 +72,19 @@ export function DosageInstructionSheet({
             }, 100)
         }
     }, [open, instruction])
+
+    // Define handlers first (before useCallback that uses them)
+    const handleSave = useCallback(() => {
+        const trimmed = draft.trim()
+        addRecent(trimmed)
+        onSave(trimmed)
+        onClose()
+    }, [draft, addRecent, onSave, onClose])
+
+    const handleCancel = useCallback(() => {
+        setDraft(instruction)  // Reset draft
+        onClose()
+    }, [instruction, onClose])
 
     // Handle keyboard shortcuts
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -81,19 +95,7 @@ export function DosageInstructionSheet({
             e.preventDefault()
             handleSave()
         }
-    }, [draft])
-
-    const handleSave = () => {
-        const trimmed = draft.trim()
-        addRecent(trimmed)
-        onSave(trimmed)
-        onClose()
-    }
-
-    const handleCancel = () => {
-        setDraft(instruction)  // Reset draft
-        onClose()
-    }
+    }, [handleCancel, handleSave])
 
     const handleChipClick = (text: string) => {
         setDraft(text)  // Replace mode

@@ -132,7 +132,7 @@ export function PaymentModal({ open, onOpenChange, prescription }: PaymentModalP
             if (result.data?.id) {
                 router.push(`/billing/receipt/${result.data.id}`)
             }
-        } catch (error) {
+        } catch {
             toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
         } finally {
             setIsProcessing(false)

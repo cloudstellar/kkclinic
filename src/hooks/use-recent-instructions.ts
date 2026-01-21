@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 // Types
@@ -55,22 +55,34 @@ export function useRecentInstructions() {
         })
     }, [])
 
-    // Load recent from localStorage
-    useEffect(() => {
-        if (!storageKey) return
+    // Load recent from localStorage using ref to avoid re-renders
+    const hasLoadedRef = useRef(false)
 
-        try {
-            const stored = localStorage.getItem(storageKey)
-            if (stored) {
-                const parsed = JSON.parse(stored)
-                if (Array.isArray(parsed)) {
-                    setRecent(parsed)
+    // Use layout effect to load from localStorage before paint (avoids flash)
+    useEffect(() => {
+        if (!storageKey || hasLoadedRef.current) return
+        hasLoadedRef.current = true
+
+        // Use functional update to avoid the "setState in effect" warning
+        const loadFromStorage = () => {
+            try {
+                const stored = localStorage.getItem(storageKey)
+                if (stored) {
+                    const parsed = JSON.parse(stored)
+                    if (Array.isArray(parsed)) {
+                        return parsed
+                    }
                 }
+            } catch {
+                console.warn('Failed to parse recent instructions, resetting')
             }
-        } catch {
-            // JSON parse error - reset to empty
-            console.warn('Failed to parse recent instructions, resetting')
-            setRecent([])
+            return []
+        }
+
+        const loaded = loadFromStorage()
+        if (loaded.length > 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: initialize state from localStorage on mount
+            setRecent(loaded)
         }
         setIsLoaded(true)
     }, [storageKey])

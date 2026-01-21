@@ -54,7 +54,7 @@ export function VoidTransactionDialog({ transactionId, receiptNo }: VoidTransact
             setIsOpen(false)
             router.push('/billing')
             router.refresh()
-        } catch (error) {
+        } catch {
             toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่')
         } finally {
             setIsVoiding(false)

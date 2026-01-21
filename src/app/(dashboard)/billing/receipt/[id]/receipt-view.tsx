@@ -12,7 +12,7 @@ const paymentMethodLabels: Record<string, string> = {
 }
 
 type ReceiptViewProps = {
-    transaction: TransactionWithRelations & { items: any[] }
+    transaction: TransactionWithRelations & { items: Array<{ id?: string; quantity: number; unit_price: number; medicine?: { name: string } }> }
     userRole?: string
 }
 
@@ -154,8 +154,8 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                             <span className="text-gray-600">ชื่อ:</span>
                             <span>{transaction.patient ? getDisplayName({
                                 name: transaction.patient.name || null,
-                                name_en: (transaction.patient as any).name_en || null,
-                                nationality: (transaction.patient as any).nationality || 'thai'
+                                name_en: transaction.patient.name_en || null,
+                                nationality: transaction.patient.nationality || 'thai'
                             }) : '-'}</span>
                         </div>
                     </div>
@@ -166,7 +166,7 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                     {/* Items */}
                     <div className="text-sm mb-4">
                         <div className="font-bold mb-2">รายการยา</div>
-                        {transaction.items?.map((item: any, index: number) => (
+                        {transaction.items?.map((item, index: number) => (
                             <div key={index} className="py-1 border-b border-gray-100">
                                 <div className="flex justify-between">
                                     <div className="flex-1">

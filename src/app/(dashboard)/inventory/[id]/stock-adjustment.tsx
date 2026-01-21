@@ -53,7 +53,7 @@ export function StockAdjustment({
             setQuantity(1)
             setNotes('')
             router.refresh()
-        } catch (error) {
+        } catch {
             toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
         } finally {
             setIsSubmitting(false)

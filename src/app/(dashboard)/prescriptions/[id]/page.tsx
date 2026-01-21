@@ -154,7 +154,7 @@ export default async function PrescriptionDetailPage({
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {prescription.items?.map((item: any) => (
+                            {prescription.items?.map((item: { id: string; quantity: number; unit_price: number; dosage_instruction?: string; note?: string; medicine?: { code: string; name: string; unit: string } }) => (
                                 <TableRow key={item.id}>
                                     <TableCell className="font-mono">{item.medicine?.code}</TableCell>
                                     <TableCell>

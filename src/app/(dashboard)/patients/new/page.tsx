@@ -25,7 +25,7 @@ export default function NewPatientPage() {
 
             toast.success(`ลงทะเบียนผู้ป่วย ${result.data?.hn} สำเร็จ`)
             router.push('/patients')
-        } catch (error) {
+        } catch {
             toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
         } finally {
             setIsSubmitting(false)

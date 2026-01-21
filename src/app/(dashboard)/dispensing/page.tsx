@@ -13,7 +13,7 @@ export default async function DispensingPage() {
             <div className="bg-white rounded-lg border">
                 {prescriptions && prescriptions.length > 0 ? (
                     <div className="divide-y">
-                        {prescriptions.map((prescription: any) => (
+                        {prescriptions.map((prescription: { id: string; prescription_no: string; total_price: number; created_at: string; patient?: { name: string; hn: string } }) => (
                             <Link
                                 key={prescription.id}
                                 href={`/prescriptions/${prescription.id}`}
@@ -53,7 +53,7 @@ export default async function DispensingPage() {
                 ) : (
                     <div className="p-8 text-center text-muted-foreground">
                         <p className="text-lg mb-2">✓ ไม่มีใบสั่งยาที่รอจ่าย</p>
-                        <p className="text-sm">ใบสั่งยาที่สถานะ "รอจ่ายยา" จะแสดงที่นี่</p>
+                        <p className="text-sm">ใบสั่งยาที่สถานะ &quot;รอจ่ายยา&quot; จะแสดงที่นี่</p>
                     </div>
                 )}
             </div>

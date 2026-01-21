@@ -72,7 +72,7 @@ export default async function BillingPage() {
 
                 {dailySales?.transactions && dailySales.transactions.length > 0 ? (
                     <div className="divide-y">
-                        {dailySales.transactions.map((tx: any) => {
+                        {dailySales.transactions.map((tx: { id: string; receipt_no: string; status: string; payment_method: string; total_amount: number; discount: number; paid_at: string; void_reason?: string; patient?: { name: string; hn: string } }) => {
                             const isVoided = tx.status === 'voided'
                             return (
                                 <div
@@ -127,8 +127,8 @@ export default async function BillingPage() {
                                         <Link
                                             href={`/billing/receipt/${tx.id}`}
                                             className={`px-3 py-1.5 text-sm rounded-md ${isVoided
-                                                    ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                    : 'bg-primary text-white hover:bg-primary/90'
+                                                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                : 'bg-primary text-white hover:bg-primary/90'
                                                 }`}
                                         >
                                             {isVoided ? '👁️ ดู' : '🖨️ พิมพ์'}

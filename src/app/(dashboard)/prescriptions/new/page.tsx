@@ -165,7 +165,7 @@ export default function NewPrescriptionPage() {
 
             toast.success(`สร้างใบสั่งยา ${result.data?.prescription_no} สำเร็จ`)
             router.push('/prescriptions')
-        } catch (error) {
+        } catch {
             toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
         } finally {
             setIsSubmitting(false)

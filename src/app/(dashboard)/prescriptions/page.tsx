@@ -141,7 +141,7 @@ export default async function PrescriptionsPage({
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {prescriptions.map((rx: any) => {
+                                {prescriptions.map((rx: { id: string; prescription_no: string; status: string; total_price: number; created_at: string; patient?: { name: string | null; name_en?: string | null; nationality?: string; hn: string; drug_allergies?: string }; doctor?: { full_name: string } }) => {
                                     const status = statusLabels[rx.status] || statusLabels.pending
                                     return (
                                         <TableRow key={rx.id}>

@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { PatientFormValues, patientFormSchema, normalizeTN } from '@/types/patients'
+import { PatientFormValues, normalizeTN } from '@/types/patients'
 
 // TN format regex
 const TN_REGEX = /^TN[0-9]{6}$/

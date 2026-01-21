@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getTransaction } from '../../../actions'
 import { LabelPrintView } from './label-print-view'
-import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,5 +28,5 @@ export default async function LabelsPage({
         )
     }
 
-    return <LabelPrintView transaction={transaction as any} />
+    return <LabelPrintView transaction={transaction} />
 }

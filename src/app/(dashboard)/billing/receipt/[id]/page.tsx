@@ -33,5 +33,5 @@ export default async function ReceiptPage({
         userRole = userData?.role || 'staff'
     }
 
-    return <ReceiptView transaction={transaction as any} userRole={userRole} />
+    return <ReceiptView transaction={transaction} userRole={userRole} />
 }

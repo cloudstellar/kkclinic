@@ -49,6 +49,7 @@ export function MedicineForm({ medicine, onSubmit, isSubmitting }: MedicineFormP
         watch,
         formState: { errors },
     } = useForm<MedicineFormValues>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Known zod v4 + react-hook-form compatibility issue
         resolver: zodResolver(medicineFormSchema) as any,
         defaultValues: {
             code: medicine?.code || '',
@@ -93,7 +94,7 @@ export function MedicineForm({ medicine, onSubmit, isSubmitting }: MedicineFormP
             setValue('code', data, { shouldValidate: true })
             clearErrors('code')
             toast.success(`สร้างรหัส ${data} สำเร็จ`)
-        } catch (error) {
+        } catch {
             toast.error('เกิดข้อผิดพลาดในการสร้างรหัส')
         } finally {
             setIsGenerating(false)
@@ -115,8 +116,8 @@ export function MedicineForm({ medicine, onSubmit, isSubmitting }: MedicineFormP
             } else {
                 clearErrors('code')
             }
-        } catch (error) {
-            console.error(error)
+        } catch {
+            // Validation error - ignore
         } finally {
             setIsValidating(false)
         }
@@ -235,7 +236,7 @@ export function MedicineForm({ medicine, onSubmit, isSubmitting }: MedicineFormP
                                                         }
                                                     }}
                                                 >
-                                                    ใช้ "{searchTerm}"
+                                                    ใช้ &quot;{searchTerm}&quot;
                                                 </div>
                                             </CommandEmpty>
                                             <CommandGroup>

@@ -39,7 +39,7 @@ export function DeletePatientButton({
 
             toast.success(`ลบข้อมูลผู้ป่วย ${patientName} เรียบร้อย`)
             router.push('/patients')
-        } catch (error) {
+        } catch {
             toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
         } finally {
             setIsDeleting(false)
