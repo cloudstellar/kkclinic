@@ -276,7 +276,7 @@ const displayName = medicine.name
   overflow: hidden;
 }
 
-/* ชื่อยา: ห้ามตัด! ใช้ชื่อย่อแทน (เชิงคลินิก: หมอจำชื่อย่อได้ดีกว่า) */
+/* ชื่อยา: ห้ามตัด (wrap ได้) */
 .medicine-name { 
   white-space: normal;
   word-break: break-word;
@@ -356,7 +356,7 @@ npm run typecheck
 #### 4. Medicine Summary Sheet
 - [ ] Checkbox default ON
 - [ ] พิมพ์แล้วได้ label + summary ต่อท้ายในครั้งเดียว
-- [ ] ทดสอบ 11 รายการ: ไม่ล้นเกินกระดาษ (ชื่อยาไม่ตัด ใช้ชื่อย่อถ้ามี, directions ครบ)
+- [ ] ทดสอบ 11 รายการ: ไม่ล้นเกินกระดาษ (ชื่อยาไม่ตัด, directions ครบ)
 
 #### 5. Form Quick Fixes
 - [ ] มือถือ: ช่อง tel ขึ้น numpad
