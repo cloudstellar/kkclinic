@@ -127,6 +127,7 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                                 id="name"
                                 {...register('name')}
                                 placeholder="ชื่อ นามสกุล"
+                                autoComplete="name"
                                 disabled={isSubmitting}
                             />
                             {errors.name && (
@@ -143,6 +144,7 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                                 id="name_en"
                                 {...register('name_en')}
                                 placeholder="Full Name in English"
+                                autoComplete="name"
                                 disabled={isSubmitting}
                             />
                             {errors.name_en && (
@@ -184,6 +186,8 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                             <Label htmlFor="phone">เบอร์โทรศัพท์ *</Label>
                             <Input
                                 id="phone"
+                                type="tel"
+                                autoComplete="tel"
                                 {...register('phone')}
                                 placeholder="0812345678"
                                 disabled={isSubmitting}
@@ -256,6 +260,8 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                             <Label htmlFor="emergency_contact_phone">เบอร์โทร</Label>
                             <Input
                                 id="emergency_contact_phone"
+                                type="tel"
+                                autoComplete="tel"
                                 {...register('emergency_contact_phone')}
                                 placeholder="0812345678"
                                 disabled={isSubmitting}
