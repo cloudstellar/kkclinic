@@ -187,6 +187,7 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                             <Input
                                 id="phone"
                                 type="tel"
+                                inputMode="numeric"
                                 autoComplete="tel"
                                 {...register('phone')}
                                 placeholder="0812345678"
@@ -261,6 +262,7 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                             <Input
                                 id="emergency_contact_phone"
                                 type="tel"
+                                inputMode="numeric"
                                 autoComplete="tel"
                                 {...register('emergency_contact_phone')}
                                 placeholder="0812345678"
