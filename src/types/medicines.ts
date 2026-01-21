@@ -12,6 +12,8 @@ export type Medicine = {
     min_stock: number
     description: string | null
     description_en: string | null  // Sprint 3A
+    expiry_note_th: string | null  // Sprint 3A+ - ข้อความวันหมดอายุ TH
+    expiry_note_en: string | null  // Sprint 3A+ - ข้อความวันหมดอายุ EN
     is_active: boolean
     is_demo: boolean
     created_at: string
@@ -29,6 +31,14 @@ export type MedicineFormData = {
     min_stock?: number
     description?: string
     description_en?: string
+    expiry_note_th?: string | null  // Sprint 3A+ - zod transform returns null for empty
+    expiry_note_en?: string | null  // Sprint 3A+ - zod transform returns null for empty
+}
+
+// Normalize empty/whitespace-only strings to null for DB default
+const normalizeNote = (v?: string | null) => {
+    const s = (v ?? '').trim()
+    return s.length ? s : null
 }
 
 // Zod validation schema for medicine form
@@ -42,8 +52,11 @@ export const medicineFormSchema = z.object({
     min_stock: z.preprocess((val) => val ? Number(val) : undefined, z.number().int().min(0, 'จำนวนต้องไม่ติดลบ').optional()),
     description: z.string().optional(),
     description_en: z.string().optional(),
+    expiry_note_th: z.string().optional().transform(normalizeNote),  // Sprint 3A+
+    expiry_note_en: z.string().optional().transform(normalizeNote),  // Sprint 3A+
 })
 
 export type MedicineFormValues = z.infer<typeof medicineFormSchema>
 
-
+// Export normalizeNote for use elsewhere if needed
+export { normalizeNote }
