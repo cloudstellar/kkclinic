@@ -42,6 +42,7 @@ type Medicine = {
     stock_qty: number
 }
 
+// Sprint 3B: Local prescription item state
 type PrescriptionItem = {
     medicine_id: string
     medicine_name: string
@@ -49,9 +50,10 @@ type PrescriptionItem = {
     price: number
     quantity: number
     stock_qty: number  // เก็บไว้เตือน Soft warn
-    dosage_instruction: string     // วิธีใช้ยา (TH)
-    dosage_instruction_en: string  // วิธีใช้ยา (EN) - Sprint 3A+
-    label_language: 'auto' | 'th' | 'en'  // ภาษาพิมพ์ฉลาก (auto = ตามสัญชาติ)
+    // Sprint 3B: Smart Dosage fields
+    dosage_original: string     // Raw shorthand from doctor
+    dosage_instruction: string  // Snapshot (translated or override)
+    dosage_language: 'th' | 'en'  // Language for label
 }
 
 export default function NewPrescriptionPage() {
@@ -113,9 +115,10 @@ export default function NewPrescriptionPage() {
             price: medicine.price,
             stock_qty: medicine.stock_qty,
             quantity: 1,
+            // Sprint 3B: Smart Dosage defaults
+            dosage_original: '',
             dosage_instruction: '',
-            dosage_instruction_en: '',
-            label_language: 'auto',  // ค่าเริ่มต้น: ตามสัญชาติผู้ป่วย
+            dosage_language: selectedPatient?.nationality === 'other' ? 'en' : 'th',
         }])
         setMedicineSearch('')
         setShowMedicineDropdown(false)
@@ -127,11 +130,12 @@ export default function NewPrescriptionPage() {
         setItems(newItems)
     }
 
-    function updateItemDosage(index: number, dosageTh: string, dosageEn: string, labelLang: 'auto' | 'th' | 'en') {
+    // Sprint 3B: Update dosage with new schema
+    function updateItemDosage(index: number, original: string, instruction: string, lang: 'th' | 'en') {
         const newItems = [...items]
-        newItems[index].dosage_instruction = dosageTh
-        newItems[index].dosage_instruction_en = dosageEn
-        newItems[index].label_language = labelLang
+        newItems[index].dosage_original = original
+        newItems[index].dosage_instruction = instruction
+        newItems[index].dosage_language = lang
         setItems(newItems)
     }
 
@@ -156,26 +160,14 @@ export default function NewPrescriptionPage() {
         try {
             const result = await createPrescription(
                 selectedPatient.id,
-                items.map(i => {
-                    // Convert label_language to instruction_language
-                    // 'auto' -> ตามสัญชาติ, 'th' -> thai, 'en' -> english
-                    let instructionLang: 'thai' | 'english' | undefined
-                    if (i.label_language === 'th') {
-                        instructionLang = 'thai'
-                    } else if (i.label_language === 'en') {
-                        instructionLang = 'english'
-                    } else {
-                        // auto: ตามสัญชาติผู้ป่วย
-                        instructionLang = selectedPatient.nationality === 'other' ? 'english' : 'thai'
-                    }
-                    return {
-                        medicine_id: i.medicine_id,
-                        quantity: i.quantity,
-                        dosage_instruction: i.dosage_instruction || undefined,
-                        dosage_instruction_en: i.dosage_instruction_en || undefined,
-                        instruction_language: instructionLang,
-                    }
-                }),
+                items.map(i => ({
+                    // Sprint 3B: Smart Dosage schema
+                    medicine_id: i.medicine_id,
+                    quantity: i.quantity,
+                    dosage_original: i.dosage_original || undefined,
+                    dosage_instruction: i.dosage_instruction || undefined,
+                    dosage_language: i.dosage_language,
+                })),
                 note || undefined
             )
 
@@ -347,8 +339,8 @@ export default function NewPrescriptionPage() {
                                         </TableCell>
                                         <TableCell>
                                             <DosageDisplay
-                                                instructionTh={item.dosage_instruction}
-                                                instructionEn={item.dosage_instruction_en}
+                                                instruction={item.dosage_instruction}
+                                                language={item.dosage_language}
                                                 onClick={() => setOpenSheetItemId(item.medicine_id)}
                                             />
                                         </TableCell>
@@ -422,19 +414,19 @@ export default function NewPrescriptionPage() {
                 return (
                     <DosageInstructionSheet
                         open={!!openItem}
-                        instructionTh={openItem?.dosage_instruction ?? ''}
-                        instructionEn={openItem?.dosage_instruction_en ?? ''}
-                        labelLanguage={openItem?.label_language ?? 'auto'}
+                        dosageOriginal={openItem?.dosage_original ?? ''}
+                        dosageInstruction={openItem?.dosage_instruction ?? ''}
+                        dosageLanguage={openItem?.dosage_language ?? 'th'}
                         medicineName={openItem?.medicine_name}
                         isForeignPatient={isForeignPatient}
-                        onSave={(textTh, textEn, labelLang) => {
+                        onSave={(original, instruction, lang) => {
                             if (openItem) {
-                                updateItemDosage(openItemIndex, textTh, textEn, labelLang)
+                                updateItemDosage(openItemIndex, original, instruction, lang)
                             }
                         }}
                         onClose={() => setOpenSheetItemId(null)}
-                        previousInstructionTh={previousItem?.dosage_instruction ?? ''}
-                        previousInstructionEn={previousItem?.dosage_instruction_en ?? ''}
+                        previousDosageOriginal={previousItem?.dosage_original ?? ''}
+                        previousDosageInstruction={previousItem?.dosage_instruction ?? ''}
                     />
                 )
             })()}

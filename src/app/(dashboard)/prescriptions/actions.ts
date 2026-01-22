@@ -140,16 +140,18 @@ export async function createPrescription(
         return { data: null, error: prescriptionError.message }
     }
 
-    // Create prescription items
+    // Create prescription items (Sprint 3B schema - Option A: Single Snapshot)
     const itemsToInsert = itemsWithPrices.map(item => ({
         prescription_id: prescription.id,
         item_type: 'medicine' as const,
         medicine_id: item.medicine_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        dosage_instruction: item.dosage_instruction || null,       // วิธีใช้ยา (TH)
-        dosage_instruction_en: item.dosage_instruction_en || null, // วิธีใช้ยา (EN)
-        instruction_language: item.instruction_language || 'thai', // ค่าเริ่มต้น: thai (ตาม default ใน DB)
+        // Sprint 3B: Smart Dosage fields
+        dosage_original: item.dosage_original || null,         // Raw shorthand from doctor
+        dosage_instruction: item.dosage_instruction || null,   // Snapshot in patient language
+        dosage_language: item.dosage_language || 'th',         // Language of snapshot
+        dictionary_version: item.dosage_original ? 'legacy' : null, // Will be '1.0' when engine is ready
         note: item.note || null,
     }))
 
