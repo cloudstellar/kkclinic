@@ -354,6 +354,27 @@ import Quagga from '@ericblade/quagga2';
 
 ---
 
+### 🟩 Phase 4: Sprint 3B - Smart Dosage System (Current)
+
+**Goal:** ระบบฉลากยาอัจฉริยะ (Shorthand -> Full Instruction)
+
+| Task | Status | Description |
+|------|--------|-------------|
+| **M1: DB & Types** | ✅ | Schema update, Single Snapshot approach (Option A) |
+| **M2: Tokenizer** | ✅ | Split text, normalize, handle numbers/punctuation |
+| **M3: Dictionary** | ✅ | Version 1.0 Frozen (Ophthalmology terms) |
+| **M4: Engine** | ✅ | Deterministic translation (Site->Freq->Duration) |
+| **M5: UI Preview** | 🟡 | 2-Pane Editor (Input + Realtime Preview) |
+| **M6: Integration** | 🔲 | Save/Load logic, server-side validation |
+| **M7: Print** | 🔲 | 10x7.5cm label template, pagination |
+
+**Deliverables:**
+- ✅ `src/lib/dosage/` (Core engine)
+- ✅ `tests/dosage-engine.test.ts` (40 tests passed)
+- 🟡 Updated `DosageInstructionSheet` with preview
+
+---
+
 ## Environment Variables
 
 ### `.env.local` (Development)
