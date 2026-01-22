@@ -101,6 +101,12 @@ describe('Dictionary', () => {
         expect(lookup('Ou')?.translation.th).toBe('ตาทั้งสองข้าง')
     })
 
+    test('lookup od (lowercase) returns site category (SAFETY CHECK)', () => {
+        const entry = lookup('od')
+        expect(entry?.category).toBe('site')
+        expect(entry?.translation.th).toBe('ตาขวา')
+    })
+
     test('lookup bid returns frequency', () => {
         const entry = lookup('bid')
         expect(entry?.category).toBe('frequency')

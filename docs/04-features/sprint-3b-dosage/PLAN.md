@@ -215,11 +215,17 @@ translate(input: string, lang: 'th' | 'en'): TranslationResult
    - หมอเปลี่ยนภาษาฉลาก (`dosage_language`)
 4. **Print ใช้ข้อความที่หมอแก้จริง** — ไม่มี auto-correct
 
-### UX Recommendation
+### UX Recommendation (Silent Feedback)
 
-- Preview เป็น **read-only by default**
-- มีปุ่ม **"แก้ไขข้อความฉลาก"**
-- เมื่อกด → textarea editable + แสดง label "แพทย์แก้ไขเอง"
+- Preview เป็น **editable ตลอดเวลา** (ไม่ต้องกดปุ่ม)
+- แสดงข้อความเล็กๆ ใต้ preview บอก state:
+  - **Auto**: `ระบบแปลอัตโนมัติ — แก้ไขได้`
+  - **Override**: `แพทย์แก้ไขข้อความเอง`
+- ❌ ไม่มีปุ่มแก้ไข / ไม่ต้องเด่น
+- ✅ Silent feedback ให้หมอรู้ state โดยไม่รบกวน flow
+
+> [!IMPORTANT]
+> **Override Reset Rule**: Reset override ต้องเป็น event-based เท่านั้น (เมื่อ user แก้ `draftOriginal` หรือ `lang`) **ห้ามใช้ broad `useEffect`** ที่ผูกกับ `draftOriginal` เพราะจะทำให้ state flip-flop
 
 ---
 
@@ -248,6 +254,9 @@ translate(input: string, lang: 'th' | 'en'): TranslationResult
 **Token-Aware Highlighting**:
 - Reuse tokenizer เดียวกับ engine
 - Case-sensitive match ตาม spec
+
+> [!IMPORTANT]
+> **Preview Highlight Implementation**: ใช้ **overlay rendering** (highlight layer + transparent textarea) เพราะ `<textarea>` ไม่สามารถ render `<span>` tags ได้
 
 ---
 
@@ -362,9 +371,11 @@ translate(input: string, lang: 'th' | 'en'): TranslationResult
 
 ### UI
 - [ ] 2-pane editor (Editor/Preview)
+- [ ] Preview เป็น editable ตลอดเวลา (no mode switch)
+- [ ] แสดง silent feedback ใต้ preview บอก state (auto/override)
 - [ ] Preview ตามภาษาฉลากที่จะพิมพ์
 - [ ] Unknown highlight ใน preview เท่านั้น (token-aware)
-- [ ] ไม่มี modal/toast
+- [ ] ไม่มี modal/toast/edit button
 - [ ] Preview never blank/crash
 
 ### Doctor Override
