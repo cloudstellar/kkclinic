@@ -46,7 +46,6 @@ export const SITES: Record<string, Translation> = {
 // Frequency
 export const FREQUENCIES: Record<string, Translation> = {
     'qd': { th: 'วันละ 1 ครั้ง', en: 'once daily' },
-    'od': { th: 'วันละ 1 ครั้ง', en: 'once daily' },  // Alternative for qd
     'bid': { th: 'วันละ 2 ครั้ง', en: 'twice daily' },
     'tid': { th: 'วันละ 3 ครั้ง', en: '3 times daily' },
     'qid': { th: 'วันละ 4 ครั้ง', en: '4 times daily' },
@@ -55,8 +54,6 @@ export const FREQUENCIES: Record<string, Translation> = {
     'q8h': { th: 'ทุก 8 ชั่วโมง', en: 'every 8 hours' },
     'q12h': { th: 'ทุก 12 ชั่วโมง', en: 'every 12 hours' },
     'hs': { th: 'ก่อนนอน', en: 'at bedtime' },
-    'prn': { th: 'เมื่อมีอาการ', en: 'as needed' },
-    'stat': { th: 'ทันที', en: 'immediately' },
 }
 
 // Condition (when to take)
@@ -73,10 +70,10 @@ export const DURATION_MARKERS: Record<string, Translation> = {
     'x': { th: 'เป็นเวลา', en: 'for' },
     'd': { th: 'วัน', en: 'day(s)' },
     'day': { th: 'วัน', en: 'day(s)' },
-    'days': { th: 'วัน', en: 'days' },
+    'days': { th: 'วัน', en: 'day(s)' },
     'wk': { th: 'สัปดาห์', en: 'week(s)' },
     'week': { th: 'สัปดาห์', en: 'week(s)' },
-    'weeks': { th: 'สัปดาห์', en: 'weeks' },
+    'weeks': { th: 'สัปดาห์', en: 'week(s)' },
 }
 
 // Combined lookup for quick category detection
@@ -91,20 +88,30 @@ type DictionaryEntry = {
 const buildDictionary = (): Map<string, DictionaryEntry> => {
     const dict = new Map<string, DictionaryEntry>()
 
+    const addEntry = (key: string, category: DosageCategory, translation: Translation) => {
+        const lowerKey = key.toLowerCase()
+        if (dict.has(lowerKey)) {
+            console.error(`[Dictionary V${DICT_VERSION}] Duplicate key detected: "${lowerKey}" in category "${category}". Existing category: "${dict.get(lowerKey)?.category}"`)
+            // For production safety, we log error but might choose to overwrite or throw.
+            // Strict mode: throw new Error(`Duplicate dictionary key: "${lowerKey}"`)
+        }
+        dict.set(lowerKey, { category, translation })
+    }
+
     for (const [key, translation] of Object.entries(FORMS)) {
-        dict.set(key, { category: 'form', translation })
+        addEntry(key, 'form', translation)
     }
     for (const [key, translation] of Object.entries(SITES)) {
-        dict.set(key, { category: 'site', translation })
+        addEntry(key, 'site', translation)
     }
     for (const [key, translation] of Object.entries(FREQUENCIES)) {
-        dict.set(key, { category: 'frequency', translation })
+        addEntry(key, 'frequency', translation)
     }
     for (const [key, translation] of Object.entries(CONDITIONS)) {
-        dict.set(key, { category: 'condition', translation })
+        addEntry(key, 'condition', translation)
     }
     for (const [key, translation] of Object.entries(DURATION_MARKERS)) {
-        dict.set(key, { category: 'duration', translation })
+        addEntry(key, 'duration', translation)
     }
 
     return dict
