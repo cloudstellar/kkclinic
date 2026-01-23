@@ -1,33 +1,55 @@
-# Handoff Note: Sprint 3B - Smart Dosage System (M5.5 Completed)
-**Date**: 2026-01-24
-**Status**: M1-M5.5 Completed (Schema, Engine, UI, UX Improvements)
+# Handoff Note: Sprint 3B Complete!
+
+**Date**: 24 มกราคม 2569
+**Status**: ✅ All Milestones Completed (M1-M7)
 **Branch**: `main`
 
-## ✅ Completed (M1-M5.5)
-1.  **Database**: `dosage_original`, `dosage_instruction`, `dosage_language`, `dictionary_version` + Constraints.
-2.  **Engine**: `tokenizer.ts`, `dictionary-v1.ts`, `engine.ts`
-3.  **UI (`DosageInstructionSheet`)**:
-    *   2-Pane: Editor (Top) + Preview (Bottom)
-    *   Doctor Override with silent feedback
-    *   Overlay Highlight for unknown tokens
-4.  **M5.5 UX Improvements**:
-    *   **Default language**: Based on patient nationality (`isForeignPatient`)
-    *   **Shorthand history**: Stores `dosage_original` instead of translated text
-    *   **Recent section**: Moved to top, always expanded
-    *   **Race condition fix**: `loadedKeyRef` handles async userId loading
+---
 
-## ⏭️ Next Steps (M6 - Integration)
-**File**: `src/app/(dashboard)/prescriptions/actions.ts`
+## ✅ Sprint 3B Summary
 
-1.  Update `createPrescription`:
-    *   Use `dictionary_version: '1.0'` when engine is used
-    *   Accept Doctor Override (use client snapshot if overridden)
-    *   Validation: v1.0 requires all fields
+### M1-M4: Core Engine
+- Database schema with `dosage_original`, `dosage_instruction`, `dosage_language`, `dictionary_version`
+- Tokenizer, Dictionary V1 (Frozen), Translation Engine
 
-2.  Verify: Save → Reload → Fields persist correctly
+### M5-M5.5: UI & UX
+- 2-Pane UI: Shorthand Editor + Label Preview
+- Doctor Override with silent feedback
+- Default language by patient nationality
+- Shorthand history (v2 storage, per-user)
 
-## 📄 M7 — Medicine Summary Sheet
-*   Thermal 10×7.5cm using `dosage_original`
+### M6: Integration
+- `dictionary_version = '1.0'` in createPrescription
+- Proper null handling for empty dosage
+- Fallback: instruction defaults to original if blank
+
+### M7: Medicine Summary Sheet
+- Component: `medicine-summary-sheet.tsx`
+- Thermal 10×7.5cm, 6 items/page
+- Uses `dosage_original` for internal use
+- Checkbox in label print view (default: ON)
+
+---
+
+## 📊 Commits
+
+| Commit | Description |
+|--------|-------------|
+| `2627f92` | M5.5 UX improvements |
+| `f5b4ba0` | M6 Integration |
+| `73fb0de` | M7 Medicine Summary Sheet |
+
+---
+
+## ⏭️ Next: Sprint 4
+
+Consult user for priorities:
+- UX Phase 2 (Filters, Sorting, TN Standard)
+- Workflow Revolution (Reserved Stock, EOD, Auto Calc)
+
+---
 
 ## ⚠️ Notes
-*   **Testing**: Run `npm test` to verify engine logic
+
+- Tests: `npm test` for engine logic (Vitest)
+- TypeScript: All passing as of 23:20

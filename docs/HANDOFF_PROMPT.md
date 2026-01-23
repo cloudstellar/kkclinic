@@ -1,8 +1,8 @@
 # Handoff Prompt for AI Agent
 
-**Current State:** Sprint 3B M6 Ready to Start
-**Last Updated:** 24 มกราคม 2569 @ 04:46
-**Version:** `main` — M5.5 Completed
+**Current State:** Sprint 3B Complete! — Ready for Sprint 4
+**Last Updated:** 24 มกราคม 2569 @ 23:20
+**Version:** `main`
 
 ---
 
@@ -15,39 +15,46 @@
 
 ---
 
-## 🎯 NEXT ACTION: Start Sprint 3B M6
+## ✅ Sprint 3B Completed
 
-**Task:** Integration (Server Actions)
-
-**What to do:**
-1. Update `createPrescription` in `actions.ts`:
-   - Change `dictionary_version: 'legacy'` → `'1.0'`
-   - Accept Doctor Override (use client snapshot if different from server translation)
-   - Validation: v1.0 requires all fields
-2. Verify save/reload flow works correctly
-
-**Key Documents:**
-- `docs/04-features/sprint-3b-dosage/PLAN.md` — Full plan with DoD
-- `docs/NEXT_SESSION.md` — Latest session notes
-
-**Done When:**
-- ✅ Save prescription → reload → all dosage fields persist
-- ✅ Doctor Override saves correctly
+All milestones done:
+- M1-M4: Database, Tokenizer, Dictionary, Engine
+- M5-M5.5: UI 2-Pane, UX Improvements
+- M6: Integration (dictionary_version 1.0)
+- M7: Medicine Summary Sheet
 
 ---
 
-## 📊 Sprint 3B Milestones
+## 🎯 NEXT: Sprint 4 Planning
 
-| M | Task | Status |
-|---|------|--------|
-| M1 | Database Migration + Types | ✅ Done |
-| M2 | Tokenizer Implementation | ✅ Done |
-| M3 | Dictionary V1 (Frozen) | ✅ Done |
-| M4 | Translation Engine | ✅ Done |
-| M5 | UI 2-Pane Preview | ✅ Done |
-| **M5.5** | UX Improvements | ✅ Done |
-| **M6** | Integration (Save/Load) | 🟡 **START HERE** |
-| M7 | Medicine Summary Sheet | 🔲 Pending |
+**Focus:** UX Phase 2 + Workflow Revolution
+
+Before starting, consult user for Sprint 4 priorities:
+
+### UX Phase 2 (from 3A+)
+- Real-time filter (debounce 300ms)
+- Sortable tables
+- TN Standardization (HN → TN)
+
+### Workflow Revolution
+- Reserved Stock Model
+- Patient Statement (ใบสรุปค่าใช้จ่าย)
+- Auto Calculator
+- Payment Status (3 states)
+- End of Day (EOD)
+
+---
+
+## 📁 Key Files (Sprint 3B)
+
+| Component | File |
+|-----------|------|
+| Tokenizer | `src/lib/dosage/tokenizer.ts` |
+| Dictionary | `src/lib/dosage/dictionary-v1.ts` |
+| Engine | `src/lib/dosage/engine.ts` |
+| Dosage Sheet | `src/components/prescription/dosage-instruction-sheet.tsx` |
+| Summary Sheet | `src/components/prescription/medicine-summary-sheet.tsx` |
+| Label Print | `src/app/(dashboard)/billing/receipt/[id]/labels/label-print-view.tsx` |
 
 ---
 
