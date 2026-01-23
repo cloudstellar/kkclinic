@@ -1,57 +1,43 @@
-# Session Note: Sprint 3C — Doctor Fee
+# Session Note: Sprint 3C (WIP)
 
 **Date**: 24 มกราคม 2569
-**Status**: Planning Complete — Ready to Implement
+**Status**: Partial Complete (Core Done, UI Fixes Pending)
 **Branch**: `main`
 
 ---
 
-## 🎯 Sprint 3C Goal
+## 🚧 Work in Progress
 
-เพิ่มค่าธรรมเนียมแพทย์ (Doctor Fee) ในใบสั่งยา
+User stopped session during Sprint 3C UI feedback implementation.
 
----
+### Completed ✅
+1. **Core DF Feature**: DB, API, Types implemented.
+2. **Prescription Form**: Added DF input + **Note Presets** (ตรวจตา, ลอกดูตา, ตรวจประเมิน).
+3. **Receipt**: Updated layout to show DF first (Simplified format).
 
-## ✅ Design Decisions
-
-| Question | Decision | Reason |
-|----------|----------|--------|
-| DF location | `prescriptions` table | Standard: 1 visit = 1 fee |
-| Fields | `df` (decimal), `df_note` (text) | Simple, direct |
-| UI | ในหน้า prescription form | หมอกรอกตอนสั่งยา |
-| Receipt | แสดงเป็น line item แยก | ชัดเจนสำหรับคนไข้ |
-
----
-
-## 📋 Implementation Plan
-
-### Phase 1: Database
-```sql
-ALTER TABLE prescriptions
-ADD COLUMN df DECIMAL(10,2) DEFAULT 0,
-ADD COLUMN df_note TEXT;
-```
-
-### Phase 2: Prescription Form
-- Add DF input (number) + note textarea
-- Update total calculation
-
-### Phase 3: Payment & Receipt
-- Show DF in payment breakdown
-- Print DF line in receipt
+### Pending 🛑
+1. **View Prescription**: Doesn't show DF yet.
+2. **Payment Page**: Doesn't show DF breakdown yet.
+3. **Summary Sheet**: User wants to remove the checkbox icon from the DF line.
 
 ---
 
-## ⚠️ ไม่ขัดกับแผนใหญ่
+## 📝 Implementation Notes for Next Session
 
-- ใช้ `prescriptions` table ที่มีอยู่แล้ว
-- เป็น enhancement ไม่ใช่ breaking change
-- รองรับ Sprint 4 (EOD, Billing summary) ได้เลย
+### 1. View Prescription
+Update `src/app/(dashboard)/prescriptions/[id]/page.tsx` to fetch and display `df` field.
+
+### 2. Payment Page
+Update `src/app/(dashboard)/dispensing/[id]/page.tsx`.
+Check `payment-modal.tsx` if it needs `df` prop or if it uses `total_amount` directly. Ensure breakdown is shown.
+
+### 3. Summary Sheet
+In `src/components/prescription/medicine-summary-sheet.tsx`:
+- Locate the DF rendering block.
+- Remove the `<span className="inline-block w-3 h-3 border..." />` element.
 
 ---
 
-## 📜 Previous Session (Sprint 3B)
-
-All completed:
-- M1-M7: Smart Dosage System ✅
-- Commits: `2627f92`, `f5b4ba0`, `73fb0de`, `2ecc0e6`
+## 📊 Commits
+- `f61c6d3`: Core DF feature complete
+- (Pending): UI Fixes (Presets, Receipt, etc.)

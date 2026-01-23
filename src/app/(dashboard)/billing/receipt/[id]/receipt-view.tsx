@@ -166,22 +166,13 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                     {/* Sprint 3C: Doctor Fee (shown first) */}
                     {transaction.prescription?.df && transaction.prescription.df > 0 && (
                         <>
-                            <div className="text-sm mb-4">
-                                <div className="font-bold mb-2">ค่าธรรมเนียมแพทย์</div>
-                                <div className="py-1 border-b border-gray-100">
-                                    <div className="flex justify-between">
-                                        <div className="flex-1">
-                                            <span>Doctor Fee</span>
-                                            {transaction.prescription.df_note && (
-                                                <span className="text-gray-500 text-xs ml-1">
-                                                    ({transaction.prescription.df_note})
-                                                </span>
-                                            )}
-                                        </div>
-                                        <span>
-                                            ฿{transaction.prescription.df.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-                                        </span>
+                            <div className="text-sm mb-2">
+                                <div className="flex justify-between">
+                                    <div>
+                                        <div className="font-medium">ค่าธรรมเนียมแพทย์</div>
+                                        <div className="text-[10px] text-gray-500 -mt-0.5">(Doctor Fee)</div>
                                     </div>
+                                    <span>฿{transaction.prescription.df.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
                                 </div>
                             </div>
                             <div className="border-t border-dashed my-2"></div>

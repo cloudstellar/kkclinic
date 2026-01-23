@@ -1,49 +1,42 @@
 # Handoff Prompt for AI Agent
 
-**Current State:** Sprint 3C — Doctor Fee Implementation
-**Last Updated:** 24 มกราคม 2569 @ 23:35
+**Current State:** Sprint 3C — Doctor Fee UI Fixes (WIP)
+**Last Updated:** 24 มกราคม 2569 @ 00:10
 **Version:** `main`
 
 ---
 
-## ⚠️ CRITICAL: Read These First (In Order)
+## ⚠️ CRITICAL: Read These First
 
-1. `docs/01-constitution/RULES.md` — AI workflow rules + User Confirmation requirement
-2. `docs/01-constitution/TECH_STACK.md` — Authoritative tech stack
-3. `docs/01-constitution/LESSONS_LEARNED.md` — Hard constraints from past failures
-4. `docs/05-reference/GLOSSARY.md` — Term definitions (TN, Snapshot, etc.)
-
----
-
-## 🎯 CURRENT: Sprint 3C — Doctor Fee
-
-### Scope
-เพิ่มค่าธรรมเนียมแพทย์ (Doctor Fee) ในใบสั่งยา
-
-### Tasks
-1. **DB Migration**: Add `df`, `df_note` to `prescriptions` table
-2. **Prescription Form**: Input field for DF + note
-3. **Payment Page**: Show DF in price breakdown
-4. **Receipt Print**: Show DF as line item
-
-### Files to Modify
-| File | Change |
-|------|--------|
-| DB (Supabase) | Add columns to prescriptions |
-| `types/prescriptions.ts` | Add df, df_note types |
-| `prescriptions/actions.ts` | Accept DF in createPrescription |
-| `prescriptions/new/page.tsx` | Add DF input UI |
-| `billing/receipt/[id]/page.tsx` | Show DF in receipt |
+1. `docs/01-constitution/RULES.md`
+2. `docs/01-constitution/TECH_STACK.md`
+3. `docs/NEXT_SESSION.md` (Detailed pending tasks)
 
 ---
 
-## ✅ Sprint 3B Completed
+## 🚧 CURRENT TASK: Sprint 3C UI Fixes
 
-All milestones done:
-- M1-M4: Database, Tokenizer, Dictionary, Engine
-- M5-M5.5: UI 2-Pane, UX Improvements
-- M6: Integration (dictionary_version 1.0)
-- M7: Medicine Summary Sheet
+User requested fixes for Doctor Fee feature. Some are done, some pending.
+
+### ✅ Completed
+- **Prescription Form**: Added DF Note Presets (chips)
+- **Receipt View**: Simplified DF layout (Single line + small text)
+
+### 🛑 PENDING (Do these NEXT)
+1. **Prescription View**: (`src/app/(dashboard)/prescriptions/[id]/page.tsx`)
+   - แสดง Doctor Fee ในหน้าดูรายละเอียด
+2. **Dispensing/Payment**: (`src/app/(dashboard)/dispensing/[id]/page.tsx` & `payment-modal.tsx`)
+   - แสดง Doctor Fee ก่อนชำระเงิน
+3. **Summary Sheet**: (`src/components/prescription/medicine-summary-sheet.tsx`)
+   - เอา "check mark" (กล่องสี่เหลี่ยม) ออกจากบรรทัด DF
+
+---
+
+## 🧪 Verification
+- สร้างใบสั่งยา (เลือก preset DF Note)
+- ดูหน้า View -> ต้องเห็น DF
+- หน้า Payment -> ต้องเห็น DF Breakdown
+- Print Label -> Summary Sheet บรรทัด DF ต้องไม่มี checkbox
 
 ---
 

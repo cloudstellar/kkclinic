@@ -402,6 +402,22 @@ export default function NewPrescriptionPage() {
                                     onChange={(e) => setDfNote(e.target.value)}
                                     placeholder="เช่น ตรวจตา, ลอกดูตา"
                                 />
+                                {/* DF Note Presets */}
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                    {['ตรวจตา', 'ลอกดูตา', 'ตรวจประเมิน'].map((preset) => (
+                                        <button
+                                            key={preset}
+                                            type="button"
+                                            onClick={() => setDfNote(preset)}
+                                            className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${dfNote === preset
+                                                    ? 'bg-primary text-white border-primary'
+                                                    : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                                                }`}
+                                        >
+                                            {preset}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
