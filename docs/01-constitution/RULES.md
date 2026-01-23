@@ -117,6 +117,7 @@ PLANNING → EXECUTION → VERIFICATION
 - ❌ อย่าข้ามการ test ก่อน commit
 - ❌ อย่าลืม tag
 - ❌ อย่าสร้าง decision ใหม่โดยไม่บันทึก ADR
+- ❌ **Schema Change = Type Check** อย่าแก้ DB schema โดยไม่ grep หา type usage ทั้ง repo (Sprint 3C lesson)
 
 ---
 
