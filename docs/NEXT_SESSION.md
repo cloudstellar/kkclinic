@@ -1,55 +1,57 @@
-# Handoff Note: Sprint 3B Complete!
+# Session Note: Sprint 3C — Doctor Fee
 
 **Date**: 24 มกราคม 2569
-**Status**: ✅ All Milestones Completed (M1-M7)
+**Status**: Planning Complete — Ready to Implement
 **Branch**: `main`
 
 ---
 
-## ✅ Sprint 3B Summary
+## 🎯 Sprint 3C Goal
 
-### M1-M4: Core Engine
-- Database schema with `dosage_original`, `dosage_instruction`, `dosage_language`, `dictionary_version`
-- Tokenizer, Dictionary V1 (Frozen), Translation Engine
-
-### M5-M5.5: UI & UX
-- 2-Pane UI: Shorthand Editor + Label Preview
-- Doctor Override with silent feedback
-- Default language by patient nationality
-- Shorthand history (v2 storage, per-user)
-
-### M6: Integration
-- `dictionary_version = '1.0'` in createPrescription
-- Proper null handling for empty dosage
-- Fallback: instruction defaults to original if blank
-
-### M7: Medicine Summary Sheet
-- Component: `medicine-summary-sheet.tsx`
-- Thermal 10×7.5cm, 6 items/page
-- Uses `dosage_original` for internal use
-- Checkbox in label print view (default: ON)
+เพิ่มค่าธรรมเนียมแพทย์ (Doctor Fee) ในใบสั่งยา
 
 ---
 
-## 📊 Commits
+## ✅ Design Decisions
 
-| Commit | Description |
-|--------|-------------|
-| `2627f92` | M5.5 UX improvements |
-| `f5b4ba0` | M6 Integration |
-| `73fb0de` | M7 Medicine Summary Sheet |
-
----
-
-## ⏭️ Next: Sprint 4
-
-Consult user for priorities:
-- UX Phase 2 (Filters, Sorting, TN Standard)
-- Workflow Revolution (Reserved Stock, EOD, Auto Calc)
+| Question | Decision | Reason |
+|----------|----------|--------|
+| DF location | `prescriptions` table | Standard: 1 visit = 1 fee |
+| Fields | `df` (decimal), `df_note` (text) | Simple, direct |
+| UI | ในหน้า prescription form | หมอกรอกตอนสั่งยา |
+| Receipt | แสดงเป็น line item แยก | ชัดเจนสำหรับคนไข้ |
 
 ---
 
-## ⚠️ Notes
+## 📋 Implementation Plan
 
-- Tests: `npm test` for engine logic (Vitest)
-- TypeScript: All passing as of 23:20
+### Phase 1: Database
+```sql
+ALTER TABLE prescriptions
+ADD COLUMN df DECIMAL(10,2) DEFAULT 0,
+ADD COLUMN df_note TEXT;
+```
+
+### Phase 2: Prescription Form
+- Add DF input (number) + note textarea
+- Update total calculation
+
+### Phase 3: Payment & Receipt
+- Show DF in payment breakdown
+- Print DF line in receipt
+
+---
+
+## ⚠️ ไม่ขัดกับแผนใหญ่
+
+- ใช้ `prescriptions` table ที่มีอยู่แล้ว
+- เป็น enhancement ไม่ใช่ breaking change
+- รองรับ Sprint 4 (EOD, Billing summary) ได้เลย
+
+---
+
+## 📜 Previous Session (Sprint 3B)
+
+All completed:
+- M1-M7: Smart Dosage System ✅
+- Commits: `2627f92`, `f5b4ba0`, `73fb0de`, `2ecc0e6`

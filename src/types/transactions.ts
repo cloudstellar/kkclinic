@@ -42,6 +42,10 @@ export type TransactionWithRelations = Transaction & {
         id: string
         prescription_no: string
         note?: string
+        // Sprint 3C: Doctor Fee
+        df?: number
+        df_note?: string
+        created_at?: string
     }
     staff?: {
         id: string

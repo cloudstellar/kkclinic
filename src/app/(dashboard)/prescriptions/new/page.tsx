@@ -75,6 +75,10 @@ export default function NewPrescriptionPage() {
     const [items, setItems] = useState<PrescriptionItem[]>([])
     const [note, setNote] = useState('')
 
+    // Sprint 3C: Doctor Fee
+    const [df, setDf] = useState(0)
+    const [dfNote, setDfNote] = useState('')
+
     // Dosage sheet state (tracks which item's sheet is open by medicine_id)
     const [openSheetItemId, setOpenSheetItemId] = useState<string | null>(null)
 
@@ -143,7 +147,9 @@ export default function NewPrescriptionPage() {
         setItems(items.filter((_, i) => i !== index))
     }
 
-    const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    // Sprint 3C: Total includes DF
+    const itemsTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    const totalPrice = itemsTotal + df
 
     async function handleSubmit() {
         if (!selectedPatient) {
@@ -168,7 +174,9 @@ export default function NewPrescriptionPage() {
                     dosage_instruction: i.dosage_instruction || undefined,
                     dosage_language: i.dosage_language,
                 })),
-                note || undefined
+                note || undefined,
+                df || undefined,
+                dfNote || undefined
             )
 
             if (result.error) {
@@ -369,10 +377,34 @@ export default function NewPrescriptionPage() {
             {/* Note & Summary */}
             <Card className="mb-6">
                 <CardHeader>
-                    <CardTitle className="text-base">3. หมายเหตุและสรุป</CardTitle>
+                    <CardTitle className="text-base">3. ค่าธรรมเนียมและสรุป</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
+                        {/* Sprint 3C: Doctor Fee */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="df">ค่าธรรมเนียมแพทย์ (Doctor Fee)</Label>
+                                <Input
+                                    id="df"
+                                    type="number"
+                                    value={df || ''}
+                                    onChange={(e) => setDf(Number(e.target.value) || 0)}
+                                    placeholder="0"
+                                    min={0}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="dfNote">หมายเหตุ DF</Label>
+                                <Input
+                                    id="dfNote"
+                                    value={dfNote}
+                                    onChange={(e) => setDfNote(e.target.value)}
+                                    placeholder="เช่น ตรวจตา, ลอกดูตา"
+                                />
+                            </div>
+                        </div>
+
                         <div>
                             <Label htmlFor="note">หมายเหตุแพทย์</Label>
                             <Textarea
@@ -384,11 +416,26 @@ export default function NewPrescriptionPage() {
                             />
                         </div>
 
-                        <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                            <span className="font-medium">ยอดรวมทั้งสิ้น</span>
-                            <span className="text-2xl font-bold text-primary">
-                                ฿{totalPrice.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-                            </span>
+                        {/* Price Summary */}
+                        <div className="p-4 bg-gray-50 rounded-lg space-y-2">
+                            {df > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span>ค่าธรรมเนียมแพทย์</span>
+                                    <span>฿{df.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                            )}
+                            {itemsTotal > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span>ค่ายา</span>
+                                    <span>฿{itemsTotal.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                            )}
+                            <div className="flex justify-between items-center pt-2 border-t">
+                                <span className="font-medium">ยอดรวมทั้งสิ้น</span>
+                                <span className="text-2xl font-bold text-primary">
+                                    ฿{totalPrice.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </CardContent>

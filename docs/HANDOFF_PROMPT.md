@@ -1,7 +1,7 @@
 # Handoff Prompt for AI Agent
 
-**Current State:** Sprint 3B Complete! — Ready for Sprint 4
-**Last Updated:** 24 มกราคม 2569 @ 23:20
+**Current State:** Sprint 3C — Doctor Fee Implementation
+**Last Updated:** 24 มกราคม 2569 @ 23:35
 **Version:** `main`
 
 ---
@@ -15,6 +15,28 @@
 
 ---
 
+## 🎯 CURRENT: Sprint 3C — Doctor Fee
+
+### Scope
+เพิ่มค่าธรรมเนียมแพทย์ (Doctor Fee) ในใบสั่งยา
+
+### Tasks
+1. **DB Migration**: Add `df`, `df_note` to `prescriptions` table
+2. **Prescription Form**: Input field for DF + note
+3. **Payment Page**: Show DF in price breakdown
+4. **Receipt Print**: Show DF as line item
+
+### Files to Modify
+| File | Change |
+|------|--------|
+| DB (Supabase) | Add columns to prescriptions |
+| `types/prescriptions.ts` | Add df, df_note types |
+| `prescriptions/actions.ts` | Accept DF in createPrescription |
+| `prescriptions/new/page.tsx` | Add DF input UI |
+| `billing/receipt/[id]/page.tsx` | Show DF in receipt |
+
+---
+
 ## ✅ Sprint 3B Completed
 
 All milestones done:
@@ -22,39 +44,6 @@ All milestones done:
 - M5-M5.5: UI 2-Pane, UX Improvements
 - M6: Integration (dictionary_version 1.0)
 - M7: Medicine Summary Sheet
-
----
-
-## 🎯 NEXT: Sprint 4 Planning
-
-**Focus:** UX Phase 2 + Workflow Revolution
-
-Before starting, consult user for Sprint 4 priorities:
-
-### UX Phase 2 (from 3A+)
-- Real-time filter (debounce 300ms)
-- Sortable tables
-- TN Standardization (HN → TN)
-
-### Workflow Revolution
-- Reserved Stock Model
-- Patient Statement (ใบสรุปค่าใช้จ่าย)
-- Auto Calculator
-- Payment Status (3 states)
-- End of Day (EOD)
-
----
-
-## 📁 Key Files (Sprint 3B)
-
-| Component | File |
-|-----------|------|
-| Tokenizer | `src/lib/dosage/tokenizer.ts` |
-| Dictionary | `src/lib/dosage/dictionary-v1.ts` |
-| Engine | `src/lib/dosage/engine.ts` |
-| Dosage Sheet | `src/components/prescription/dosage-instruction-sheet.tsx` |
-| Summary Sheet | `src/components/prescription/medicine-summary-sheet.tsx` |
-| Label Print | `src/app/(dashboard)/billing/receipt/[id]/labels/label-print-view.tsx` |
 
 ---
 

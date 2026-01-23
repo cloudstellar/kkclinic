@@ -86,11 +86,13 @@ async function generatePrescriptionNo(): Promise<string> {
     return `RX${dateStr}-${nextNum.toString().padStart(4, '0')}`
 }
 
-// Create prescription
+// Create prescription (Sprint 3C: Added df params)
 export async function createPrescription(
     patientId: string,
     items: PrescriptionItemFormData[],
-    note?: string
+    note?: string,
+    df?: number,
+    dfNote?: string
 ) {
     const supabase = await createClient()
 
@@ -121,7 +123,9 @@ export async function createPrescription(
     // Generate prescription number
     const prescriptionNo = await generatePrescriptionNo()
 
-    // Create prescription
+    // Create prescription (Sprint 3C: total_price includes df)
+    const totalWithDf = totalPrice + (df || 0)
+
     const { data: prescription, error: prescriptionError } = await supabase
         .from('prescriptions')
         .insert({
@@ -130,7 +134,10 @@ export async function createPrescription(
             doctor_id: user.id,
             status: 'pending',
             note: note || null,
-            total_price: totalPrice,
+            total_price: totalWithDf,
+            // Sprint 3C: Doctor Fee
+            df: df || 0,
+            df_note: dfNote || null,
         })
         .select()
         .single()

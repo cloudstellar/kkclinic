@@ -41,6 +41,9 @@ type Transaction = {
         prescription_no: string
         note: string | null
         created_at?: string
+        // Sprint 3C: Doctor Fee
+        df?: number
+        df_note?: string
     } | null
     items?: LabelItem[]
 }
@@ -299,6 +302,8 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                             createdAt={transaction.prescription.created_at || transaction.paid_at}
                             patient={transaction.patient}
                             items={selectedItems}
+                            df={transaction.prescription.df}
+                            dfNote={transaction.prescription.df_note}
                         />
                     )}
 

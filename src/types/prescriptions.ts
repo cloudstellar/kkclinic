@@ -12,6 +12,9 @@ export type Prescription = {
     status: PrescriptionStatus
     note: string | null
     total_price: number | null
+    // Sprint 3C: Doctor Fee
+    df: number
+    df_note: string | null
     cancelled_reason: string | null
     completed_at: string | null
     created_at: string

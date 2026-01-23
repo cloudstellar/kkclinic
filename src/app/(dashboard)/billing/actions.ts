@@ -257,7 +257,7 @@ export async function getTransaction(id: string) {
         .select(`
             *,
             patient:patients(id, hn, name, name_en, nationality, phone),
-            prescription:prescriptions(id, prescription_no, note),
+            prescription:prescriptions(id, prescription_no, note, df, df_note, created_at),
             staff:users!transactions_staff_id_fkey(id, full_name),
             voided_by_user:users!transactions_voided_by_fkey(id, full_name)
         `)
