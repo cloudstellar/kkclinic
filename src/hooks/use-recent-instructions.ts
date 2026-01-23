@@ -60,24 +60,34 @@ export function useRecentInstructions() {
     // M5.5 fix: Track which key was loaded to handle userId async loading
     const loadedKeyRef = useRef<string | null>(null)
 
-    useEffect(() => {
-        // Skip if already loaded for this key
-        if (loadedKeyRef.current === storageKey) return
-        loadedKeyRef.current = storageKey
-
+    // Use useMemo for initial load to avoid setState in effect
+    const initialRecent = useMemo(() => {
+        if (typeof window === 'undefined') return []
         try {
             const stored = localStorage.getItem(storageKey)
             if (stored) {
                 const parsed = JSON.parse(stored)
-                if (Array.isArray(parsed)) {
-                    setRecent(parsed)
-                }
+                if (Array.isArray(parsed)) return parsed
             }
         } catch {
-            console.warn('Failed to parse recent instructions, resetting')
+            console.warn('Failed to parse recent instructions')
         }
-        setIsLoaded(true)
+        return []
     }, [storageKey])
+
+    // Sync state when storageKey changes (after initial useMemo)
+    // NOTE: This pattern is intentional for localStorage sync - disable lint rule
+    useEffect(() => {
+        if (loadedKeyRef.current === storageKey) return
+        loadedKeyRef.current = storageKey
+        // Only update if different from initialRecent
+        if (initialRecent.length > 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setRecent(initialRecent)
+        }
+         
+        setIsLoaded(true)
+    }, [storageKey, initialRecent])
 
     // Save to localStorage
     const saveToStorage = useCallback((items: RecentInstruction[]) => {

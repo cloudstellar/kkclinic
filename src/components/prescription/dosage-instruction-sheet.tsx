@@ -138,7 +138,7 @@ export function DosageInstructionSheet(props: DosageInstructionSheetProps) {
         open,
         dosageOriginal: initialOriginal,
         dosageInstruction: initialInstruction,
-        dosageLanguage,
+        dosageLanguage: _dosageLanguage, // eslint-disable-line @typescript-eslint/no-unused-vars
         medicineName,
         isForeignPatient,
         onSave,

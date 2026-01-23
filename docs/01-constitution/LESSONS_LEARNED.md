@@ -48,6 +48,12 @@
 - **Example (Sprint 3C)**: `Prescription` type was in `payment-button.tsx`, `payment-modal.tsx`, `label-print-view.tsx`.
 - **Rule**: Prefer importing from central `types/*.ts` files. If local type is needed, keep minimal and extend from central type.
 
+## 11. Lint Neglect (Pain Level: HIGH ⚠️)
+- **Mistake**: Not running `npm run lint` during development, only discovering errors after many commits.
+- **Problem**: Accumulated lint errors become harder to fix; need to trace back multiple changes.
+- **Rule**: **MUST** run `npm run lint` before every commit. Fix errors immediately.
+- **Example (Sprint 3C)**: setState in useEffect error discovered late, required refactoring.
+
 ---
 
 ## 📚 See also

@@ -53,6 +53,9 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
         },
     })
 
+    // NOTE: React Hook Form watch() triggers a React Compiler warning.
+    // This is a known limitation and is intentionally left as-is.
+    // Ref: RHF imperatively subscribes to form state; behavior is correct.
     const gender = watch('gender')
     const nationality = watch('nationality')
 

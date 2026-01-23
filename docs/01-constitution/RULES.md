@@ -52,6 +52,7 @@
 - อัปเดต `docs/HANDOFF_PROMPT.md` หลังเสร็จงาน
 
 ### 4. Commit Properly
+- **Run lint first**: `npm run lint` **MUST** pass before commit (0 errors)
 - ใช้ conventional commits
 - Tag ตาม sprint convention
 - Push พร้อม tags
