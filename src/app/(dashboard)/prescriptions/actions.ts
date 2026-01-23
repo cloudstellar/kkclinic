@@ -147,11 +147,13 @@ export async function createPrescription(
         medicine_id: item.medicine_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        // Sprint 3B: Smart Dosage fields
-        dosage_original: item.dosage_original || null,         // Raw shorthand from doctor
-        dosage_instruction: item.dosage_instruction || null,   // Snapshot in patient language
-        dosage_language: item.dosage_language || 'th',         // Language of snapshot
-        dictionary_version: item.dosage_original ? 'legacy' : null, // Will be '1.0' when engine is ready
+        // Sprint 3B M6: Smart Dosage fields
+        // Rule: If dosage_original is blank → ALL fields NULL
+        // Rule: If dosage_original exists → dictionary_version='1.0', all fields required
+        dosage_original: item.dosage_original?.trim() || null,
+        dosage_instruction: item.dosage_original?.trim() ? (item.dosage_instruction?.trim() || item.dosage_original.trim()) : null,
+        dosage_language: item.dosage_original?.trim() ? (item.dosage_language || 'th') : null,
+        dictionary_version: item.dosage_original?.trim() ? '1.0' : null,
         note: item.note || null,
     }))
 
