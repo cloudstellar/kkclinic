@@ -38,6 +38,9 @@ type Prescription = {
     id: string
     prescription_no: string
     total_price: number
+    // Sprint 3C: Doctor Fee
+    df?: number
+    df_note?: string | null
     patient?: {
         id: string
         hn: string
@@ -160,6 +163,18 @@ export function PaymentModal({ open, onOpenChange, prescription }: PaymentModalP
                     <div className="rounded-lg border p-3 bg-muted/50">
                         <p className="text-sm font-medium mb-2">รายการ:</p>
                         <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {/* Sprint 3C: Doctor Fee first */}
+                            {prescription.df && prescription.df > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">
+                                        ค่าธรรมเนียมแพทย์
+                                        {prescription.df_note && (
+                                            <span className="text-xs ml-1">({prescription.df_note})</span>
+                                        )}
+                                    </span>
+                                    <span>{formatCurrency(prescription.df)}</span>
+                                </div>
+                            )}
                             {prescription.items?.map((item) => (
                                 <div key={item.id} className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">

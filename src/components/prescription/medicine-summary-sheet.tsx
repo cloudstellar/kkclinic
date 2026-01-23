@@ -91,11 +91,10 @@ export function MedicineSummarySheet({
 
                     {/* Items */}
                     <div className="summary-items">
-                        {/* Sprint 3C: DF as first item on first page */}
+                        {/* Sprint 3C: DF as first item on first page (no checkbox) */}
                         {pageIndex === 0 && df && df > 0 && (
                             <div className="summary-item">
                                 <div className="flex items-start gap-1.5 text-[11px]">
-                                    <span className="inline-block w-3 h-3 border border-gray-400 rounded-sm flex-shrink-0 mt-0.5" />
                                     <span className="font-medium flex-1">
                                         ค่าธรรมเนียมแพทย์ (Doctor Fee)
                                     </span>
@@ -104,7 +103,7 @@ export function MedicineSummarySheet({
                                     </span>
                                 </div>
                                 {dfNote && (
-                                    <div className="ml-4.5 text-[10px] text-gray-600 pl-4">
+                                    <div className="text-[10px] text-gray-600">
                                         {dfNote}
                                     </div>
                                 )}

@@ -22,6 +22,9 @@ type Prescription = {
     id: string
     prescription_no: string
     total_price: number
+    // Sprint 3C: Doctor Fee
+    df?: number
+    df_note?: string | null
     patient?: {
         id: string
         hn: string
