@@ -13,6 +13,7 @@
     - **Snapshot**: The expanded, patient-friendly text (e.g., "รับประทานครั้งละ 1 เม็ด...").
     - **Instruction Snapshot**: Frozen at dispense time and must not change retrospectively.
     - **Instruction Language**: The language of the snapshot (TH/EN).
+- **DF (Doctor Fee)**: ค่าธรรมเนียมแพทย์. Stored per-prescription (not per-item). Added in Sprint 3C.
 
 ## System Status
 - **DoD (Definition of Done)**: The checklist used to verify a task before marking it complete.

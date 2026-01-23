@@ -42,6 +42,12 @@
 - **Mistake**: Temporary fix without considering system flow.
 - **Rule**: If a workaround is needed, **MUST** add a comment explanation and a clear `TODO`.
 
+## 10. Type Duplication (Pain Level: MEDIUM 😤)
+- **Mistake**: Same type (e.g., `Prescription`) defined in multiple component files.
+- **Problem**: When adding new fields (e.g., `df`, `df_note`), **MUST** update ALL files.
+- **Example (Sprint 3C)**: `Prescription` type was in `payment-button.tsx`, `payment-modal.tsx`, `label-print-view.tsx`.
+- **Rule**: Prefer importing from central `types/*.ts` files. If local type is needed, keep minimal and extend from central type.
+
 ---
 
 ## 📚 See also

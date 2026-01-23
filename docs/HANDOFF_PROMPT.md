@@ -1,7 +1,7 @@
 # Handoff Prompt for AI Agent
 
-**Current State:** Sprint 3C — Doctor Fee UI Fixes (WIP)
-**Last Updated:** 24 มกราคม 2569 @ 00:10
+**Current State:** Sprint 3C Complete! — Ready for Sprint 4
+**Last Updated:** 24 มกราคม 2569 @ 00:40
 **Version:** `main`
 
 ---
@@ -10,33 +10,40 @@
 
 1. `docs/01-constitution/RULES.md`
 2. `docs/01-constitution/TECH_STACK.md`
-3. `docs/NEXT_SESSION.md` (Detailed pending tasks)
+3. `docs/01-constitution/LESSONS_LEARNED.md` — เพิ่ม #10 Type Duplication ใหม่
 
 ---
 
-## 🚧 CURRENT TASK: Sprint 3C UI Fixes
+## ✅ Sprint 3B & 3C — Complete!
 
-User requested fixes for Doctor Fee feature. Some are done, some pending.
+### Sprint 3B: Smart Dosage System
+- Tokenizer, Dictionary V1, Translation Engine
+- 2-Pane UI with Doctor Override
+- Medicine Summary Sheet (Internal Use)
 
-### ✅ Completed
-- **Prescription Form**: Added DF Note Presets (chips)
-- **Receipt View**: Simplified DF layout (Single line + small text)
-
-### 🛑 PENDING (Do these NEXT)
-1. **Prescription View**: (`src/app/(dashboard)/prescriptions/[id]/page.tsx`)
-   - แสดง Doctor Fee ในหน้าดูรายละเอียด
-2. **Dispensing/Payment**: (`src/app/(dashboard)/dispensing/[id]/page.tsx` & `payment-modal.tsx`)
-   - แสดง Doctor Fee ก่อนชำระเงิน
-3. **Summary Sheet**: (`src/components/prescription/medicine-summary-sheet.tsx`)
-   - เอา "check mark" (กล่องสี่เหลี่ยม) ออกจากบรรทัด DF
+### Sprint 3C: Doctor Fee
+- DB: `df`, `df_note` in `prescriptions`
+- Form: DF input + Presets
+- All views show DF breakdown
+- Summary Sheet: DF as first item (no checkbox)
 
 ---
 
-## 🧪 Verification
-- สร้างใบสั่งยา (เลือก preset DF Note)
-- ดูหน้า View -> ต้องเห็น DF
-- หน้า Payment -> ต้องเห็น DF Breakdown
-- Print Label -> Summary Sheet บรรทัด DF ต้องไม่มี checkbox
+## 🎯 NEXT: Sprint 4 Planning
+
+Consult user for Sprint 4 priorities:
+
+### UX Phase 2
+- Real-time filter (debounce 300ms)
+- Sortable tables
+- TN Standardization
+
+### Workflow Revolution
+- Reserved Stock Model
+- Patient Statement
+- Auto Calculator
+- Payment Status (3 states)
+- End of Day (EOD)
 
 ---
 

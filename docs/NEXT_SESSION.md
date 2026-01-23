@@ -1,43 +1,54 @@
-# Session Note: Sprint 3C (WIP)
+# Session Note: Sprint 3B & 3C Complete!
 
 **Date**: 24 มกราคม 2569
-**Status**: Partial Complete (Core Done, UI Fixes Pending)
+**Status**: ✅ All Complete
 **Branch**: `main`
 
 ---
 
-## 🚧 Work in Progress
+## 📊 Commits Today
 
-User stopped session during Sprint 3C UI feedback implementation.
-
-### Completed ✅
-1. **Core DF Feature**: DB, API, Types implemented.
-2. **Prescription Form**: Added DF input + **Note Presets** (ตรวจตา, ลอกดูตา, ตรวจประเมิน).
-3. **Receipt**: Updated layout to show DF first (Simplified format).
-
-### Pending 🛑
-1. **View Prescription**: Doesn't show DF yet.
-2. **Payment Page**: Doesn't show DF breakdown yet.
-3. **Summary Sheet**: User wants to remove the checkbox icon from the DF line.
+| Commit | Description |
+|--------|-------------|
+| `2627f92` | M5.5 UX improvements (smart defaults, shorthand history) |
+| `f5b4ba0` | M6 Integration (dictionary_version 1.0) |
+| `73fb0de` | M7 Medicine Summary Sheet |
+| `2ecc0e6` | Sprint 3B docs update |
+| `f61c6d3` | Sprint 3C DF core feature |
+| `28351f1` | Sprint 3C UI WIP |
+| `5190974` | Sprint 3C UI complete |
 
 ---
 
-## 📝 Implementation Notes for Next Session
+## ✅ Sprint 3B: Smart Dosage System
 
-### 1. View Prescription
-Update `src/app/(dashboard)/prescriptions/[id]/page.tsx` to fetch and display `df` field.
-
-### 2. Payment Page
-Update `src/app/(dashboard)/dispensing/[id]/page.tsx`.
-Check `payment-modal.tsx` if it needs `df` prop or if it uses `total_amount` directly. Ensure breakdown is shown.
-
-### 3. Summary Sheet
-In `src/components/prescription/medicine-summary-sheet.tsx`:
-- Locate the DF rendering block.
-- Remove the `<span className="inline-block w-3 h-3 border..." />` element.
+All milestones (M1-M7) completed:
+- Tokenizer, Dictionary V1, Translation Engine
+- 2-Pane UI with Doctor Override
+- Integration with dictionary_version 1.0
+- Medicine Summary Sheet
 
 ---
 
-## 📊 Commits
-- `f61c6d3`: Core DF feature complete
-- (Pending): UI Fixes (Presets, Receipt, etc.)
+## ✅ Sprint 3C: Doctor Fee
+
+- Database: Added `df`, `df_note` to `prescriptions`
+- Prescription Form: DF input + Note Presets
+- View Prescription: Shows DF breakdown
+- Payment Modal: Shows DF in items list
+- Receipt View: DF shown first (simplified layout)
+- Summary Sheet: DF as first item, no checkbox
+
+---
+
+## 📚 Lessons Learned Added
+
+**#10 Type Duplication**: Same type in multiple files requires updating all when adding fields.
+
+---
+
+## 🎯 Next: Sprint 4
+
+Ready to plan:
+- UX Phase 2 (Filters, Sorting)
+- Workflow Revolution (Reserved Stock, EOD)
