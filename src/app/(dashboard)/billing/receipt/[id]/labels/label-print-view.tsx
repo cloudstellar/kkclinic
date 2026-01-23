@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { formatPatientId, formatDate } from '@/lib/clinic-config'
 import { getDisplayName } from '@/lib/patient-utils'
 import { getLabelLang, LABEL_TRANSLATIONS, DEFAULT_EXPIRY_NOTE } from '@/lib/label-translations'
+import { MedicineSummarySheet } from '@/components/prescription/medicine-summary-sheet'
 
 type LabelItem = {
     id: string
@@ -34,6 +35,13 @@ type Transaction = {
         name_en?: string | null
         nationality?: string | null
     } | null
+    // M7: Prescription data for summary sheet
+    prescription?: {
+        id: string
+        prescription_no: string
+        note: string | null
+        created_at?: string
+    } | null
     items?: LabelItem[]
 }
 
@@ -48,6 +56,9 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(
         new Set(medicineItems.map(item => item.id))
     )
+
+    // M7: Print summary sheet option (default: true)
+    const [printSummary, setPrintSummary] = useState(true)
 
     // Items without dosage instruction (warning)
     const itemsWithoutDosage = medicineItems.filter(item =>
@@ -245,6 +256,17 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                             </div>
                         </div>
 
+                        {/* M7: Summary Sheet Option */}
+                        <label className="flex items-center gap-2 mb-4 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={printSummary}
+                                onChange={(e) => setPrintSummary(e.target.checked)}
+                                className="w-4 h-4 rounded"
+                            />
+                            <span className="text-sm">📋 พิมพ์ใบสรุปรายการยา (Internal)</span>
+                        </label>
+
                         <div className="flex gap-4">
                             <button
                                 onClick={() => window.history.back()}
@@ -257,7 +279,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                                 disabled={selectedIds.size === 0}
                                 className="flex-1 bg-black text-white px-4 py-2 rounded hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
-                                🖨️ พิมพ์ฉลากยา ({selectedItems.length} รายการ)
+                                🖨️ พิมพ์{printSummary ? 'ใบสรุป + ' : ''}ฉลากยา ({selectedItems.length} รายการ)
                             </button>
                         </div>
 
@@ -269,6 +291,18 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
 
                 {/* Print Area */}
                 <div className="print-container">
+                    {/* M7: Summary Sheet (prints first) */}
+                    {printSummary && transaction.prescription && (
+                        <MedicineSummarySheet
+                            prescriptionNo={transaction.prescription.prescription_no}
+                            prescriptionNote={transaction.prescription.note}
+                            createdAt={transaction.prescription.created_at || transaction.paid_at}
+                            patient={transaction.patient}
+                            items={selectedItems}
+                        />
+                    )}
+
+                    {/* Individual Labels */}
                     {selectedItems.map((item) => (
                         <LabelTemplate
                             key={item.id}
