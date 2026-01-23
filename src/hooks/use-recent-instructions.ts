@@ -11,7 +11,8 @@ type RecentInstruction = {
 }
 
 const MAX_ITEMS = 15
-const STORAGE_KEY_PREFIX = 'kkclinic:rx:recentInstructions'
+// M5.5: v2 stores shorthand (dosage_original) instead of translated text
+const STORAGE_KEY_PREFIX = 'kkclinic:rx:recentShorthand:v2'
 
 /**
  * Normalize text for storage and comparison
@@ -55,34 +56,25 @@ export function useRecentInstructions() {
         })
     }, [])
 
-    // Load recent from localStorage using ref to avoid re-renders
-    const hasLoadedRef = useRef(false)
+    // Load recent from localStorage - reload when storageKey changes
+    // M5.5 fix: Track which key was loaded to handle userId async loading
+    const loadedKeyRef = useRef<string | null>(null)
 
-    // Use layout effect to load from localStorage before paint (avoids flash)
     useEffect(() => {
-        if (!storageKey || hasLoadedRef.current) return
-        hasLoadedRef.current = true
+        // Skip if already loaded for this key
+        if (loadedKeyRef.current === storageKey) return
+        loadedKeyRef.current = storageKey
 
-        // Use functional update to avoid the "setState in effect" warning
-        const loadFromStorage = () => {
-            try {
-                const stored = localStorage.getItem(storageKey)
-                if (stored) {
-                    const parsed = JSON.parse(stored)
-                    if (Array.isArray(parsed)) {
-                        return parsed
-                    }
+        try {
+            const stored = localStorage.getItem(storageKey)
+            if (stored) {
+                const parsed = JSON.parse(stored)
+                if (Array.isArray(parsed)) {
+                    setRecent(parsed)
                 }
-            } catch {
-                console.warn('Failed to parse recent instructions, resetting')
             }
-            return []
-        }
-
-        const loaded = loadFromStorage()
-        if (loaded.length > 0) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: initialize state from localStorage on mount
-            setRecent(loaded)
+        } catch {
+            console.warn('Failed to parse recent instructions, resetting')
         }
         setIsLoaded(true)
     }, [storageKey])

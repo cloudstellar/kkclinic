@@ -412,7 +412,9 @@ export default function NewPrescriptionPage() {
                 const isForeignPatient = selectedPatient?.nationality === 'other'
 
                 return (
+                    // M5.5: Key forces remount on item change → ensures fresh state init
                     <DosageInstructionSheet
+                        key={openSheetItemId ?? 'closed'}
                         open={!!openItem}
                         dosageOriginal={openItem?.dosage_original ?? ''}
                         dosageInstruction={openItem?.dosage_instruction ?? ''}

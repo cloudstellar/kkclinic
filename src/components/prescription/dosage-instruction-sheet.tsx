@@ -153,7 +153,8 @@ export function DosageInstructionSheet(props: DosageInstructionSheetProps) {
     const [draftInstructionText, setDraftInstructionText] = useState(() => initialInstruction)
     const [isOverridden, setIsOverridden] = useState(false)
     const [unknownTokens, setUnknownTokens] = useState<string[]>([])
-    const [lang, setLang] = useState<'th' | 'en'>(() => dosageLanguage)
+    // M5.5: Smart default based on patient nationality (can still be changed manually)
+    const [lang, setLang] = useState<'th' | 'en'>(() => isForeignPatient ? 'en' : 'th')
 
     // Core refs logic
     const lastAutoTranslation = useRef(initialInstruction)
@@ -239,7 +240,8 @@ export function DosageInstructionSheet(props: DosageInstructionSheetProps) {
             return
         }
 
-        if (instruction) addRecent(instruction)
+        // M5.5: Store shorthand instead of translated text (works across languages)
+        if (original) addRecent(original)
         onSave(original, instruction, lang)
         closeSheet()
     }, [draftOriginal, draftInstructionText, lang, addRecent, onSave, closeSheet])
@@ -264,12 +266,10 @@ export function DosageInstructionSheet(props: DosageInstructionSheetProps) {
         }
     }, [previousDosageOriginal, previousDosageInstruction, handleOriginalChange])
 
+    // M5.5: Recent now stores shorthand, so insert into editor (triggers translation)
     const handleRecentClick = useCallback((text: string) => {
-        setDraftInstructionText(text)
-        lastAutoTranslation.current = ''
-        setIsOverridden(true)
-        setUnknownTokens([])
-    }, [])
+        handleOriginalChange(text)
+    }, [handleOriginalChange])
 
     const charCount = draftInstructionText.length
     const badge = getLengthBadge(charCount)
@@ -310,6 +310,18 @@ export function DosageInstructionSheet(props: DosageInstructionSheetProps) {
                         <Button type="button" variant="outline" size="sm" onClick={handleCopyPrevious} className="h-10">📋 คัดลอกจากรายการก่อนหน้า</Button>
                     )}
 
+                    {/* M5.5: Recent shorthand - always visible at top */}
+                    {recent.length > 0 && (
+                        <div className="space-y-1.5">
+                            <Label className="text-xs text-muted-foreground">🕐 ใช้ล่าสุด</Label>
+                            <div className="flex flex-wrap gap-2">
+                                {recent.slice(0, 5).map((item, idx) => (
+                                    <button key={idx} type="button" onClick={() => handleRecentClick(item.text)} className="px-3 py-1.5 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-full transition-colors font-mono">{item.text.length > 30 ? item.text.slice(0, 30) + '...' : item.text}</button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="space-y-2">
                         <Label className="font-semibold">📝 คำสั่งแพทย์ (Shorthand)</Label>
                         <Textarea
@@ -343,17 +355,6 @@ export function DosageInstructionSheet(props: DosageInstructionSheetProps) {
                             </div>
                         </div>
                     </div>
-
-                    {recent.length > 0 && (
-                        <details className="group">
-                            <summary className="text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground">🕐 ใช้ล่าสุด ({recent.length})</summary>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                                {recent.slice(0, 5).map((item, idx) => (
-                                    <button key={idx} type="button" onClick={() => handleRecentClick(item.text)} className="px-3 py-2 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-full transition-colors">{item.text.length > 40 ? item.text.slice(0, 40) + '...' : item.text}</button>
-                                ))}
-                            </div>
-                        </details>
-                    )}
                 </div>
 
                 <SheetFooter className="border-t pt-4">

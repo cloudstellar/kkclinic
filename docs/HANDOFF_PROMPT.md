@@ -1,8 +1,8 @@
 # Handoff Prompt for AI Agent
 
-**Current State:** Sprint 3B M1 Ready to Start
-**Last Updated:** 22 มกราคม 2569 @ 21:30
-**Version:** `feature/sprint-3b` — PLAN v1.0 FINAL LOCKED
+**Current State:** Sprint 3B M6 Ready to Start
+**Last Updated:** 24 มกราคม 2569 @ 04:46
+**Version:** `main` — M5.5 Completed
 
 ---
 
@@ -15,27 +15,24 @@
 
 ---
 
-## 🎯 NEXT ACTION: Start Sprint 3B M1
+## 🎯 NEXT ACTION: Start Sprint 3B M6
 
-**Task:** Database Migration + Types
+**Task:** Integration (Server Actions)
 
 **What to do:**
-1. Run migration on Supabase to add columns to `prescription_items`:
-   - `dosage_original` (text, nullable)
-   - `dictionary_version` (text, nullable)
-2. Add DB CHECK constraint for data integrity (see PLAN.md)
-3. Backfill existing data: copy `dosage_instruction` → `dosage_original`, set `dictionary_version = 'legacy'`
-4. Update `src/types/prescriptions.ts` with new fields
-5. Run `npm run typecheck` to verify
+1. Update `createPrescription` in `actions.ts`:
+   - Change `dictionary_version: 'legacy'` → `'1.0'`
+   - Accept Doctor Override (use client snapshot if different from server translation)
+   - Validation: v1.0 requires all fields
+2. Verify save/reload flow works correctly
 
 **Key Documents:**
-- `docs/04-features/sprint-3b-dosage/SPEC.md` — Full specification
-- `docs/04-features/sprint-3b-dosage/PLAN.md` — Implementation plan with DoD (JUST UPDATED)
+- `docs/04-features/sprint-3b-dosage/PLAN.md` — Full plan with DoD
+- `docs/NEXT_SESSION.md` — Latest session notes
 
 **Done When:**
-- ✅ Migration applied successfully
-- ✅ CHECK constraint active
-- ✅ `npm run typecheck` passes
+- ✅ Save prescription → reload → all dosage fields persist
+- ✅ Doctor Override saves correctly
 
 ---
 
@@ -43,52 +40,14 @@
 
 | M | Task | Status |
 |---|------|--------|
-| **M1** | Database Migration + Types | 🟡 **START HERE** |
-| M2 | Tokenizer Implementation | 🔲 Pending |
-| M3 | Dictionary V1 (Frozen) | 🔲 Pending |
-| M4 | Translation Engine | 🔲 Pending |
-| M5 | UI 2-Pane Preview | 🔲 Pending |
-| M6 | Integration (Save/Load) | 🔲 Pending |
+| M1 | Database Migration + Types | ✅ Done |
+| M2 | Tokenizer Implementation | ✅ Done |
+| M3 | Dictionary V1 (Frozen) | ✅ Done |
+| M4 | Translation Engine | ✅ Done |
+| M5 | UI 2-Pane Preview | ✅ Done |
+| **M5.5** | UX Improvements | ✅ Done |
+| **M6** | Integration (Save/Load) | 🟡 **START HERE** |
 | M7 | Medicine Summary Sheet | 🔲 Pending |
-
----
-
-## ⚡ Decision Lock (Important for M1)
-
-| Decision | Choice |
-|----------|--------|
-| Patient ID | **TN only** (DB column still `hn`) |
-| `dictionary_version` values | `NULL` (no instruction), `'legacy'`, `'1.0'` |
-| Empty dosage rule | Both fields NULL + version NULL |
-| Constraint enforcement | **DB-level CHECK** + Server-side assertion |
-| Snapshot Policy | Frozen at save time, never re-translate |
-
----
-
-## 🔧 Recent Changes (This Session)
-
-1. ✅ Restructured `docs/` folder (constitution, architecture, features, reference)
-2. ✅ Created `TECH_STACK.md`, `LESSONS_LEARNED.md`, `GLOSSARY.md`
-3. ✅ Fixed all broken links and outdated content
-4. ✅ Updated PLAN.md with 8 critical fixes:
-   - Unknown token preservation (no case change)
-   - Dictionary version rule (NULL/legacy/1.0 clear)
-   - DB-level CHECK constraint added
-   - Tokenizer supports joined patterns (x7d)
-   - Highlight in Preview, not Editor
-   - Fail = exception only, garbage = OK
-   - Added test cases (case-insensitive, whitespace)
-   - Fixed SPEC filename reference
-
----
-
-## 📁 Key Files for M1
-
-| File | Purpose |
-|------|---------|
-| `docs/04-features/sprint-3b-dosage/PLAN.md` | Full plan with M1 details |
-| `src/types/prescriptions.ts` | Update with new fields |
-| Supabase Dashboard | Run migration SQL |
 
 ---
 
