@@ -1,7 +1,7 @@
 # Handoff Prompt for AI Agent
 
-**Current State:** Sprint 3C Complete! — Ready for Sprint 4  
-**Last Updated:** 24 มกราคม 2569 @ 13:00  
+**Current State:** Sprint 3C Complete! — Ready for Sprint 4 (New)  
+**Last Updated:** 24 มกราคม 2569 @ 21:52  
 **Version:** `main`
 
 ---
@@ -11,12 +11,7 @@
 1. `docs/01-constitution/RULES.md`
 2. `docs/01-constitution/TECH_STACK.md`
 3. `docs/01-constitution/LESSONS_LEARNED.md`
-4. `docs/05-reference/SEMANTIC_GLOSSARY.md` — 🆕 **คำศัพท์มาตรฐาน**
-
-> [!CAUTION]
-> **MUST read `SEMANTIC_GLOSSARY.md` before editing any Billing documents!**
-> - ห้ามใช้ "receipt" หมายถึง prepay summary
-> - ต้องใช้ PrepaySummary / Receipt ให้ถูกต้อง
+4. `docs/05-reference/SEMANTIC_GLOSSARY.md`
 
 ---
 
@@ -31,34 +26,45 @@
 - DB: `df`, `df_note` in `prescriptions`
 - Form: DF input + Presets
 - All views show DF breakdown
-- Summary Sheet: DF as first item (no checkbox)
 
 ---
 
-## 🎯 NEXT: Sprint 4 (Naming & Semantics Clean)
+## 🎯 NEXT: Sprint 4 (New) — Pre-Payment Adjustment
 
 > [!IMPORTANT]
-> Sprint 4 ไม่แตะ DB, ไม่แตะ logic  
-> **Legacy payment behavior ยังคงเดิม!**
+> **แทน Sprint 4-5 เดิม** (Reserved Stock Workflow ถูก archived)
+> ไม่รื้อ flow เดิม — Backward compatible
 
-### Scope
-- New routes: `/billing/documents/prepay/` และ `/receipt/`
-- Rename: `receipt-view` → `billing-document-view`
-- Semantic terms: PrepaySummary / Receipt
-- UI Labels: "ใบสรุปค่าใช้จ่าย" / "ใบเสร็จรับเงิน"
-- Grep check: กำจัด "receipt" ที่หมายถึง prepay
+### Key Concepts
+
+| Term | Definition |
+|------|------------|
+| **Base Items** | `transaction_items` ณ ตอนชำระ (immutable) |
+| **Adjustment** | ลด/ติ๊กออกหลังชำระ (ไม่แก้ทับ) |
+| **Effective Items** | base_qty − sum(qty_reduced) |
+
+### Phases
+
+| Phase | Task | Status |
+|-------|------|--------|
+| 0 | DB: table + RPC | 🔲 **Next** |
+| 1 | Pre-payment tick-off | 🔲 |
+| 2 | Adjustment UI | 🔲 |
+| 3 | RPC integration | 🔲 |
+| 4 | Print effective items | 🔲 |
 
 ### Reference Documents
-- [Sprint 4 PLAN.md](04-features/sprint-4/PLAN.md)
-- [SEMANTIC_GLOSSARY.md](05-reference/SEMANTIC_GLOSSARY.md)
+- [PLAN.md](04-features/sprint-4-adjustment/PLAN.md)
+- [ACCEPTANCE_CRITERIA.md](04-features/sprint-4-adjustment/ACCEPTANCE_CRITERIA.md)
+- [ADR-0002](02-architecture/ADR/0002-reserved-stock-workflow.md)
 
 ---
 
-## 🔜 Sprint 5: Schema + Workflow
+## ⚠️ Archived Documents
 
-DB Migration และ workflow จะทำใน Sprint 5:
-- [ADR-0002](02-architecture/ADR/0002-reserved-stock-workflow.md)
-- [Sprint 5 PLAN.md](04-features/sprint-5/PLAN.md)
+Old Sprint 4-5 plans moved to `docs/99-archived/`:
+- `99-archived/sprint-4/PLAN.md` (Naming & Semantics - deprecated)
+- `99-archived/sprint-5/PLAN.md` (Reserved Stock - deprecated)
 
 ---
 
