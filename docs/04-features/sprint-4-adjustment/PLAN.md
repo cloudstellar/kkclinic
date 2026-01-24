@@ -199,6 +199,18 @@ $$ LANGUAGE plpgsql;
 
 ---
 
+## Edge Cases & Decisions
+
+| Case | Decision |
+|------|----------|
+| **Void หลัง adjustment** | คืน stock ตาม **effective items** ไม่ใช่ base |
+| **Doctor Fee (df)** | ปรับไม่ได้ (df คงที่) |
+| **Discount** | คงเดิม (ไม่ปรับตามสัดส่วน) |
+| **Transaction มีแค่ df ไม่มียา** | ปุ่มแสดง → Modal แสดง "ไม่มีรายการยาให้ปรับ" |
+| **Effective items = empty** | ยังพิมพ์ได้ (total = 0) |
+
+---
+
 ## Verification (DoD)
 
 - [ ] Pre-payment: ติ๊กไม่เอา → receipt ไม่รวมรายการนั้น
@@ -206,7 +218,11 @@ $$ LANGUAGE plpgsql;
 - [ ] Adjustment #1 → stock restore ถูก + "ฉบับปรับปรุง #1"
 - [ ] Adjustment #2 → diff จาก effective ล่าสุด (ไม่คืนซ้ำ)
 - [ ] Void → ปุ่มปรับปรุงไม่แสดง + RPC ปฏิเสธ
+- [ ] **Void หลัง adjust → คืน stock ตาม effective (ไม่ใช่ base)**
 - [ ] Print → ยอดสุทธิ + "ฉบับปรับปรุง" + effective items ถูกต้อง
+- [ ] df ไม่ถูก adjust
+- [ ] discount ไม่เปลี่ยน
+- [ ] Transaction มีแค่ df → modal แสดง "ไม่มีรายการยา"
 
 ---
 
@@ -214,7 +230,8 @@ $$ LANGUAGE plpgsql;
 
 1. **previous_total source**: ใช้ `ORDER BY adjustment_no DESC LIMIT 1`
 2. **RPC concurrency**: `FOR UPDATE` + throw error + UI retry (OK)
-3. **Print edge case**: effective items = empty → ยังพิมพ์ได้ (total = 0, ไม่มีรายการยา)
+3. **Print edge case**: effective items = empty → ยังพิมพ์ได้ (total = 0)
+4. **Void logic**: แก้ให้คืน effective items ไม่ใช่ base items
 
 ---
 

@@ -210,3 +210,8 @@
 - [ ] Adjustment หลัง void ถูกปฏิเสธทั้ง UI + RPC
 - [ ] Stock restore ไม่เกิดซ้ำเมื่อปรับหลายครั้ง
 - [ ] ไม่มี dependency กับ prescription flow
+- [ ] **Void หลัง adjust → คืน stock ตาม effective (ไม่ใช่ base)**
+- [ ] **df ไม่ถูก adjust** (Doctor Fee คงที่)
+- [ ] **discount คงเดิม** (ไม่ปรับตามสัดส่วน)
+- [ ] **Transaction มีแค่ df → modal แสดง "ไม่มีรายการยาให้ปรับ"**
+
