@@ -23,6 +23,7 @@ type ReceiptViewProps = {
             medicine?: { id: string; name: string; unit?: string }
         }>
         hasBaseItems?: boolean
+        adjustmentCount?: number
     }
     userRole?: string
 }
@@ -149,9 +150,16 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
 
                     {/* Receipt Info */}
                     <div className="text-sm mb-4 space-y-1">
-                        <div className="flex justify-between">
+                        <div className="flex justify-between items-center">
                             <span className="text-gray-600">เลขใบเสร็จ:</span>
-                            <span className="font-mono font-bold">{transaction.receipt_no}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="font-mono font-bold">{transaction.receipt_no}</span>
+                                {(transaction.adjustmentCount ?? 0) > 0 && (
+                                    <span className="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">
+                                        ฉบับปรับปรุง #{transaction.adjustmentCount}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-600">วันที่:</span>
@@ -277,6 +285,7 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                     receiptNo={transaction.receipt_no}
                     items={transaction.items}
                     currentTotal={transaction.total_amount}
+                    df={transaction.prescription?.df}
                 />
             )}
         </>

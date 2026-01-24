@@ -322,7 +322,7 @@ export async function getTransaction(id: string) {
         .from('transaction_items')
         .select(`
             *,
-            medicine:medicines(code, name, name_en, unit, description, description_en, expiry_note_th, expiry_note_en)
+            medicine:medicines(id, code, name, name_en, unit, description, description_en, expiry_note_th, expiry_note_en)
         `)
         .eq('transaction_id', id)
         .order('created_at', { ascending: true })
@@ -357,11 +357,48 @@ export async function getTransaction(id: string) {
             }
         }
 
+        // Phase 4: Get adjustments and calculate effective quantities
+        const { data: adjustments } = await supabase
+            .from('transaction_adjustments')
+            .select('items_delta, adjustment_no')
+            .eq('transaction_id', id)
+            .order('adjustment_no', { ascending: true })
+
+        // Build reduction map from all adjustments
+        const reductionMap = new Map<string, number>()
+        let adjustmentCount = 0
+
+        if (adjustments && adjustments.length > 0) {
+            adjustmentCount = adjustments.length
+            for (const adj of adjustments) {
+                const itemsDelta = adj.items_delta as Array<{ medicine_id: string; qty_reduced: number }> || []
+                for (const delta of itemsDelta) {
+                    const current = reductionMap.get(delta.medicine_id) || 0
+                    reductionMap.set(delta.medicine_id, current + delta.qty_reduced)
+                }
+            }
+        }
+
+        // Apply reductions to get effective items
+        const effectiveItems = enrichedItems
+            .map(item => {
+                const reduction = reductionMap.get(item.medicine_id) || 0
+                const effectiveQty = item.quantity - reduction
+                return {
+                    ...item,
+                    quantity: effectiveQty,
+                    base_quantity: item.quantity,  // Original for reference
+                    is_reduced: reduction > 0
+                }
+            })
+            .filter(item => item.quantity > 0)  // Remove items reduced to 0
+
         return {
             data: {
                 ...data,
-                items: enrichedItems,
-                hasBaseItems: true  // Flag for UI to enable adjustment
+                items: effectiveItems,
+                hasBaseItems: true,
+                adjustmentCount  // For "ฉบับปรับปรุง #N"
             },
             error: null
         }
@@ -373,7 +410,7 @@ export async function getTransaction(id: string) {
             .from('prescription_items')
             .select(`
                 *,
-                medicine:medicines(code, name, name_en, unit, description, description_en, expiry_note_th, expiry_note_en)
+                medicine:medicines(id, code, name, name_en, unit, description, description_en, expiry_note_th, expiry_note_en)
             `)
             .eq('prescription_id', data.prescription.id)
             .order('created_at', { ascending: true })
@@ -382,13 +419,14 @@ export async function getTransaction(id: string) {
             data: {
                 ...data,
                 items: prescriptionItems || [],
-                hasBaseItems: false  // Flag for UI to disable adjustment
+                hasBaseItems: false,
+                adjustmentCount: 0
             },
             error: null
         }
     }
 
-    return { data: { ...data, hasBaseItems: false }, error: null }
+    return { data: { ...data, hasBaseItems: false, adjustmentCount: 0 }, error: null }
 }
 
 // ============================================

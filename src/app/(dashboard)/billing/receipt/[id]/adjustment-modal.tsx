@@ -41,6 +41,7 @@ type AdjustmentModalProps = {
     receiptNo: string
     items: TransactionItem[]
     currentTotal: number
+    df?: number  // Doctor fee (not adjustable, but included in totals)
 }
 
 // Local state for each item adjustment
@@ -57,6 +58,7 @@ export function AdjustmentModal({
     receiptNo,
     items,
     currentTotal,
+    df = 0,
 }: AdjustmentModalProps) {
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -93,7 +95,8 @@ export function AdjustmentModal({
         }
     })
 
-    const previewTotal = previewItems.reduce((sum, item) => sum + item.newAmount, 0)
+    const medicineTotal = previewItems.reduce((sum, item) => sum + item.newAmount, 0)
+    const previewTotal = medicineTotal + df  // Include DF in total
     const delta = previewTotal - currentTotal
     const hasChanges = delta !== 0
 
@@ -231,20 +234,29 @@ export function AdjustmentModal({
 
                     {/* Totals Preview */}
                     <div className="rounded-lg border p-3 space-y-2">
-                        <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">ยอดเดิม</span>
-                            <span>{formatCurrency(currentTotal)}</span>
+                        {/* Show DF if exists */}
+                        {df > 0 && (
+                            <div className="flex justify-between text-sm text-muted-foreground">
+                                <span>ค่าธรรมเนียมแพทย์ (ไม่ปรับ)</span>
+                                <span>{formatCurrency(df)}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                            <span>ค่ายา (ปรับแล้ว)</span>
+                            <span className={hasChanges ? 'text-orange-600' : ''}>
+                                {formatCurrency(medicineTotal)}
+                            </span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">ยอดใหม่ (preview)</span>
-                            <span className={hasChanges ? 'text-primary font-medium' : ''}>
+                        <div className="flex justify-between items-baseline pt-2 border-t">
+                            <span className="font-medium">ยอดรวมใหม่</span>
+                            <span className="text-xl font-bold text-primary">
                                 {formatCurrency(previewTotal)}
                             </span>
                         </div>
                         {hasChanges && (
-                            <div className="flex justify-between text-sm border-t pt-2">
-                                <span className="text-muted-foreground">ส่วนต่าง</span>
-                                <span className="text-red-600 font-medium">
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>ยอดเดิม {formatCurrency(currentTotal)} / ส่วนต่าง</span>
+                                <span className="text-red-600">
                                     {formatCurrency(delta)}
                                 </span>
                             </div>
