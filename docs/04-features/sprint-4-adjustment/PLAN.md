@@ -210,6 +210,14 @@ $$ LANGUAGE plpgsql;
 
 ---
 
+## Implementation Notes (Final Nits)
+
+1. **previous_total source**: ใช้ `ORDER BY adjustment_no DESC LIMIT 1`
+2. **RPC concurrency**: `FOR UPDATE` + throw error + UI retry (OK)
+3. **Print edge case**: effective items = empty → ยังพิมพ์ได้ (total = 0, ไม่มีรายการยา)
+
+---
+
 ## Related Documents
 
 - [ADR-0002](../../02-architecture/ADR/0002-reserved-stock-workflow.md)
