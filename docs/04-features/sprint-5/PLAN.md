@@ -40,6 +40,112 @@
 
 ---
 
+## 🚦 Sprint 5 — Start Checklist (SOP)
+
+> [!CAUTION]
+> **ทำตาม SOP นี้ก่อนเริ่ม M1!**
+
+---
+
+### A) Pre-flight (กันรันผิด environment)
+
+> [!WARNING]
+> **ตรวจทุกครั้งก่อนลบ!**
+
+- [ ] ยืนยันว่าเชื่อมต่อ **staging/dev** (ตรวจ project ref / DB URL / Supabase project)
+- [ ] ตรวจ row counts ก่อนลบ (sanity check)
+
+```sql
+SELECT 'patients' as t, count(*) FROM patients
+UNION ALL SELECT 'medicines', count(*) FROM medicines
+UNION ALL SELECT 'prescriptions', count(*) FROM prescriptions
+UNION ALL SELECT 'prescription_items', count(*) FROM prescription_items
+UNION ALL SELECT 'transactions', count(*) FROM transactions;
+```
+
+---
+
+### B) Backup Snapshot (optional)
+
+> **Decision rule:** มี seed v2 ที่มั่นใจแล้ว = ไม่ต้อง backup  
+> ทำเฉพาะก่อนการเปลี่ยน schema ครั้งใหญ่ หรือก่อน UAT
+
+- [ ] (ถ้าจำเป็น) Export/backup: `kkclinic_staging_pre_sprint5_<YYYYMMDD>.dump`
+
+---
+
+### C) Purge Test Data (FK-safe) — ทำใน transaction เดียว
+
+**Rule:**
+| Mode | ลบอะไร | ใช้เมื่อ |
+|------|--------|---------|
+| **Default** | prescription_items → transactions → prescriptions | เคลียร์ workflow data, เก็บ master data |
+| **Full Reset** | รวม medicines + patients | Seed v2 master data ใหม่ทั้งหมด |
+
+```sql
+BEGIN;
+
+DELETE FROM prescription_items;
+DELETE FROM transactions;
+DELETE FROM prescriptions;
+
+-- Full reset only:
+DELETE FROM medicines;
+DELETE FROM patients;
+
+COMMIT;
+```
+
+> [!NOTE]
+> - Sprint 5 เพิ่มแค่ columns (ไม่มี table ใหม่) → purge order เดิมยังใช้ได้
+> - **Project ใช้ UUID → ไม่ต้อง reset sequences**
+
+---
+
+### C.1) Post-Purge Verification
+
+> [!IMPORTANT]
+> **หลัง purge ต้อง count เป็น 0** ในตารางที่ลบ (กันลบไม่หมดเพราะ RLS/permission)
+
+```sql
+SELECT count(*) FROM prescriptions;
+SELECT count(*) FROM prescription_items;
+SELECT count(*) FROM transactions;
+-- Full reset:
+SELECT count(*) FROM medicines;
+SELECT count(*) FROM patients;
+```
+
+---
+
+### D) Run Migrations (M1 Reserved Stock schema)
+
+เพิ่ม columns:
+- `prescriptions.status`
+- `prescription_items.is_dispensed`
+- `medicines.reserved_qty`
+
+---
+
+### E) Seed v2 (ครั้งเดียวหลัง schema ใหม่)
+
+- [ ] Seed patients/medicines
+- [ ] Seed scenario prescriptions ที่ครอบคลุมเคสหลัก (เช่น จ่ายบางตัว/ไม่เอายาบางตัว)
+
+---
+
+### F) Smoke Test (ต้องมี assertions)
+
+| # | Test | Assertion |
+|---|------|-----------|
+| 1 | Doctor: สั่งยา → สรุปราคา | `reserved_qty` เพิ่มขึ้นตามจำนวนที่สั่ง |
+| 2 | Billing/Staff: reserve/confirm | `reserved_qty` ถูกต้องหลัง confirm |
+| 3 | Dispense: เลือกจ่าย/ไม่จ่าย | `is_dispensed` ถูกต้องตามสถานะจ่ายจริง |
+| 4 | ชำระเงิน | `on_hand_qty` ลดลง, `reserved_qty = 0` |
+| 5 | Print: label + medicine summary | จำนวนหน้า/รูปแบบถูกต้อง |
+
+---
+
 ## 🔧 M1: Database Migration
 
 > [!NOTE]
