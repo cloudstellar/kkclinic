@@ -183,11 +183,19 @@ $$ LANGUAGE plpgsql;
 
 ---
 
-## Phase 3: RPC Integration
+## Phase 3: RPC Integration + Void Logic Fix
 
+**createAdjustment:**
 - Call RPC from `billing/actions.ts`
 - Handle errors: voided, invalid qty, calculation mismatch
 - On success: refresh receipt view
+
+**Void Logic (Extended):**
+- Void หลัง adjustment: คืน stock ตาม **effective items** (ไม่ใช่ base)
+- Reuse helper: `getEffectiveItems(transactionId)`
+- Void ต้อง idempotent (เช็ค `voided_at` ก่อน stock movement)
+- Void แล้ว: ปุ่ม "ปรับปรุงรายการ" ไม่แสดง + RPC reject
+- Void transaction ที่มีเฉพาะ df: ไม่แตะ stock, void ผ่านปกติ
 
 ---
 
@@ -219,6 +227,7 @@ $$ LANGUAGE plpgsql;
 - [ ] Adjustment #2 → diff จาก effective ล่าสุด (ไม่คืนซ้ำ)
 - [ ] Void → ปุ่มปรับปรุงไม่แสดง + RPC ปฏิเสธ
 - [ ] **Void หลัง adjust → คืน stock ตาม effective (ไม่ใช่ base)**
+- [ ] **Void ซ้ำ → ไม่เกิด stock movement รอบสอง (idempotent)**
 - [ ] Print → ยอดสุทธิ + "ฉบับปรับปรุง" + effective items ถูกต้อง
 - [ ] df ไม่ถูก adjust
 - [ ] discount ไม่เปลี่ยน
