@@ -175,14 +175,41 @@ $$ LANGUAGE plpgsql;
 |------|--------|
 | `receipt-view.tsx` | ปุ่ม "ปรับปรุงรายการ" |
 | `adjustment-modal.tsx` | NEW: modal ลด/ติ๊กออก |
+| `billing/actions.ts` | `createAdjustment` stub (placeholder for Phase 3) |
 
-**Button visibility:** `paid AND voided_at IS NULL`
+### Guardrails (LOCKED)
+
+**Button visibility:**
+```
+status = 'paid' AND voided_at IS NULL AND hasBaseItems = true
+```
+- `hasBaseItems` = transaction มี records ใน `transaction_items`
+- Legacy transactions (ไม่มี transaction_items) จะไม่แสดงปุ่ม
+- df-only payments (ไม่มี medicine items) จะไม่แสดงปุ่ม
+
+**Phase 2 Scope:**
+- ❌ **ห้าม** แตะ stock / คำนวณใน DB
+- ✅ UI แค่ "เตรียม payload" (`{ medicine_id, new_qty }[]`)
+- ✅ การคืน stock และ validate ทั้งหมดไปอยู่ Phase 3 RPC
+
+**Data Source:**
+- Modal ใช้ items จาก `getTransaction` (transaction_items)
+- **อย่าใช้ prescription_items**
 
 **Modal behavior:**
 - แสดง effective items ล่าสุด
-- ลด/ติ๊กออกได้เท่านั้น (no add)
-- แสดงยอด: previous_total, new_total, delta
-- Save → เรียก RPC
+- ลด/ติ๊กออกได้เท่านั้น (no add, no increase)
+- แสดงยอด: previous_total, new_total, delta (client-side preview)
+- **Final truth อยู่ที่ RPC**
+- Save → เรียก stub action (Phase 3 จะ implement จริง)
+
+### Definition of Done
+
+- [ ] เพิ่มปุ่ม "ปรับปรุงรายการ" บน receipt page (ตาม visibility logic)
+- [ ] กดแล้วเปิด modal
+- [ ] Modal แสดงรายการยาจาก transaction_items พร้อม qty input
+- [ ] แสดง previous_total, new_total, delta (preview)
+- [ ] กด Save → เรียก `createAdjustment` stub (throw "Not implemented")
 
 ---
 
