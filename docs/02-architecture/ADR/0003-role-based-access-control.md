@@ -62,6 +62,18 @@
 - Server action guards: Return error
 - UI guards: Hide buttons/menus
 
+### Data Enforcement (Server-side)
+
+> Adjust validated at server (`createAdjustment`):
+> - `new_qty ≤ effective_qty` (ห้ามเพิ่ม)
+> - `new_qty ≥ 0` (ห้ามติดลบ)
+> - ห้ามเพิ่มรายการใหม่
+> - ห้ามแก้ราคา (ใช้ unit_price จาก base snapshot)
+
+> Void:
+> - Staff เห็นสถานะ void ได้ (read-only badge "ยกเลิก")
+> - Staff ทำ void ไม่ได้ (UI + server guard)
+
 ## Consequences
 
 - Staff ทำงานได้ครบที่หน้าเดียว
