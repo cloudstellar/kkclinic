@@ -52,6 +52,15 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
     // Show more menu if any action available
     const hasMoreActions = canVoid || canAdjust
 
+    // Calculate effective totals from current items (after adjustments)
+    const df = transaction.prescription?.df || 0
+    const itemsSubtotal = transaction.items.reduce(
+        (sum, item) => sum + (item.unit_price || 0) * item.quantity,
+        0
+    )
+    const effectiveSubtotal = itemsSubtotal + df
+    const effectiveTotal = effectiveSubtotal - (transaction.discount || 0)
+
     return (
         <>
             {/* Print Styles */}
@@ -258,7 +267,7 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                     <div className="text-sm space-y-1">
                         <div className="flex justify-between">
                             <span>ยอดรวม</span>
-                            <span>฿{(transaction.subtotal || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                            <span>฿{effectiveSubtotal.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
                         </div>
                         {transaction.discount > 0 && (
                             <div className="flex justify-between text-red-600">
@@ -268,7 +277,7 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                         )}
                         <div className={`flex justify-between text-lg font-bold pt-2 border-t ${isVoided ? 'line-through text-gray-400' : ''}`}>
                             <span>รวมทั้งสิ้น</span>
-                            <span>฿{(transaction.total_amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                            <span>฿{effectiveTotal.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
                         </div>
                     </div>
 
