@@ -446,15 +446,15 @@ export async function voidTransaction(id: string, reason: string) {
         return { success: false, error: 'ไม่ได้เข้าสู่ระบบ' }
     }
 
-    // 2. Check user role (admin/staff only)
+    // 2. Check user role (B2: Admin/Doctor only - staff cannot void)
     const { data: userData } = await supabase
         .from('users')
         .select('role')
         .eq('id', user.id)
         .single()
 
-    if (!userData || !['admin', 'staff'].includes(userData.role)) {
-        return { success: false, error: 'ไม่มีสิทธิ์ยกเลิกบิล (ต้องเป็น Admin หรือ Staff)' }
+    if (!userData || !['admin', 'doctor'].includes(userData.role)) {
+        return { success: false, error: 'ไม่มีสิทธิ์ยกเลิกบิล (ต้องเป็น Admin หรือ Doctor)' }
     }
 
     // 3. Get transaction

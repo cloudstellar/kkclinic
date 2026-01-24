@@ -6,6 +6,13 @@ import { TransactionWithRelations } from '@/types/transactions'
 import { VoidTransactionDialog } from './void-transaction-dialog'
 import { AdjustmentModal } from './adjustment-modal'
 import { getDisplayName } from '@/lib/patient-utils'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
 
 const paymentMethodLabels: Record<string, string> = {
     cash: 'เงินสด',
@@ -32,15 +39,18 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
     const [adjustmentOpen, setAdjustmentOpen] = useState(false)
 
     const isVoided = transaction.status === 'voided'
-    const canVoid = !isVoided && ['admin', 'staff'].includes(userRole || '')
+    // B2: Void = Admin/Doctor only (not staff)
+    const canVoid = !isVoided && ['admin', 'doctor'].includes(userRole || '')
 
-    // Phase 2: Adjustment button visibility
-    // Show only for: paid, not voided, hasBaseItems (not legacy)
+    // Adjustment: paid, not voided, hasBaseItems, admin/staff
     const canAdjust = !isVoided &&
         transaction.status === 'paid' &&
         transaction.hasBaseItems === true &&
         transaction.items.length > 0 &&
         ['admin', 'staff'].includes(userRole || '')
+
+    // Show more menu if any action available
+    const hasMoreActions = canVoid || canAdjust
 
     return (
         <>
@@ -111,13 +121,22 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                             receiptNo={transaction.receipt_no}
                         />
                     )}
-                    {canAdjust && (
-                        <button
-                            onClick={() => setAdjustmentOpen(true)}
-                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium"
-                        >
-                            🔧 ปรับปรุงรายการ
-                        </button>
+                    {/* More Actions Dropdown */}
+                    {hasMoreActions && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="default">
+                                    ⋯ เพิ่มเติม
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {canAdjust && (
+                                    <DropdownMenuItem onClick={() => setAdjustmentOpen(true)}>
+                                        🔧 ปรับปรุงรายการ
+                                    </DropdownMenuItem>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     )}
                 </div>
 
