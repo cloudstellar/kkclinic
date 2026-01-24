@@ -554,26 +554,224 @@ export type CreateAdjustmentInput = {
 /**
  * Create a transaction adjustment (post-payment modification)
  * 
- * Phase 2: Stub implementation - throws "Not implemented"
- * Phase 3: Will call RPC to atomically update stock and create adjustment record
+ * Phase 3 implementation using direct Supabase operations:
+ * 1. Validate transaction (not voided, has items)
+ * 2. Get effective quantities (base - previous adjustments)
+ * 3. Validate new quantities (no increase, no negative)
+ * 4. Restore stock for reduced items
+ * 5. Insert adjustment record
  */
 export async function createAdjustment(input: CreateAdjustmentInput): Promise<{
     data: { adjustmentId: string } | null
     error: string | null
 }> {
-    // Phase 2: Validate input exists
+    const supabase = await createClient()
+
+    // 1. Auth check
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { data: null, error: 'ไม่ได้เข้าสู่ระบบ' }
+    }
+
+    // 2. Validate input
     if (!input.transactionId || !input.items || input.items.length === 0) {
-        return { data: null, error: 'Invalid input' }
+        return { data: null, error: 'ข้อมูลไม่ครบถ้วน' }
     }
 
-    // Phase 2: STUB - Phase 3 will implement RPC call
-    // The actual implementation will:
-    // 1. Call create_transaction_adjustment RPC
-    // 2. Atomically lock transaction, validate, restore stock, insert adjustment
-    // 3. Return adjustment_id on success
+    // 3. Get transaction and verify it's not voided
+    const { data: transaction, error: txError } = await supabase
+        .from('transactions')
+        .select('id, total_amount, voided_at, status')
+        .eq('id', input.transactionId)
+        .single()
 
-    return {
-        data: null,
-        error: 'กำลังพัฒนาฟีเจอร์นี้ (Phase 3 RPC not implemented yet)'
+    if (txError || !transaction) {
+        return { data: null, error: 'ไม่พบ Transaction' }
     }
+
+    if (transaction.voided_at) {
+        return { data: null, error: 'ไม่สามารถปรับปรุง Transaction ที่ถูกยกเลิกแล้ว' }
+    }
+
+    if (transaction.status !== 'paid') {
+        return { data: null, error: 'สามารถปรับปรุงได้เฉพาะ Transaction ที่ชำระแล้ว' }
+    }
+
+    // 4. Get transaction_items (base items)
+    const { data: baseItems, error: itemsError } = await supabase
+        .from('transaction_items')
+        .select('medicine_id, quantity, unit_price')
+        .eq('transaction_id', input.transactionId)
+
+    if (itemsError || !baseItems || baseItems.length === 0) {
+        return { data: null, error: 'ไม่พบรายการยาใน Transaction' }
+    }
+
+    // 5. Get previous adjustments to calculate effective quantities
+    const { data: prevAdjustments } = await supabase
+        .from('transaction_adjustments')
+        .select('items_delta')
+        .eq('transaction_id', input.transactionId)
+        .order('adjustment_no', { ascending: true })
+
+    // Calculate effective quantities (base - all previous reductions)
+    const effectiveQty = new Map<string, { qty: number; unitPrice: number }>()
+
+    for (const item of baseItems) {
+        effectiveQty.set(item.medicine_id, {
+            qty: item.quantity,
+            unitPrice: item.unit_price
+        })
+    }
+
+    // Apply previous adjustments
+    if (prevAdjustments) {
+        for (const adj of prevAdjustments) {
+            const itemsDelta = adj.items_delta as Array<{ medicine_id: string; qty_reduced: number }> || []
+            for (const delta of itemsDelta) {
+                const current = effectiveQty.get(delta.medicine_id)
+                if (current) {
+                    current.qty -= delta.qty_reduced
+                    effectiveQty.set(delta.medicine_id, current)
+                }
+            }
+        }
+    }
+
+    // 6. Get previous_total (last adjustment new_total OR base transaction total)
+    const { data: lastAdj } = await supabase
+        .from('transaction_adjustments')
+        .select('new_total')
+        .eq('transaction_id', input.transactionId)
+        .order('adjustment_no', { ascending: false })
+        .limit(1)
+        .single()
+
+    const previousTotal = lastAdj?.new_total ?? transaction.total_amount
+
+    // 7. Get next adjustment_no
+    const { count } = await supabase
+        .from('transaction_adjustments')
+        .select('id', { count: 'exact', head: true })
+        .eq('transaction_id', input.transactionId)
+
+    const adjustmentNo = (count || 0) + 1
+
+    // 8. Process items and calculate delta
+    const itemsDelta: Array<{ medicine_id: string; qty_reduced: number; unit_price: number }> = []
+    let newTotal = 0
+    const stockUpdates: Array<{ medicineId: string; qtyRestore: number }> = []
+
+    for (const inputItem of input.items) {
+        const effective = effectiveQty.get(inputItem.medicine_id)
+
+        if (!effective) {
+            return { data: null, error: `ไม่พบยา ${inputItem.medicine_id} ใน Transaction` }
+        }
+
+        // Validate: cannot increase
+        if (inputItem.new_qty > effective.qty) {
+            return { data: null, error: `ไม่สามารถเพิ่มจำนวนยาได้ (max: ${effective.qty})` }
+        }
+
+        // Validate: cannot go negative
+        if (inputItem.new_qty < 0) {
+            return { data: null, error: 'จำนวนยาต้องไม่ติดลบ' }
+        }
+
+        const qtyReduced = effective.qty - inputItem.new_qty
+
+        if (qtyReduced > 0) {
+            itemsDelta.push({
+                medicine_id: inputItem.medicine_id,
+                qty_reduced: qtyReduced,
+                unit_price: effective.unitPrice
+            })
+
+            // Queue stock restore
+            stockUpdates.push({
+                medicineId: inputItem.medicine_id,
+                qtyRestore: qtyReduced
+            })
+        }
+
+        newTotal += inputItem.new_qty * effective.unitPrice
+    }
+
+    // Add items not in input (unchanged) to newTotal
+    for (const [medicineId, eff] of effectiveQty) {
+        const inInput = input.items.find(i => i.medicine_id === medicineId)
+        if (!inInput) {
+            newTotal += eff.qty * eff.unitPrice
+        }
+    }
+
+    const amountDelta = newTotal - previousTotal
+
+    // 9. Validate: no increase
+    if (amountDelta > 0) {
+        return { data: null, error: 'ไม่สามารถเพิ่มยอดได้' }
+    }
+
+    // 10. If no changes, return error
+    if (amountDelta === 0 || itemsDelta.length === 0) {
+        return { data: null, error: 'ไม่มีการเปลี่ยนแปลง' }
+    }
+
+    // 11. Restore stock (one by one to handle potential errors)
+    for (const update of stockUpdates) {
+        const { error: stockError } = await supabase
+            .from('medicines')
+            .update({
+                stock_qty: supabase.rpc('increment_stock', {
+                    p_medicine_id: update.medicineId,
+                    p_qty: update.qtyRestore
+                })
+            })
+            .eq('id', update.medicineId)
+
+        // Fallback: direct update if RPC doesn't exist
+        if (stockError) {
+            // Get current stock
+            const { data: med } = await supabase
+                .from('medicines')
+                .select('stock_qty')
+                .eq('id', update.medicineId)
+                .single()
+
+            if (med) {
+                await supabase
+                    .from('medicines')
+                    .update({ stock_qty: (med.stock_qty || 0) + update.qtyRestore })
+                    .eq('id', update.medicineId)
+            }
+        }
+    }
+
+    // 12. Insert adjustment record
+    const { data: adjustment, error: insertError } = await supabase
+        .from('transaction_adjustments')
+        .insert({
+            transaction_id: input.transactionId,
+            adjustment_no: adjustmentNo,
+            items_delta: itemsDelta,
+            amount_delta: amountDelta,
+            previous_total: previousTotal,
+            new_total: newTotal,
+            created_by: user.id,
+            note: input.note || null
+        })
+        .select('id')
+        .single()
+
+    if (insertError) {
+        console.error('Error creating adjustment:', insertError)
+        return { data: null, error: insertError.message }
+    }
+
+    revalidatePath(`/billing/receipt/${input.transactionId}`)
+    revalidatePath('/billing')
+
+    return { data: { adjustmentId: adjustment.id }, error: null }
 }
+
