@@ -21,9 +21,10 @@
 | Sprint 3A | ✅ Done | TN, Patient Registry, Prescription, Label | `v0.5.3-sprint3a-ready` |
 | Sprint 3B | ✅ Done | Smart Dosage System (Engine, UI, Summary Sheet) | - |
 | Sprint 3C | ✅ Done | Doctor Fee (DF) Feature | `v0.6.0-sprint3-complete` |
-| **Sprint 4** | 🔲 Pending | **Naming & Semantics Clean** (no DB) | - |
-| Sprint 5 | 🔲 Future | Schema + Workflow Revolution | - |
-| Sprint 6 | 🔲 Future | UX Phase 2 + Reporting | - |
+| ~~Sprint 4~~ | ❌ Archived | ~~Naming & Semantics~~ | Replaced |
+| ~~Sprint 5~~ | ❌ Archived | ~~Reserved Stock Workflow~~ | Replaced |
+| **Sprint 4 (New)** | 🔲 Next | **Pre-Payment Adjustment + Transaction Adjustments** | - |
+| Sprint 5 | 🔲 Future | UX Phase 2 + Reporting | - |
 
 ---
 
@@ -31,46 +32,42 @@
 
 ### Deliverables
 - **DB**: `df`, `df_note` columns in `prescriptions` table
-- **Prescription Form**: DF input + Note Presets (ตรวจตา, ลอกดูตา, ตรวจประเมิน)
-- **View Prescription**: Shows DF breakdown before total
-- **Payment Modal**: Shows DF as first item
+- **Prescription Form**: DF input + Note Presets
 - **Receipt**: DF shown first with simplified layout
 - **Summary Sheet**: DF as first item (no checkbox)
 
 ---
 
-## 🎯 Sprint 4 — Next (Naming & Semantics)
+## 🎯 Sprint 4 (New) — Pre-Payment Adjustment
 
 > [!IMPORTANT]
-> Sprint 4 ไม่แตะ DB schema, ไม่แก้ logic  
-> Legacy payment behavior ยังคงเดิม (deduct stock immediately)
+> แทน Sprint 4-5 เดิม (Reserved Stock Workflow)  
+> ไม่รื้อ flow เดิม แค่เพิ่ม feature
 
 ### Scope
-- 🔲 New routes: `/billing/documents/prepay/` และ `/receipt/`
-- 🔲 Rename: `receipt-view` → `billing-document-view`
-- 🔲 Semantic terms: PrepaySummary / Receipt
-- 🔲 SEMANTIC_GLOSSARY.md
-- 🔲 Grep check: กำจัด "receipt" ที่หมายถึง prepay
-- 🔲 UI Labels: "ใบสรุปค่าใช้จ่าย" / "ใบเสร็จรับเงิน"
 
----
+| Phase | Description |
+|-------|-------------|
+| Phase 0 | DB: `transaction_adjustments` table + RPC |
+| Phase 1 | Pre-payment tick-off (ติ๊กก่อนชำระ) |
+| Phase 2 | Adjustment UI (ปุ่ม "ปรับปรุงรายการ") |
+| Phase 3 | RPC integration (atomic stock restore) |
+| Phase 4 | Print effective items |
 
-## 🎯 Sprint 5 — Schema + Workflow Revolution
-
-- 🔲 **M1**: DB Migration (status, is_dispensed, reserved_qty)
-- 🔲 **M2**: Stock Management + Guardrails
-- 🔲 **M2.5**: E2E Test (no UI)
-- 🔲 **M3**: Staff Confirmation UI + Status Flow
-- 🔲 **M4**: Minimal Reporting (optional)
+### Key Features
+- ติ๊ก "ไม่เอา" ก่อนชำระ → ลด receipt items
+- ปุ่ม "ปรับปรุงรายการ" หลังชำระ → ลด/ติ๊กออก → restore stock
+- Adjustment record (ไม่แก้ทับ original)
+- Print แสดงยอดสุทธิ + "ฉบับปรับปรุง"
 
 > See [ADR-0002](../02-architecture/ADR/0002-reserved-stock-workflow.md) for details
 
 ---
 
-## 🎯 Sprint 6 — UX Phase 2
+## 🎯 Sprint 5 — UX Phase 2
 
-- 🔲 Real-time filter (debounce 300ms, `?q=`)
-- 🔲 Sortable tables (`?sort=&order=`)
+- 🔲 Real-time filter (debounce 300ms)
+- 🔲 Sortable tables
 - 🔲 Full Reporting (EOD history, top-selling)
 - 🔲 Patient Statement
 - 🔲 Auto Calculator
@@ -83,18 +80,13 @@
 |----------|--------|--------|
 | Smart Dosage snapshot | 3B | Option A: Single Snapshot |
 | Dictionary version | 3B | `1.0` (engine on) |
-| Summary Sheet | 3B | 6 items/page, dosage_original |
 | Doctor Fee location | 3C | `prescriptions` table (per-visit) |
-| Receipt Order | 3C | DF first → Medicines |
-| **Reserved Stock Workflow** | 5 | ADR-0002 (status flow, guardrails) |
-| **Semantic Naming** | 4 | PrepaySummary / Receipt (see Glossary) |
+| **Pre-Payment Adjustment** | 4 (New) | ADR-0002 (replaces Reserved Stock) |
 
 ---
 
 ## 🔗 Related Documents
 
-- [ADR-0002: Reserved Stock Workflow](../02-architecture/ADR/0002-reserved-stock-workflow.md)
+- [ADR-0002: Pre-Payment Adjustment](../02-architecture/ADR/0002-reserved-stock-workflow.md)
 - [SEMANTIC_GLOSSARY.md](SEMANTIC_GLOSSARY.md)
 - [HANDOFF_PROMPT.md](../HANDOFF_PROMPT.md)
-- [NEXT_SESSION.md](../NEXT_SESSION.md)
-- [LESSONS_LEARNED.md](../01-constitution/LESSONS_LEARNED.md)

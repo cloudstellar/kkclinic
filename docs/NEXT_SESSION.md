@@ -1,68 +1,69 @@
-# Session Note: Sprint 4 Planning Complete!
+# Next Session: Sprint 4 (New) — Pre-Payment Adjustment
 
 **Date**: 24 มกราคม 2569  
-**Status**: ✅ Planning Done — Ready for Sprint 4  
+**Status**: ✅ Planning Complete — Ready for Implementation  
 **Branch**: `main`
 
 ---
 
-## 📊 What Was Done This Session
+## 🎯 What to Implement
 
-### ADR-0002: Reserved Stock Workflow
-- Created comprehensive ADR with:
-  - Status flow: pending → confirmed → paid
-  - Database schema changes
-  - Variable naming conventions
-  - Document flow (PrepaySummary vs Receipt)
-  - Technical Guardrails (6.1-6.3)
-  - Out of Scope for Sprint 5
+### Sprint 4 (New): Pre-Payment Adjustment + Transaction Adjustments
 
-### Sprint 4 Plan (Naming & Semantics)
-- New routes with type separation
-- Component rename strategy
-- Semantic Contract comment
-- Legacy behavior warning
-
-### Sprint 5 Plan (Schema + Workflow)
-- Reordered: Guardrails before UI
-- Added M2.5: E2E Test (no UI)
-- Reporting made optional/minimal
-
-### New Documents Created
-- `docs/05-reference/SEMANTIC_GLOSSARY.md`
-- `docs/04-features/sprint-5/PLAN.md`
+> **แทน Sprint 4-5 เดิม** (Reserved Stock Workflow ถูก archived)
 
 ---
 
-## 📁 Documents Updated
+## Phases
 
-| Document | Changes |
-|----------|---------|
-| `ADR-0002` | Guardrails, Out of Scope, Sprint references |
-| `Sprint 4 PLAN` | Naming focus, legacy behavior warning |
-| `Sprint 5 PLAN` | DB + Workflow, reordered phases |
-| `ROADMAP.md` | New sprint structure |
-| `SEMANTIC_GLOSSARY.md` | PrepaySummary / Receipt terms |
-
----
-
-## 🎯 Next: Sprint 4 Implementation
-
-Ready to implement:
-1. Create new routes (`/billing/documents/prepay/`, `/receipt/`)
-2. Rename `receipt-view.tsx` → `billing-document-view.tsx`
-3. Add Semantic Contract comment
-4. Update UI labels
-5. Grep check and cleanup
+| Phase | Description | Time |
+|-------|-------------|------|
+| 0 | DB: `transaction_adjustments` table + RPC | 1 day |
+| 1 | Pre-payment tick-off (ติ๊กก่อนชำระ) | 1 day |
+| 2 | Adjustment UI (ปุ่ม "ปรับปรุงรายการ") | 0.75 day |
+| 3 | RPC integration (atomic stock restore) | 0.5 day |
+| 4 | Print effective items | 0.5 day |
 
 ---
 
-## 📚 Key Decisions Made
+## Key Features
 
-| Decision | Choice |
-|----------|--------|
-| Sprint 4 scope | Naming only (no DB) |
-| DB Migration | Sprint 5 (with workflow) |
-| Sprint 5 order | Guardrails → E2E Test → UI |
-| Reporting | Minimal/optional in Sprint 5 |
-| Semantic terms | PrepaySummary / Receipt |
+- ✅ ติ๊ก "ไม่เอา" ก่อนชำระ → ลด receipt items
+- ✅ ปุ่ม "ปรับปรุงรายการ" หลังชำระ → ลด/ติ๊กออก → restore stock
+- ✅ Adjustment record (ไม่แก้ทับ original)
+- ✅ RPC atomic: lock + validate + restore + insert
+
+---
+
+## New Table: `transaction_adjustments`
+
+```sql
+CREATE TABLE transaction_adjustments (
+  id UUID PRIMARY KEY,
+  transaction_id UUID REFERENCES transactions(id),
+  adjustment_no INT NOT NULL,
+  items_delta JSONB NOT NULL,
+  amount_delta NUMERIC NOT NULL,
+  previous_total NUMERIC NOT NULL,
+  new_total NUMERIC NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  created_by UUID REFERENCES users(id),
+  UNIQUE(transaction_id, adjustment_no)
+);
+```
+
+---
+
+## 📚 Key Documents
+
+- [ADR-0002: Pre-Payment Adjustment](docs/02-architecture/ADR/0002-reserved-stock-workflow.md)
+- [ROADMAP.md](docs/05-reference/ROADMAP.md)
+- [SEMANTIC_GLOSSARY.md](docs/05-reference/SEMANTIC_GLOSSARY.md)
+
+---
+
+## ⚠️ Archived Documents
+
+Old Sprint 4-5 plans moved to `docs/99-archived/`:
+- `99-archived/sprint-4/PLAN.md`
+- `99-archived/sprint-5/PLAN.md`

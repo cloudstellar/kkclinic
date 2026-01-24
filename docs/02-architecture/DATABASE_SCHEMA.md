@@ -824,3 +824,53 @@ ADD COLUMN IF NOT EXISTS low_stock_threshold INT DEFAULT 10,
 ADD COLUMN IF NOT EXISTS critical_threshold INT DEFAULT 3;
 ```
 
+---
+
+## Pending Migrations (Sprint 4 New)
+
+> ⚠️ **Pre-Payment Adjustment Feature**
+
+### 9. transaction_adjustments (การปรับปรุงรายการหลังชำระ)
+
+```sql
+CREATE TABLE transaction_adjustments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    transaction_id UUID NOT NULL REFERENCES transactions(id),
+    adjustment_no INT NOT NULL,
+    
+    -- Delta: unit_price ต้องมาจาก base transaction_items
+    items_delta JSONB NOT NULL,
+    amount_delta NUMERIC NOT NULL,
+    
+    -- Totals for audit
+    previous_total NUMERIC NOT NULL,
+    new_total NUMERIC NOT NULL,
+    
+    -- Audit
+    created_at TIMESTAMPTZ DEFAULT now(),
+    created_by UUID NOT NULL REFERENCES users(id),
+    note TEXT,
+    
+    -- Constraints
+    CONSTRAINT items_delta_array CHECK (jsonb_typeof(items_delta) = 'array'),
+    CONSTRAINT amount_delta_negative CHECK (amount_delta <= 0),
+    UNIQUE(transaction_id, adjustment_no)
+);
+
+CREATE INDEX idx_adjustments_transaction ON transaction_adjustments(transaction_id);
+```
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PK | รหัส adjustment |
+| transaction_id | UUID | FK → transactions | ใบเสร็จที่ปรับ |
+| adjustment_no | INT | UNIQUE | ลำดับการปรับ (1, 2, 3...) |
+| items_delta | JSONB | NOT NULL | [{medicine_id, qty_reduced, unit_price}] |
+| amount_delta | NUMERIC | ≤ 0 | ยอดที่ลด (ติดลบ) |
+| previous_total | NUMERIC | NOT NULL | ยอดก่อนปรับ |
+| new_total | NUMERIC | NOT NULL | ยอดหลังปรับ |
+| created_at | TIMESTAMPTZ | DEFAULT now() | เวลาที่ปรับ |
+| created_by | UUID | FK → users | ใครปรับ |
+| note | TEXT | - | หมายเหตุ |
+
+> See [ADR-0002](ADR/0002-reserved-stock-workflow.md) for RPC implementation
