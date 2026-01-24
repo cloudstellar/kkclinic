@@ -10,8 +10,8 @@
 
 | Route / Action | Admin | Doctor | Staff |
 |----------------|-------|--------|-------|
-| `/billing` (สรุปรายวัน) | ✅ | ❌ | ❌ |
-| `/dispensing` (รายการจ่ายยา) | ✅ | ✅ (read-only) | ✅ |
+| `/billing` (สรุปรายวัน) | ✅ | ✅ (เจ้าของ) | ❌ |
+| `/dispensing` (รายการจ่ายยา) | ✅ | ✅ | ✅ |
 | `/prescriptions/[id]` (รายละเอียด) | ✅ | ✅ | ✅ |
 | Receipt view | ✅ | ✅ | ✅ |
 | Payment (ชำระเงิน) | ✅ | ❌ | ✅ |

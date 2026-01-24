@@ -30,11 +30,12 @@
 
 ## Patch B: Permissions (Sprint 4.5)
 
-### B1. Block `/billing` for Staff
+### B1. Block `/billing` for Staff only
 
 **File:** `app/(dashboard)/billing/page.tsx`
 
 ```tsx
+// Doctor = owner, can view billing
 if (userRole === 'staff') redirect('/dispensing')
 ```
 
