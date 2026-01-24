@@ -1,54 +1,68 @@
-# Session Note: Sprint 3B & 3C Complete!
+# Session Note: Sprint 4 Planning Complete!
 
-**Date**: 24 มกราคม 2569
-**Status**: ✅ All Complete
+**Date**: 24 มกราคม 2569  
+**Status**: ✅ Planning Done — Ready for Sprint 4  
 **Branch**: `main`
 
 ---
 
-## 📊 Commits Today
+## 📊 What Was Done This Session
 
-| Commit | Description |
-|--------|-------------|
-| `2627f92` | M5.5 UX improvements (smart defaults, shorthand history) |
-| `f5b4ba0` | M6 Integration (dictionary_version 1.0) |
-| `73fb0de` | M7 Medicine Summary Sheet |
-| `2ecc0e6` | Sprint 3B docs update |
-| `f61c6d3` | Sprint 3C DF core feature |
-| `28351f1` | Sprint 3C UI WIP |
-| `5190974` | Sprint 3C UI complete |
+### ADR-0002: Reserved Stock Workflow
+- Created comprehensive ADR with:
+  - Status flow: pending → confirmed → paid
+  - Database schema changes
+  - Variable naming conventions
+  - Document flow (PrepaySummary vs Receipt)
+  - Technical Guardrails (6.1-6.3)
+  - Out of Scope for Sprint 5
 
----
+### Sprint 4 Plan (Naming & Semantics)
+- New routes with type separation
+- Component rename strategy
+- Semantic Contract comment
+- Legacy behavior warning
 
-## ✅ Sprint 3B: Smart Dosage System
+### Sprint 5 Plan (Schema + Workflow)
+- Reordered: Guardrails before UI
+- Added M2.5: E2E Test (no UI)
+- Reporting made optional/minimal
 
-All milestones (M1-M7) completed:
-- Tokenizer, Dictionary V1, Translation Engine
-- 2-Pane UI with Doctor Override
-- Integration with dictionary_version 1.0
-- Medicine Summary Sheet
-
----
-
-## ✅ Sprint 3C: Doctor Fee
-
-- Database: Added `df`, `df_note` to `prescriptions`
-- Prescription Form: DF input + Note Presets
-- View Prescription: Shows DF breakdown
-- Payment Modal: Shows DF in items list
-- Receipt View: DF shown first (simplified layout)
-- Summary Sheet: DF as first item, no checkbox
+### New Documents Created
+- `docs/05-reference/SEMANTIC_GLOSSARY.md`
+- `docs/04-features/sprint-5/PLAN.md`
 
 ---
 
-## 📚 Lessons Learned Added
+## 📁 Documents Updated
 
-**#10 Type Duplication**: Same type in multiple files requires updating all when adding fields.
+| Document | Changes |
+|----------|---------|
+| `ADR-0002` | Guardrails, Out of Scope, Sprint references |
+| `Sprint 4 PLAN` | Naming focus, legacy behavior warning |
+| `Sprint 5 PLAN` | DB + Workflow, reordered phases |
+| `ROADMAP.md` | New sprint structure |
+| `SEMANTIC_GLOSSARY.md` | PrepaySummary / Receipt terms |
 
 ---
 
-## 🎯 Next: Sprint 4
+## 🎯 Next: Sprint 4 Implementation
 
-Ready to plan:
-- UX Phase 2 (Filters, Sorting)
-- Workflow Revolution (Reserved Stock, EOD)
+Ready to implement:
+1. Create new routes (`/billing/documents/prepay/`, `/receipt/`)
+2. Rename `receipt-view.tsx` → `billing-document-view.tsx`
+3. Add Semantic Contract comment
+4. Update UI labels
+5. Grep check and cleanup
+
+---
+
+## 📚 Key Decisions Made
+
+| Decision | Choice |
+|----------|--------|
+| Sprint 4 scope | Naming only (no DB) |
+| DB Migration | Sprint 5 (with workflow) |
+| Sprint 5 order | Guardrails → E2E Test → UI |
+| Reporting | Minimal/optional in Sprint 5 |
+| Semantic terms | PrepaySummary / Receipt |

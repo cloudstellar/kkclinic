@@ -1,35 +1,46 @@
 # KKClinic - ระบบบริหารจัดการคลินิก
 
-![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![Supabase](https://img.shields.io/badge/Supabase-Postgres-3FCF8E?logo=supabase)
-![TailwindCSS](https://img.shields.io/badge/Tailwind-CSS-06B6D4?logo=tailwindcss)
+![TailwindCSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
 ![License](https://img.shields.io/badge/License-Private-red)
 
-> Web Application สำหรับบริหารจัดการคลินิก ครอบคลุมการลงทะเบียนผู้ป่วย การสั่งยา การจ่ายยาและคิดเงิน และการจัดการคลังยา
+> Web Application สำหรับบริหารจัดการคลินิกตา ครอบคลุมการลงทะเบียนผู้ป่วย การสั่งยา การจ่ายยาและคิดเงิน และการจัดการคลังยา
 
 ## 🏥 Features
 
+### Core
 - **ระบบยืนยันตัวตน** - Login/Logout พร้อม Role-based Access (Admin, Doctor, Staff)
-- **จัดการผู้ป่วย** - ลงทะเบียน, ค้นหา, แก้ไขข้อมูลผู้ป่วย
+- **จัดการผู้ป่วย** - ลงทะเบียน, ค้นหา, แก้ไขข้อมูลผู้ป่วย, ประวัติแพ้ยา
 - **สั่งยา/หัตถการ** - แพทย์สร้างใบสั่งยาพร้อม Autocomplete
 - **จ่ายยา & คิดเงิน** - พนักงานจ่ายยาตามใบสั่ง, ออกใบเสร็จ
-- **จัดการสต๊อก** - เพิ่ม/ลดสต๊อก, สแกน Barcode, ดูประวัติ
+- **จัดการสต๊อก** - เพิ่ม/ลดสต๊อก, ดูประวัติ
+
+### Sprint 3 Features (Latest)
+- **Smart Dosage System** - Tokenizer + Dictionary + Translation Engine
+- **Doctor Fee (DF)** - ค่าธรรมเนียมแพทย์ พร้อม Note Presets
+- **Medicine Summary Sheet** - ใบสรุปรายการยา (Internal Use)
+- **Bilingual Labels** - ฉลากยา 2 ภาษา (Thai/English)
+- **TN Format** - รหัสผู้ป่วยแบบใหม่ (TN250429)
 
 ## 🛠 Tech Stack
 
-| Technology | Purpose |
-|------------|---------|
-| [Next.js 15](https://nextjs.org/) | React Framework (App Router) |
-| [TypeScript](https://www.typescriptlang.org/) | Type Safety |
-| [Tailwind CSS](https://tailwindcss.com/) | Styling |
-| [shadcn/ui](https://ui.shadcn.com/) | UI Components |
-| [Supabase](https://supabase.com/) | Backend (PostgreSQL + Auth) |
-| [Vercel](https://vercel.com/) | Deployment |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| [Next.js](https://nextjs.org/) | 16.1.3 | React Framework (App Router) |
+| [React](https://react.dev/) | 19.2.3 | UI Library |
+| [TypeScript](https://www.typescriptlang.org/) | 5 | Type Safety |
+| [Tailwind CSS](https://tailwindcss.com/) | 4 | Styling |
+| [shadcn/ui](https://ui.shadcn.com/) | - | UI Components |
+| [Supabase](https://supabase.com/) | 2.90 | Backend (PostgreSQL + Auth) |
+| [Zod](https://zod.dev/) | 4.3 | Schema Validation |
+| [Vercel](https://vercel.com/) | - | Deployment |
 
 ## 📋 Prerequisites
 
-- Node.js 18+ 
+- Node.js 20+ 
 - npm or pnpm
 - Supabase Account
 
@@ -38,7 +49,7 @@
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-username/kkclinic.git
+git clone https://github.com/cloudstellar/kkclinic.git
 cd kkclinic
 ```
 
@@ -84,11 +95,11 @@ npm run dev
 ```
 kkclinic/
 ├── docs/                    # Documentation
-│   ├── PRD.md               # Product Requirements
-│   ├── DATABASE_SCHEMA.md   # Database Schema
-│   └── IMPLEMENTATION_PLAN.md
+│   ├── 01-constitution/     # Core rules (RULES, TECH_STACK, LESSONS_LEARNED)
+│   ├── 02-architecture/     # ADR, WORKFLOW, DATABASE
+│   ├── 04-features/         # Sprint-specific docs
+│   └── 05-reference/        # ROADMAP, GLOSSARY
 ├── supabase/                # Database migrations
-│   └── migrations/
 ├── src/
 │   ├── app/                 # Next.js pages (App Router)
 │   │   ├── (auth)/          # Public routes (login)
@@ -96,9 +107,12 @@ kkclinic/
 │   ├── components/          # React components
 │   │   ├── ui/              # shadcn/ui components
 │   │   ├── layout/          # Layout components
-│   │   └── forms/           # Form components
+│   │   ├── forms/           # Form components
+│   │   ├── prescription/    # Prescription-specific (Dosage Sheet, Summary)
+│   │   └── payment/         # Payment modal, etc.
 │   ├── lib/                 # Utilities
-│   │   └── supabase/        # Supabase clients
+│   │   ├── supabase/        # Supabase clients
+│   │   └── dosage/          # Smart Dosage Engine (Tokenizer, Dictionary)
 │   ├── hooks/               # Custom React hooks
 │   └── types/               # TypeScript definitions
 └── public/                  # Static assets
@@ -120,16 +134,13 @@ kkclinic/
 
 ## 🗄 Database Schema
 
-ดูรายละเอียดได้ที่ [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md)
-
 **Tables:**
 - `users` - ข้อมูลผู้ใช้ระบบ
-- `patients` - ข้อมูลผู้ป่วย  
+- `patients` - ข้อมูลผู้ป่วย (TN, name, drug_allergies, etc.)
 - `medicines` - รายการยา/เวชภัณฑ์
-- `prescriptions` - ใบสั่งยา
-- `prescription_items` - รายการในใบสั่งยา
+- `prescriptions` - ใบสั่งยา (df, df_note, total_price)
+- `prescription_items` - รายการยา (dosage_original, dosage_instruction, etc.)
 - `transactions` - ธุรกรรมการคิดเงิน
-- `transaction_items` - รายการในใบเสร็จ
 - `stock_logs` - ประวัติการเคลื่อนไหวสต๊อก
 
 ## 📝 Available Scripts
@@ -139,8 +150,8 @@ kkclinic/
 npm run dev           # Start dev server
 npm run build         # Build for production
 npm run start         # Start production server
-npm run lint          # Run ESLint
-npm run type-check    # TypeScript check
+npm run lint          # Run ESLint (MUST pass before commit)
+npm run test          # Run Vitest tests
 
 # Database
 npm run db:types      # Generate TypeScript types from Supabase
@@ -159,77 +170,34 @@ npm run db:types      # Generate TypeScript types from Supabase
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
-## 📚 Documentation
+## 📅 Roadmap
 
-- [Product Requirements (PRD)](docs/PRD.md)
-- [Database Schema](docs/DATABASE_SCHEMA.md)
-- [Implementation Plan](docs/IMPLEMENTATION_PLAN.md)
-- [API Reference](docs/API_REFERENCE.md) *(coming soon)*
-- [User Guide](docs/USER_GUIDE.md) *(coming soon)*
+### ✅ Sprint 1-2: Foundation & Billing
+- Auth, Patients, Inventory, Prescriptions
+- Billing, Payment Modal, Void Transactions
 
-## 🤝 Contributing
+### ✅ Sprint 3A-C: UX & Smart Features
+- TN Format, Drug Allergies Warning
+- Smart Dosage System (Tokenizer + Dictionary + Engine)
+- Doctor Fee (DF) with Note Presets
+- Medicine Summary Sheet (Internal)
+- Bilingual Labels
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### 🔲 Sprint 4: Workflow Revolution (Next)
+- Real-time filter & Sortable tables
+- Reserved Stock Model
+- Patient Statement (ใบสรุปค่าใช้จ่าย)
+- End of Day (EOD) workflow
 
-## 📄 License
-
-This project is private and proprietary.
-
-## 📅 Roadmap (MVP)
-
-### Phase 1: Foundation ✅
-- [x] Project setup (Next.js + shadcn/ui)
-- [x] Database schema design
-- [x] Auth system (Login/Logout)
-- [x] Patient registration & search
-- [x] Drug allergies & medical info
-- [x] Dashboard with real data
-- [x] Responsive mobile navigation
-
-### Phase 2: Core Workflow ✅
-- [x] Medicine CRUD (Inventory)
-- [x] Prescription entry (Doctor)
-- [x] Dispensing flow (Staff)
-- [x] Auto stock deduction
-- [x] Receipt generation (thermal 80mm)
-
-### Phase 2.3: UX & Billing ✅
-- [x] Autocomplete: Open dropdown on focus
-- [x] Auto Code: Generate button for medicines
-- [x] Unit Selection: Combobox with Creatable
-- [x] Stock History: Detailed logs in medicine detail
-- [x] Void transaction (cancel with reason)
-- [x] **Payment Modal workflow** (discount, payment methods, stock validation)
-- [ ] Daily sales summary page
-
-### Phase 2.5: MVP+ (Next)
-- [ ] Procedure/Service items UI (item_type = 'procedure')
-- [ ] `service_category` field for reporting
-- [ ] VAT-ready structure (is_taxable field)
-- [ ] Label printing (medication labels A6 format)
-
-### Phase 3: Inventory & Polish
-- [ ] Barcode scanner (camera)
-- [x] Stock adjustment
-- [ ] RLS policies (production)
-- [ ] Staging deployment
-
-### Future (Phase 4+)
-- [ ] Quick Restock Mode (scan → qty → save)
-- [ ] Scan-to-Dispense (error-proofing)
-- [ ] PDF Receipt export
-- [ ] LOT/Expiry tracking
-- [ ] Mobile PWA support
-- [ ] Optical orders (แว่น/คอนแทค)
-- [ ] Insurance billing / Multi-payer
-- [ ] Split payment (multiple methods)
-- [ ] Advanced reports
-- [ ] EMR integration
+### 🔲 Future
+- Barcode Scanner
+- PDF Export
+- LOT/Expiry tracking
+- Optical orders (แว่น/คอนแทค)
+- Insurance billing
 
 ---
+
+**Current Version:** `v0.6.0-sprint3-complete`
 
 Built with ❤️ using [Next.js](https://nextjs.org/) and [Supabase](https://supabase.com/)

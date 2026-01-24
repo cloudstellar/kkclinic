@@ -119,6 +119,7 @@ PLANNING → EXECUTION → VERIFICATION
 - ❌ อย่าลืม tag
 - ❌ อย่าสร้าง decision ใหม่โดยไม่บันทึก ADR
 - ❌ **Schema Change = Type Check** อย่าแก้ DB schema โดยไม่ grep หา type usage ทั้ง repo (Sprint 3C lesson)
+- ❌ **อย่ารื้อหน้า Receipt เดิม** แค่เปลี่ยน UI label ไม่ต้อง refactor โครงสร้าง (ดู ADR-0002)
 
 ---
 

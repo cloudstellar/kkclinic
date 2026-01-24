@@ -1,7 +1,7 @@
 # Handoff Prompt for AI Agent
 
-**Current State:** Sprint 3C Complete! — Ready for Sprint 4
-**Last Updated:** 24 มกราคม 2569 @ 00:40
+**Current State:** Sprint 3C Complete! — Ready for Sprint 4  
+**Last Updated:** 24 มกราคม 2569 @ 13:00  
 **Version:** `main`
 
 ---
@@ -10,7 +10,13 @@
 
 1. `docs/01-constitution/RULES.md`
 2. `docs/01-constitution/TECH_STACK.md`
-3. `docs/01-constitution/LESSONS_LEARNED.md` — เพิ่ม #10 Type Duplication ใหม่
+3. `docs/01-constitution/LESSONS_LEARNED.md`
+4. `docs/05-reference/SEMANTIC_GLOSSARY.md` — 🆕 **คำศัพท์มาตรฐาน**
+
+> [!CAUTION]
+> **MUST read `SEMANTIC_GLOSSARY.md` before editing any Billing documents!**
+> - ห้ามใช้ "receipt" หมายถึง prepay summary
+> - ต้องใช้ PrepaySummary / Receipt ให้ถูกต้อง
 
 ---
 
@@ -29,21 +35,30 @@
 
 ---
 
-## 🎯 NEXT: Sprint 4 Planning
+## 🎯 NEXT: Sprint 4 (Naming & Semantics Clean)
 
-Consult user for Sprint 4 priorities:
+> [!IMPORTANT]
+> Sprint 4 ไม่แตะ DB, ไม่แตะ logic  
+> **Legacy payment behavior ยังคงเดิม!**
 
-### UX Phase 2
-- Real-time filter (debounce 300ms)
-- Sortable tables
-- TN Standardization
+### Scope
+- New routes: `/billing/documents/prepay/` และ `/receipt/`
+- Rename: `receipt-view` → `billing-document-view`
+- Semantic terms: PrepaySummary / Receipt
+- UI Labels: "ใบสรุปค่าใช้จ่าย" / "ใบเสร็จรับเงิน"
+- Grep check: กำจัด "receipt" ที่หมายถึง prepay
 
-### Workflow Revolution
-- Reserved Stock Model
-- Patient Statement
-- Auto Calculator
-- Payment Status (3 states)
-- End of Day (EOD)
+### Reference Documents
+- [Sprint 4 PLAN.md](04-features/sprint-4/PLAN.md)
+- [SEMANTIC_GLOSSARY.md](05-reference/SEMANTIC_GLOSSARY.md)
+
+---
+
+## 🔜 Sprint 5: Schema + Workflow
+
+DB Migration และ workflow จะทำใน Sprint 5:
+- [ADR-0002](02-architecture/ADR/0002-reserved-stock-workflow.md)
+- [Sprint 5 PLAN.md](04-features/sprint-5/PLAN.md)
 
 ---
 
