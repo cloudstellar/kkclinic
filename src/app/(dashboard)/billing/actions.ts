@@ -392,11 +392,11 @@ export async function getTransaction(id: string) {
 }
 
 // ============================================
-// VOID TRANSACTION - Sprint 2A Correct Implementation
+// VOID TRANSACTION - Sprint 4 Updated Implementation
 // ============================================
 // Rules:
 // ✅ Soft void (update, not delete)
-// ❌ NO stock restoration (ยาจ่ายไปแล้ว)
+// ✅ Sprint 4: Restore stock based on EFFECTIVE items (base - adjustments)
 // ✅ Idempotent (void ซ้ำไม่ทำอะไร)
 // ✅ Permission: admin/staff only (doctor ❌)
 export async function voidTransaction(id: string, reason: string) {
@@ -445,7 +445,57 @@ export async function voidTransaction(id: string, reason: string) {
         return { success: false, error: 'กรุณาระบุเหตุผลในการยกเลิก' }
     }
 
-    // 7. Soft void (NO stock restoration per spec)
+    // 7. Sprint 4: Restore stock based on EFFECTIVE items
+    const { data: baseItems } = await supabase
+        .from('transaction_items')
+        .select('medicine_id, quantity')
+        .eq('transaction_id', id)
+
+    if (baseItems && baseItems.length > 0) {
+        // Get adjustments to calculate effective qty
+        const { data: adjustments } = await supabase
+            .from('transaction_adjustments')
+            .select('items_delta')
+            .eq('transaction_id', id)
+
+        // Calculate effective quantities (base - all adjustments)
+        const effectiveQty = new Map<string, number>()
+
+        for (const item of baseItems) {
+            effectiveQty.set(item.medicine_id, item.quantity)
+        }
+
+        // Apply adjustments
+        if (adjustments) {
+            for (const adj of adjustments) {
+                const itemsDelta = adj.items_delta as Array<{ medicine_id: string; qty_reduced: number }> || []
+                for (const delta of itemsDelta) {
+                    const current = effectiveQty.get(delta.medicine_id) || 0
+                    effectiveQty.set(delta.medicine_id, current - delta.qty_reduced)
+                }
+            }
+        }
+
+        // Restore stock for each effective item
+        for (const [medicineId, qty] of effectiveQty) {
+            if (qty > 0) {
+                const { data: med } = await supabase
+                    .from('medicines')
+                    .select('stock_qty')
+                    .eq('id', medicineId)
+                    .single()
+
+                if (med) {
+                    await supabase
+                        .from('medicines')
+                        .update({ stock_qty: (med.stock_qty || 0) + qty })
+                        .eq('id', medicineId)
+                }
+            }
+        }
+    }
+
+    // 8. Void the transaction
     const { error: updateError } = await supabase
         .from('transactions')
         .update({
