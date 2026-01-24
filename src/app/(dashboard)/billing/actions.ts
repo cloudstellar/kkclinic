@@ -89,10 +89,20 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
     const isRepay = prescription.status === 'dispensed'
 
     // 4. For new payment: Validate stock (Fail Fast)
-    if (!isRepay && prescription.items && prescription.items.length > 0) {
-        const medicineIds = prescription.items
-            .filter((item: { medicine_id: string | null }) => item.medicine_id)
-            .map((item: { medicine_id: string }) => item.medicine_id)
+    // Sprint 4: Use effective_items if provided, otherwise use prescription.items
+    type ItemToProcess = { medicine_id: string | null; quantity: number; unit_price: number }
+    const itemsToProcess: ItemToProcess[] = formData.effective_items || prescription.items?.map(
+        (item: { medicine_id: string | null; quantity: number }) => ({
+            medicine_id: item.medicine_id,
+            quantity: item.quantity,
+            unit_price: 0  // Will be fetched from prescription_items
+        })
+    ) || []
+
+    if (!isRepay && itemsToProcess.length > 0) {
+        const medicineIds = itemsToProcess
+            .filter(item => item.medicine_id)
+            .map(item => item.medicine_id!)
 
         if (medicineIds.length > 0) {
             const { data: medicines } = await supabase
@@ -103,7 +113,7 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
             const stockMap = new Map(medicines?.map(m => [m.id, { name: m.name, stock: m.stock_qty }]) || [])
 
             const insufficientItems: string[] = []
-            for (const item of prescription.items) {
+            for (const item of itemsToProcess) {
                 if (item.medicine_id) {
                     const med = stockMap.get(item.medicine_id)
                     if (med && item.quantity > med.stock) {
@@ -119,7 +129,11 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
     }
 
     // 5. Calculate amounts
-    const subtotal = prescription.total_price || 0
+    // Sprint 4: Use effective_items total if provided, otherwise use prescription total
+    const medicineTotal = formData.effective_items
+        ? formData.effective_items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
+        : (prescription.total_price || 0) - (prescription.df || 0)
+    const subtotal = medicineTotal + (prescription.df || 0)
     const discount = formData.discount || 0
     const totalAmount = Math.max(0, Math.round((subtotal - discount) * 100) / 100)
 
@@ -175,11 +189,46 @@ export async function processPayment(prescriptionId: string, formData: PaymentFo
         return { data: null, error: transactionError.message }
     }
 
-    // 9. If NOT repay: Deduct stock
-    if (!isRepay && prescription.items) {
+    // 8.5 Sprint 4: Insert transaction_items (base items snapshot)
+    // This creates immutable base items for receipt/adjustment/void
+    if (itemsToProcess.length > 0) {
+        const transactionItems = itemsToProcess
+            .filter(item => item.medicine_id && item.quantity > 0)
+            .map(item => ({
+                transaction_id: transaction.id,
+                medicine_id: item.medicine_id,
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                amount: item.quantity * item.unit_price,
+                item_type: 'medicine' as const,
+            }))
+
+        if (transactionItems.length > 0) {
+            const { error: itemsError } = await supabase
+                .from('transaction_items')
+                .insert(transactionItems)
+
+            if (itemsError) {
+                // Auto-void if transaction_items insert failed
+                await supabase.from('transactions').update({
+                    status: 'voided',
+                    voided_at: new Date().toISOString(),
+                    voided_by: user.id,
+                    void_reason: 'auto-void: transaction_items insert failed',
+                }).eq('id', transaction.id)
+
+                console.error('Error inserting transaction_items:', itemsError)
+                return { data: null, error: 'เกิดข้อผิดพลาดในการบันทึกรายการ กรุณาลองใหม่' }
+            }
+        }
+    }
+
+    // 9. If NOT repay: Deduct stock from effective items
+    // Sprint 4: Use itemsToProcess (effective items)
+    if (!isRepay && itemsToProcess.length > 0) {
         let stockError = false
 
-        for (const item of prescription.items) {
+        for (const item of itemsToProcess) {
             if (item.medicine_id) {
                 const { data: medicine } = await supabase
                     .from('medicines')
@@ -268,9 +317,31 @@ export async function getTransaction(id: string) {
         return { data: null, error: error.message }
     }
 
-    // Get prescription items (with dosage_instruction for bilingual labels)
+    // Sprint 4: Try transaction_items first (new payments with base snapshot)
+    const { data: transactionItems } = await supabase
+        .from('transaction_items')
+        .select(`
+            *,
+            medicine:medicines(code, name, name_en, unit, description, description_en, expiry_note_th, expiry_note_en)
+        `)
+        .eq('transaction_id', id)
+        .order('created_at', { ascending: true })
+
+    if (transactionItems && transactionItems.length > 0) {
+        // Sprint 4 mode: has base items
+        return {
+            data: {
+                ...data,
+                items: transactionItems,
+                hasBaseItems: true  // Flag for UI to enable adjustment
+            },
+            error: null
+        }
+    }
+
+    // Legacy fallback: no transaction_items, use prescription_items
     if (data?.prescription?.id) {
-        const { data: items } = await supabase
+        const { data: prescriptionItems } = await supabase
             .from('prescription_items')
             .select(`
                 *,
@@ -279,10 +350,17 @@ export async function getTransaction(id: string) {
             .eq('prescription_id', data.prescription.id)
             .order('created_at', { ascending: true })
 
-        return { data: { ...data, items: items || [] }, error: null }
+        return {
+            data: {
+                ...data,
+                items: prescriptionItems || [],
+                hasBaseItems: false  // Flag for UI to disable adjustment
+            },
+            error: null
+        }
     }
 
-    return { data, error: null }
+    return { data: { ...data, hasBaseItems: false }, error: null }
 }
 
 // ============================================

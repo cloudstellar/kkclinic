@@ -826,9 +826,9 @@ ADD COLUMN IF NOT EXISTS critical_threshold INT DEFAULT 3;
 
 ---
 
-## Pending Migrations (Sprint 4 New)
+## Applied Migrations (Sprint 4 New)
 
-> ⚠️ **Pre-Payment Adjustment Feature**
+> ✅ **Pre-Payment Adjustment Feature** — Applied 24 มกราคม 2569
 
 ### 9. transaction_adjustments (การปรับปรุงรายการหลังชำระ)
 

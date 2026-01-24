@@ -57,12 +57,20 @@ export type TransactionWithRelations = Transaction & {
     }
 }
 
+// Effective item for pre-payment adjustment (Sprint 4)
+export type EffectiveItem = {
+    medicine_id: string
+    quantity: number
+    unit_price: number
+}
+
 // Payment form data
 export type PaymentFormData = {
     payment_method: 'cash' | 'transfer' | 'card'
     discount: number
     notes?: string
     request_id: string  // Required for idempotency
+    effective_items?: EffectiveItem[]  // Sprint 4: Pre-payment item adjustment
 }
 
 // Zod validation schema
