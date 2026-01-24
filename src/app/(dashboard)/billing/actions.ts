@@ -535,3 +535,45 @@ export async function getSalesSummary(dateFrom?: string, dateTo?: string) {
 export async function getDailySales(date?: string) {
     return getSalesSummary(date, date)
 }
+
+// ============================================
+// PHASE 2: ADJUSTMENT STUB (Phase 3 will implement RPC)
+// ============================================
+
+export type AdjustmentItem = {
+    medicine_id: string
+    new_qty: number
+}
+
+export type CreateAdjustmentInput = {
+    transactionId: string
+    items: AdjustmentItem[]
+    note?: string
+}
+
+/**
+ * Create a transaction adjustment (post-payment modification)
+ * 
+ * Phase 2: Stub implementation - throws "Not implemented"
+ * Phase 3: Will call RPC to atomically update stock and create adjustment record
+ */
+export async function createAdjustment(input: CreateAdjustmentInput): Promise<{
+    data: { adjustmentId: string } | null
+    error: string | null
+}> {
+    // Phase 2: Validate input exists
+    if (!input.transactionId || !input.items || input.items.length === 0) {
+        return { data: null, error: 'Invalid input' }
+    }
+
+    // Phase 2: STUB - Phase 3 will implement RPC call
+    // The actual implementation will:
+    // 1. Call create_transaction_adjustment RPC
+    // 2. Atomically lock transaction, validate, restore stock, insert adjustment
+    // 3. Return adjustment_id on success
+
+    return {
+        data: null,
+        error: 'กำลังพัฒนาฟีเจอร์นี้ (Phase 3 RPC not implemented yet)'
+    }
+}

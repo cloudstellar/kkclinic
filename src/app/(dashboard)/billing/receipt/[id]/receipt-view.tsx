@@ -1,8 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import { TransactionWithRelations } from '@/types/transactions'
 import { VoidTransactionDialog } from './void-transaction-dialog'
+import { AdjustmentModal } from './adjustment-modal'
 import { getDisplayName } from '@/lib/patient-utils'
 
 const paymentMethodLabels: Record<string, string> = {
@@ -12,13 +14,32 @@ const paymentMethodLabels: Record<string, string> = {
 }
 
 type ReceiptViewProps = {
-    transaction: TransactionWithRelations & { items: Array<{ id?: string; quantity: number; unit_price: number; medicine?: { name: string } }> }
+    transaction: TransactionWithRelations & {
+        items: Array<{
+            id?: string
+            medicine_id?: string
+            quantity: number
+            unit_price: number
+            medicine?: { id: string; name: string; unit?: string }
+        }>
+        hasBaseItems?: boolean
+    }
     userRole?: string
 }
 
 export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
+    const [adjustmentOpen, setAdjustmentOpen] = useState(false)
+
     const isVoided = transaction.status === 'voided'
     const canVoid = !isVoided && ['admin', 'staff'].includes(userRole || '')
+
+    // Phase 2: Adjustment button visibility
+    // Show only for: paid, not voided, hasBaseItems (not legacy)
+    const canAdjust = !isVoided &&
+        transaction.status === 'paid' &&
+        transaction.hasBaseItems === true &&
+        transaction.items.length > 0 &&
+        ['admin', 'staff'].includes(userRole || '')
 
     return (
         <>
@@ -88,6 +109,14 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                             transactionId={transaction.id}
                             receiptNo={transaction.receipt_no}
                         />
+                    )}
+                    {canAdjust && (
+                        <button
+                            onClick={() => setAdjustmentOpen(true)}
+                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium"
+                        >
+                            🔧 ปรับปรุงรายการ
+                        </button>
                     )}
                 </div>
 
@@ -238,6 +267,18 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Adjustment Modal */}
+            {canAdjust && (
+                <AdjustmentModal
+                    open={adjustmentOpen}
+                    onOpenChange={setAdjustmentOpen}
+                    transactionId={transaction.id}
+                    receiptNo={transaction.receipt_no}
+                    items={transaction.items}
+                    currentTotal={transaction.total_amount}
+                />
+            )}
         </>
     )
 }
