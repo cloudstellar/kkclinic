@@ -241,6 +241,8 @@ $$ LANGUAGE plpgsql;
 2. **RPC concurrency**: `FOR UPDATE` + throw error + UI retry (OK)
 3. **Print edge case**: effective items = empty → ยังพิมพ์ได้ (total = 0)
 4. **Void logic**: แก้ให้คืน effective items ไม่ใช่ base items
+5. **RPC precision**: เปรียบเทียบ NUMERIC ใช้ tolerance หรือ cast scale เดียวกัน
+6. **UI message (df-only)**: "รายการนี้ไม่มีรายการยา (มีเฉพาะค่าบริการแพทย์)"
 
 ---
 
