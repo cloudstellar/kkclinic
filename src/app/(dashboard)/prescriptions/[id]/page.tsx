@@ -182,7 +182,7 @@ export default async function PrescriptionDetailPage({
             <Card>
                 <CardContent className="pt-6">
                     {/* Sprint 3C: Show DF breakdown */}
-                    {prescription.df && prescription.df > 0 && (
+                    {!!prescription.df && prescription.df > 0 && (
                         <div className="flex justify-between items-center text-sm mb-2">
                             <div>
                                 <span>ค่าธรรมเนียมแพทย์</span>
@@ -193,13 +193,13 @@ export default async function PrescriptionDetailPage({
                             <span>฿{prescription.df.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
                         </div>
                     )}
-                    {prescription.items && prescription.items.length > 0 && prescription.df && prescription.df > 0 && (
+                    {prescription.items && prescription.items.length > 0 && !!prescription.df && prescription.df > 0 && (
                         <div className="flex justify-between items-center text-sm mb-2">
                             <span>ค่ายา</span>
                             <span>฿{(prescription.items.reduce((sum: number, item: { unit_price: number; quantity: number }) => sum + item.unit_price * item.quantity, 0)).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
                         </div>
                     )}
-                    <div className={`flex justify-between items-center ${prescription.df && prescription.df > 0 ? 'pt-2 border-t' : ''}`}>
+                    <div className={`flex justify-between items-center ${!!prescription.df && prescription.df > 0 ? 'pt-2 border-t' : ''}`}>
                         <span className="text-lg font-medium">ยอดรวมทั้งสิ้น</span>
                         <span className="text-2xl font-bold text-primary">
                             ฿{(prescription.total_price || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}

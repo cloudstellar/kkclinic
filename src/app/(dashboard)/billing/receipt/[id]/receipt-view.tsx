@@ -164,7 +164,7 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                     <div className="border-t border-dashed my-2"></div>
 
                     {/* Sprint 3C: Doctor Fee (shown first) */}
-                    {transaction.prescription?.df && transaction.prescription.df > 0 && (
+                    {!!transaction.prescription?.df && transaction.prescription.df > 0 && (
                         <>
                             <div className="text-sm mb-2">
                                 <div className="flex justify-between">

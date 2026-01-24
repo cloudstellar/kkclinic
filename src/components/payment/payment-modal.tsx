@@ -218,7 +218,7 @@ export function PaymentModal({ open, onOpenChange, prescription }: PaymentModalP
                         <p className="text-sm font-medium mb-2">รายการ: <span className="text-xs text-muted-foreground font-normal">(ติ๊กออกหรือปรับจำนวนได้)</span></p>
                         <div className="space-y-2 max-h-48 overflow-y-auto">
                             {/* Sprint 3C: Doctor Fee first - NOT adjustable */}
-                            {prescription.df && prescription.df > 0 && (
+                            {!!prescription.df && prescription.df > 0 && (
                                 <div className="flex justify-between text-sm py-1 border-b">
                                     <span className="text-muted-foreground">
                                         ค่าธรรมเนียมแพทย์
