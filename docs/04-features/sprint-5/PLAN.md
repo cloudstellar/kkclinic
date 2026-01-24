@@ -1,98 +1,131 @@
-# Sprint 5: Role-Based Access & Audit Trail
+# Sprint 5: Staff Workflow & Audit Trail
 
 **Status:** Planning  
-**Date:** 2025-01-25
-
-## Goals
-
-1. Staff-only dispensing workflow (ไม่เห็นยอดสรุป)
-2. Void ควบคุมโดย Admin/Doctor เท่านั้น
-3. Audit trail บนหน้า Prescription
+**Date:** 2025-01-25  
+**Depends on:** Sprint 4 (Adjustment), ADR-0003 (RBAC)
 
 ---
 
-## Patch A: UI/UX (Sprint 4.5)
+## Real World Flow (ที่ระบบทำอยู่แล้ว)
 
-### A1. Move "ปรับปรุงรายการ" to dropdown menu
-
-**File:** `receipt-view.tsx`
-
-- ลบปุ่ม primary "🔧 ปรับปรุงรายการ"
-- เพิ่มใน dropdown "⋯ เพิ่มเติม"
-- Condition: `paid && !voided && hasBaseItems && items.length > 0`
-
-### A2. df-only handling
-
-- ปุ่มยังอยู่ในเมนู
-- กดแล้ว modal ขึ้น "ไม่มีรายการยา…" + Save disabled (เดิมทำไว้แล้ว)
-
----
-
-## Patch B: Permissions (Sprint 4.5)
-
-### B1. Block `/billing` for Staff only
-
-**File:** `app/(dashboard)/billing/page.tsx`
-
-```tsx
-// Doctor = owner, can view billing
-if (userRole === 'staff') redirect('/dispensing')
+```
+1. หมอสร้าง Rx
+2. หมอกด "ชำระ" (= สรุปเคส, ไม่ใช่รับเงินจริง)
+3. หมอพิมพ์ใบเสร็จ+ฉลาก (ส่งให้ staff)
+4. Stock ตัด ณ จุดนี้
+5. Staff เก็บเงินจริงจากคนไข้
+6. ถ้าคนไข้คืนยา → Staff adjust → Stock คืน
 ```
 
-### B2. Void = Admin/Doctor only
-
-**Files:**
-- `receipt-view.tsx`: ซ่อน VoidTransactionDialog สำหรับ staff
-- `actions.ts` (`voidTransaction`): เพิ่ม guard role check
-
-### B3. Create `/dispensing` route
-
-- Clone simplified billing page
-- Show prescriptions list (pending + paid)
-- ไม่มียอดสรุป
+**ระบบทำถูกแล้ว — เปลี่ยนแค่ UI naming ให้ตรง real world**
 
 ---
 
-## Phase 1: History on Prescription (Sprint 5)
+## Goals (Locked)
 
-**File:** `/prescriptions/[id]/page.tsx`
+1. `/frontdesk` = Staff default landing
+2. Tab naming: "รอสรุปเคส" / "สรุปเคสแล้ว"
+3. Staff ไม่เห็น `/billing`
+4. Void = Admin/Doctor only
+5. หน้า Rx มี "ประวัติ"
 
-### UI Section: "ประวัติ"
+---
+
+## Phase 1: Done (Sprint 4.5)
+
+- [x] A1: Adjust → dropdown menu
+- [x] B2: Void = Admin/Doctor only
+
+---
+
+## Phase 2: `/frontdesk` Route
+
+### 2.1 Create `/frontdesk`
+
+**File:** `app/(dashboard)/frontdesk/page.tsx`
+
+```
+/frontdesk
+├── Card 1: ผู้ป่วย
+│   ├── ค้นหาผู้ป่วย
+│   └── ➕ เพิ่มผู้ป่วยใหม่
+│
+├── Card 2: งานวันนี้
+│   ├── Tab: รอสรุปเคส
+│   │     (prescriptions ที่ยังไม่มี transaction)
+│   │     - แสดง Rx ที่หมอสร้างแล้วแต่ยังไม่กด "ชำระ"
+│   │
+│   └── Tab: สรุปเคสแล้ว ← Staff ทำงานหลักที่นี่
+│         (transactions วันนี้)
+│         - แสดงรายการที่หมอกดแล้ว
+│         - Staff รอเก็บเงิน / adjust ได้
+│         - กด → ไปหน้า receipt
+│
+└── ❌ ไม่มียอดสรุป
+```
+
+**Est:** 2h
+
+### 2.2 Block `/billing` for Staff
+
+```tsx
+if (userRole === 'staff') redirect('/frontdesk')
+```
+
++ ซ่อนเมนู billing ใน nav
+
+**Est:** 30m
+
+### 2.3 Staff Default Landing
+
+```tsx
+// After login
+if (userRole === 'staff') redirect('/frontdesk')
+```
+
+**Est:** 15m
+
+---
+
+## Phase 3: Rx History (Audit Trail)
+
+**File:** `app/(dashboard)/prescriptions/[id]/page.tsx`
 
 ```tsx
 <Card>
-  <CardHeader>ประวัติ</CardHeader>
+  <CardHeader>📋 ประวัติ</CardHeader>
   <CardContent>
-    - ✅ ชำระเงิน: {date} | {receipt_no}
-    - 🔧 ปรับปรุง #1: {date} | {by} | ฿{prev} → ฿{new}
-    - 🔧 ปรับปรุง #2: ...
-    - ❌ ยกเลิก: {date} | {by} | {reason}
+    ✅ สรุปเคส: 25 ม.ค. 68 10:30 | RCP250125-001
+    🔧 ปรับปรุง #1: 25 ม.ค. 68 11:00 | Staff | ฿500 → ฿400
+    ❌ ยกเลิก: 25 ม.ค. 68 12:00 | Doctor | "ผู้ป่วยไม่รับยา"
   </CardContent>
 </Card>
 ```
 
-### Data Source
-
-- `transactions` → paid_at, voided_at, void_reason
-- `transaction_adjustments` → list
+**Est:** 1.5h
 
 ---
 
 ## Implementation Order
 
-| Order | Task | Est |
-|-------|------|-----|
-| 1 | A1: Adjust button → dropdown | 30m |
-| 2 | B2: Void guard (server + UI) | 30m |
-| 3 | B1: Block /billing for staff | 15m |
-| 4 | B3: Create /dispensing | 1h |
-| 5 | History section on Rx | 1h |
+| # | Task | Est | Status |
+|---|------|-----|--------|
+| 1 | Adjust → dropdown | 30m | ✅ |
+| 2 | Void guard | 30m | ✅ |
+| 3 | Create `/frontdesk` | 2h | ⬜ |
+| 4 | Block `/billing` + nav | 30m | ⬜ |
+| 5 | Staff default landing | 15m | ⬜ |
+| 6 | Rx history | 1.5h | ⬜ |
+
+**Total:** ~5h
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] Staff ไม่เห็น `/billing`
-- [ ] Staff ไม่ void ได้
-- [ ] "ปรับปรุงรายการ" อยู่ในเมนู ⋯
-- [ ] หน้า Rx แสดงประวัติ (payment, adjustments, void)
+- [ ] Staff เข้า `/billing` → redirect `/frontdesk`
+- [ ] Staff ไม่เห็นเมนู `/billing`
+- [ ] Staff void ไม่ได้ ✅
+- [ ] Tab naming: "รอสรุปเคส" / "สรุปเคสแล้ว"
+- [ ] `/frontdesk` มี: ค้นหาผู้ป่วย + เพิ่มผู้ป่วย + 2 tabs
+- [ ] หน้า Rx แสดงประวัติ
