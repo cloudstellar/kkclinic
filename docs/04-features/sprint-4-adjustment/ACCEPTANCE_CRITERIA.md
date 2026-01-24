@@ -4,6 +4,9 @@
 **Status:** Approved  
 **Out of Scope:** Reserved stock workflow, prescription mutation, route refactor
 
+> **🔒 Scope Lock:** Sprint 4 นี้ไม่เพิ่มตารางอื่นนอกจาก `transaction_adjustments` 
+> และไม่เปลี่ยน schema/meaning ของ `transactions.total_amount` และ `transaction_items`
+
 ---
 
 ## Phase 0 — Database
