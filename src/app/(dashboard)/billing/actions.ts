@@ -329,10 +329,38 @@ export async function getTransaction(id: string) {
 
     if (transactionItems && transactionItems.length > 0) {
         // Sprint 4 mode: has base items
+        // Need to fetch dosage fields from prescription_items for label printing
+        let enrichedItems = transactionItems
+
+        if (data?.prescription?.id) {
+            const { data: prescriptionItems } = await supabase
+                .from('prescription_items')
+                .select('medicine_id, dosage_instruction, dosage_original, dosage_language, note')
+                .eq('prescription_id', data.prescription.id)
+
+            if (prescriptionItems) {
+                // Create lookup map by medicine_id
+                const dosageMap = new Map(
+                    prescriptionItems.map(pi => [pi.medicine_id, {
+                        dosage_instruction: pi.dosage_instruction,
+                        dosage_original: pi.dosage_original,
+                        dosage_language: pi.dosage_language,
+                        note: pi.note
+                    }])
+                )
+
+                // Merge dosage fields into transaction_items
+                enrichedItems = transactionItems.map(ti => ({
+                    ...ti,
+                    ...dosageMap.get(ti.medicine_id)
+                }))
+            }
+        }
+
         return {
             data: {
                 ...data,
-                items: transactionItems,
+                items: enrichedItems,
                 hasBaseItems: true  // Flag for UI to enable adjustment
             },
             error: null

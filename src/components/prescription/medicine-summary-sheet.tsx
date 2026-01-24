@@ -49,8 +49,15 @@ export function MedicineSummarySheet({
     df,
     dfNote,
 }: MedicineSummarySheetProps) {
-    const pages = chunkItems(items, ITEMS_PER_PAGE)
-    const totalPages = pages.length
+    // Sprint 4 fix: Handle df-only case (no medicine items)
+    // Ensure at least one page if df exists
+    const hasContent = items.length > 0 || (df && df > 0)
+    if (!hasContent) {
+        return null
+    }
+
+    const pages = items.length > 0 ? chunkItems(items, ITEMS_PER_PAGE) : [[]] // Minimum 1 page for df
+    const totalPages = Math.max(1, pages.length)
     const totalItems = items.length
 
     // Parse date/time
@@ -79,7 +86,7 @@ export function MedicineSummarySheet({
                             ตาใสใส คลินิก — ใบสรุปรายการยา (Internal)
                         </div>
                         <div className="text-[10px] text-gray-600 mt-0.5">
-                            {prescriptionNo} | {date} {time} | {totalItems} รายการ
+                            {prescriptionNo} | {date} {time} | {totalItems > 0 ? `${totalItems} รายการ` : (df && df > 0 ? 'ค่าบริการ' : '-')}
                         </div>
                         <div className="text-[10px] mt-0.5">
                             {formatPatientId(patient?.hn || '')} ชื่อ : {patientName}
