@@ -410,8 +410,8 @@ export default function NewPrescriptionPage() {
                                             type="button"
                                             onClick={() => setDfNote(preset)}
                                             className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${dfNote === preset
-                                                    ? 'bg-primary text-white border-primary'
-                                                    : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                                                ? 'bg-primary text-white border-primary'
+                                                : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
                                                 }`}
                                         >
                                             {preset}
@@ -434,12 +434,10 @@ export default function NewPrescriptionPage() {
 
                         {/* Price Summary */}
                         <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-                            {df > 0 && (
-                                <div className="flex justify-between text-sm">
-                                    <span>ค่าธรรมเนียมแพทย์</span>
-                                    <span>฿{df.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
-                                </div>
-                            )}
+                            <div className="flex justify-between text-sm">
+                                <span>ค่าธรรมเนียมแพทย์</span>
+                                <span>{df > 0 ? `฿${df.toLocaleString('th-TH', { minimumFractionDigits: 2 })}` : '-'}</span>
+                            </div>
                             {itemsTotal > 0 && (
                                 <div className="flex justify-between text-sm">
                                     <span>ค่ายา</span>

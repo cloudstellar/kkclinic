@@ -163,21 +163,19 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                     {/* Divider */}
                     <div className="border-t border-dashed my-2"></div>
 
-                    {/* Sprint 3C: Doctor Fee (shown first) */}
-                    {!!transaction.prescription?.df && transaction.prescription.df > 0 && (
-                        <>
-                            <div className="text-sm mb-2">
-                                <div className="flex justify-between">
-                                    <div>
-                                        <div className="font-medium">ค่าธรรมเนียมแพทย์</div>
-                                        <div className="text-[10px] text-gray-500 -mt-0.5">(Doctor Fee)</div>
-                                    </div>
-                                    <span>฿{transaction.prescription.df.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                    {/* Sprint 3C: Doctor Fee (shown first) - always show, "-" if not set */}
+                    <>
+                        <div className="text-sm mb-2">
+                            <div className="flex justify-between">
+                                <div>
+                                    <div className="font-medium">ค่าธรรมเนียมแพทย์</div>
+                                    <div className="text-[10px] text-gray-500 -mt-0.5">(Doctor Fee)</div>
                                 </div>
+                                <span>{transaction.prescription?.df && transaction.prescription.df > 0 ? `฿${transaction.prescription.df.toLocaleString('th-TH', { minimumFractionDigits: 2 })}` : '-'}</span>
                             </div>
-                            <div className="border-t border-dashed my-2"></div>
-                        </>
-                    )}
+                        </div>
+                        <div className="border-t border-dashed my-2"></div>
+                    </>
 
                     {/* Items */}
                     <div className="text-sm mb-4">
