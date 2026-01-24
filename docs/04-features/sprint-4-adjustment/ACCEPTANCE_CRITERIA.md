@@ -150,13 +150,13 @@
 
 ---
 
-## Phase 3 — RPC Integration
+## Phase 3 — RPC Integration (Extended)
 
 ### 📄 Billing Actions
 
 **File:** `src/app/(dashboard)/billing/actions.ts`
 
-**Acceptance Criteria:**
+**Acceptance Criteria (createAdjustment):**
 - [ ] มี function `createAdjustment(transactionId, updatedItems, note?)`
 - [ ] เรียก Supabase RPC `create_transaction_adjustment`
 - [ ] ส่ง `user_id` จาก session
@@ -167,6 +167,24 @@
 - [ ] On success:
   - refresh receipt data
   - ไม่ redirect บังคับ (print optional)
+
+---
+
+### 📄 Void Logic (Extended)
+
+**File:** `src/app/(dashboard)/billing/actions.ts` (แก้ `voidTransaction`)
+
+**Acceptance Criteria (Void หลัง adjustment):**
+- [ ] คืน stock ตาม **effective items** ล่าสุด (ไม่ใช่ base)
+- [ ] Reuse `getEffectiveItems(transactionId)`
+- [ ] Void ไม่สร้าง adjustment ใหม่
+- [ ] Void ทำได้ครั้งเดียว (idempotent)
+- [ ] Void หลัง adjustment:
+  - ไม่แก้ doctor fee (df)
+  - ไม่แก้ discount
+- [ ] Void transaction ที่มีเฉพาะ df:
+  - ไม่มี stock movement
+  - Void ผ่านได้ปกติ
 
 ---
 
