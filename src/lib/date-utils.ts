@@ -79,3 +79,35 @@ export function calculateAge(birthDate: string | null): number | null {
     }
     return age
 }
+
+/**
+ * Get today's date range for a specific timezone
+ * Returns { start, nextStart } for use with [start, nextStart) pattern
+ * Prevents midnight edge cases by using exclusive end
+ */
+export function getTodayRange(tz = 'Asia/Bangkok') {
+    const now = new Date()
+
+    // Get today's date string in the target timezone
+    const fmt = new Intl.DateTimeFormat('en-CA', {
+        timeZone: tz,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    })
+    const todayStr = fmt.format(now) // "2026-01-25"
+
+    // Get next day's date string
+    const tomorrow = new Date(now)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const nextStr = fmt.format(tomorrow)
+
+    // Create ISO strings for Bangkok timezone (UTC+7)
+    const startLocal = new Date(`${todayStr}T00:00:00+07:00`)
+    const nextStartLocal = new Date(`${nextStr}T00:00:00+07:00`)
+
+    return {
+        start: startLocal.toISOString(),
+        nextStart: nextStartLocal.toISOString()
+    }
+}

@@ -6,7 +6,9 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { getPendingPrescriptions, getTodayTransactions } from './actions'
+import { Check } from 'lucide-react'
+import { toast } from 'sonner'
+import { getPendingPrescriptions, getTodayTransactions, closeTransaction } from './actions'
 import { formatCurrency } from '@/lib/utils'
 import { getDisplayName } from '@/lib/patient-utils'
 
@@ -43,6 +45,7 @@ export function FrontdeskContent() {
     const [todayTx, setTodayTx] = useState<Transaction[]>([])
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('pending')
+    const [closingId, setClosingId] = useState<string | null>(null)
 
     useEffect(() => {
         loadData()
@@ -67,6 +70,32 @@ export function FrontdeskContent() {
         setPendingRx(rxData)
         setTodayTx(txData)
         setLoading(false)
+    }
+
+    // Handle close transaction with optimistic update
+    const handleClose = async (id: string, e: React.MouseEvent) => {
+        e.preventDefault() // Prevent Link navigation
+        e.stopPropagation()
+
+        setClosingId(id)
+        // Optimistic remove
+        const original = [...todayTx]
+        setTodayTx(prev => prev.filter(t => t.id !== id))
+
+        const result = await closeTransaction(id)
+
+        if (!result.success) {
+            // Revert + error toast
+            setTodayTx(original)
+            toast.error(result.error || 'เกิดข้อผิดพลาด')
+        } else if (result.status === 'noop') {
+            // Revert + info toast
+            setTodayTx(original)
+            toast.info('รายการนี้ปิดไม่ได้')
+        }
+        // status === 'closed' → already removed, done
+
+        setClosingId(null)
     }
 
     const filteredPatients = searchTerm.trim() ?
@@ -277,9 +306,17 @@ export function FrontdeskContent() {
                                                                 {formatCurrency(tx.total_amount || 0)}
                                                             </div>
                                                             {!isVoided && (
-                                                                <Badge variant="outline" className="mt-1 text-xs">
-                                                                    🧾 รอเก็บเงิน
-                                                                </Badge>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={(e) => handleClose(tx.id, e)}
+                                                                    disabled={closingId === tx.id}
+                                                                    aria-label="ปิดงาน"
+                                                                    className="mt-1 text-xs text-neutral-500 hover:text-neutral-700 h-7 px-2"
+                                                                >
+                                                                    <Check className="w-3.5 h-3.5 mr-1" />
+                                                                    {closingId === tx.id ? 'กำลังปิด...' : 'ปิดงาน'}
+                                                                </Button>
                                                             )}
                                                         </div>
                                                     </div>

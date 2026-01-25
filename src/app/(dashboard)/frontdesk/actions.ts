@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getTodayRange } from '@/lib/date-utils'
 
 // Get prescriptions without transactions (รอสรุปเคส)
 export async function getPendingPrescriptions() {
@@ -38,15 +39,10 @@ export async function getPendingPrescriptions() {
     return { data: pendingRx, error: null }
 }
 
-// Get today's transactions (รอดำเนินการ)
+// Get today's transactions (รอดำเนินการ) - excludes voided and closed
 export async function getTodayTransactions() {
     const supabase = await createClient()
-
-    // Get today's date in Bangkok timezone
-    const today = new Date()
-    const bangkokOffset = 7 * 60 // UTC+7
-    const localDate = new Date(today.getTime() + bangkokOffset * 60 * 1000)
-    const dateStr = localDate.toISOString().slice(0, 10)
+    const { start, nextStart } = getTodayRange('Asia/Bangkok')
 
     const { data: transactions, error } = await supabase
         .from('transactions')
@@ -56,11 +52,15 @@ export async function getTodayTransactions() {
             status,
             total_amount,
             paid_at,
+            voided_at,
+            closed_at,
             patient:patients(id, hn, name, name_en, nationality),
             prescription:prescriptions(id, prescription_no)
         `)
-        .gte('paid_at', `${dateStr}T00:00:00+07:00`)
-        .lt('paid_at', `${dateStr}T23:59:59+07:00`)
+        .gte('paid_at', start)
+        .lt('paid_at', nextStart)
+        .is('voided_at', null)
+        .is('closed_at', null)
         .order('paid_at', { ascending: false })
 
     if (error) {
@@ -69,4 +69,44 @@ export async function getTodayTransactions() {
     }
 
     return { data: transactions || [], error: null }
+}
+
+// Close a transaction (ปิดงาน)
+export async function closeTransaction(transactionId: string) {
+    const supabase = await createClient()
+
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
+    const { start, nextStart } = getTodayRange('Asia/Bangkok')
+
+    // Conditional update: only if not already closed, not voided, and from today
+    const { data, error } = await supabase
+        .from('transactions')
+        .update({
+            closed_at: new Date().toISOString(),
+            closed_by: user.id
+        })
+        .eq('id', transactionId)
+        .is('closed_at', null)
+        .is('voided_at', null)
+        .gte('paid_at', start)
+        .lt('paid_at', nextStart)
+        .select('id, closed_at, closed_by')
+
+    if (error) {
+        console.error('Error closing transaction:', error)
+        return { success: false, error: error.message }
+    }
+
+    // Check if any row was actually updated
+    if (data && data.length > 0) {
+        return { success: true, status: 'closed' as const }
+    }
+
+    // No rows affected = idempotent (already closed) or not eligible
+    return { success: true, status: 'noop' as const }
 }
