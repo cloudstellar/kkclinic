@@ -120,7 +120,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         top: 0;
                         width: 100mm;
                         min-height: 75mm;
-                        padding: 3mm;
+                        padding: 0;
                         
                         /* Layout formatting */
                         display: flex;
@@ -136,6 +136,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                     .label-container {
                         width: 94mm;
                         height: 69mm;
+                        margin-top: 3mm;
                         padding: 3mm;
                         border: 1px solid #333;
                         background: white;
@@ -148,14 +149,17 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         page-break-after: avoid;
                     }
 
-                    /* Smaller text for print */
-                    .label-container .text-xl { font-size: 12px !important; }
-                    .label-container .text-sm { font-size: 9px !important; }
-                    .label-container .text-xs { font-size: 7px !important; }
-                    .label-container h1 { font-size: 13px !important; margin: 0 !important; }
+                    /* Font sizes for print - larger for readability */
+                    .label-container .text-xl { font-size: 16px !important; }
+                    .label-container .text-lg { font-size: 14px !important; }
+                    .label-container .text-base { font-size: 13px !important; }
+                    .label-container .text-sm { font-size: 12px !important; }
+                    .label-container .text-xs { font-size: 10px !important; }
+                    .label-container h1 { font-size: 18px !important; margin: 0 !important; }
                     .label-container p { margin: 0 !important; }
-                    .label-container .space-y-1 > * + * { margin-top: 2px !important; }
-                    .label-container .mb-2 { margin-bottom: 3px !important; }
+                    .label-container .space-y-1 > * + * { margin-top: 3px !important; }
+                    .label-container .space-y-2 > * + * { margin-top: 4px !important; }
+                    .label-container .mb-2 { margin-bottom: 4px !important; }
                 }
 
                 @media screen {
