@@ -10,6 +10,10 @@ export const CLINIC_CONFIG = {
     address: '186/153 ถนน เทศบาล34 ตำบลพลา อำเภอบ้านฉาง จังหวัดระยอง',
     phone: '081-776-6936',
 
+    // Timezone & Operating Hours (for future settings page)
+    timezone: 'Asia/Bangkok',         // IANA timezone
+    lateHour: 21,                      // Hour considered "late" (for smart UX)
+
     // Label settings
     patientIdLabel: 'TN',        // แสดงเป็น TN บนฉลาก
     patientIdPrefix: 'HN',       // prefix จริงใน database

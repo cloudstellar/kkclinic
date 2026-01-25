@@ -9,6 +9,137 @@ description: Expert knowledge for designing clinic management UI that doctors an
 
 ---
 
+## 🌿 Healthcare UI v1.0 — Design Philosophy
+
+> **You are a Senior Product Designer + Frontend Architect specialized in MODERN HEALTHCARE UI.**
+
+This skill must be applied whenever you design, review, or generate UI/UX for:
+- Clinics, Hospitals, Medical/Healthcare systems
+- Front desk, Nurse, Doctor dashboards
+- HIS / EMR / PMS systems
+
+Your goal is to produce interfaces that feel: **Calm, Modern, Clinical, Human, Trustworthy**
+
+### Core Philosophy (MANDATORY)
+
+| Principle | Guideline |
+|-----------|-----------|
+| **Healthcare ≠ Enterprise** | Avoid heavy borders, boxes, grid-heavy layouts, excessive accent colors |
+| **Calm First, Not Flashy** | Design for 8–10 hours continuous usage. Reduce visual fatigue |
+| **Space > Lines** | Use spacing and hierarchy instead of borders. Shadow + whitespace preferred |
+| **Accent Color Discipline** | Reserved ONLY for: active state, important counts (>0), primary action |
+
+### Tabs & Navigation (Healthcare Standard)
+
+```
+- Tabs MUST NOT have:
+  ❌ Surrounding box
+  ❌ Background panel
+  
+- Tabs MUST have:
+  ✅ Underline ONLY for active state (3px thick, accent color)
+  ✅ High-contrast neutral text for active
+  ✅ Solid badge for active, outline badge for inactive
+  ✅ Muted/outline badge when count = 0
+```
+
+**Tailwind Implementation:**
+```tsx
+// Tab Container
+"flex items-end gap-6 border-b border-neutral-200"
+
+// Tab Button (base)
+"relative pb-3 px-1 text-base font-medium transition-colors"
+
+// Inactive: "text-neutral-500 hover:text-neutral-800"
+// Active: "text-neutral-900"
+
+// Active Underline
+"after:content-[''] after:absolute after:left-0 after:-bottom-[1px] 
+ after:h-[3px] after:w-full after:rounded-full after:bg-orange-500"
+
+// Badge (active with count > 0)
+"ml-2 inline-flex h-6 min-w-6 items-center justify-center 
+ rounded-full bg-orange-500 px-2 text-sm font-semibold text-white"
+
+// Badge (inactive / count = 0)
+"ml-2 inline-flex h-6 min-w-6 items-center justify-center 
+ rounded-full border border-neutral-200 bg-white px-2 text-sm text-neutral-400"
+```
+
+### Content Zones
+
+- ❌ Do NOT tint entire content areas with accent colors
+- ✅ Use neutral backgrounds: `bg-neutral-50/60` or `bg-white`
+- ✅ Content must visually "flow" from the active tab without visible containers
+
+```tsx
+// Content Zone Container
+"mt-4 rounded-2xl bg-neutral-50/60 p-4"
+```
+
+### Cards (CRITICAL)
+
+```
+Cards MUST:
+✅ Have NO visible thick border
+✅ Use very soft shadow + thin ring
+✅ Feel lightweight and breathable
+
+Card Accent Rules:
+❌ NO thick colored bars
+✅ 2px hairline accent (left side)
+✅ Subtle, calm, non-aggressive
+```
+
+**Tailwind Implementation:**
+```tsx
+// Healthcare Card (with hairline accent)
+"relative rounded-2xl bg-white p-5 shadow-sm ring-1 ring-neutral-200/60 
+ transition hover:shadow-md 
+ before:content-[''] before:absolute before:left-0 before:top-4 before:bottom-4 
+ before:w-[2px] before:rounded-full before:bg-orange-500"
+```
+
+### Typography Hierarchy
+
+| Element | Style |
+|---------|-------|
+| Patient Name | `text-xl font-semibold text-neutral-900 leading-tight` |
+| Metadata (TN/RX) | `mt-1 text-base text-neutral-500` |
+| Price/Amount | `text-2xl font-semibold text-emerald-600 tabular-nums` |
+| Time | `mt-1 text-sm text-neutral-400 tabular-nums` |
+
+### Color System
+
+- **Base:** White, soft neutral grays
+- **Accent:** Used sparingly — never more than 2 usages per viewport
+- **Money:** `text-emerald-600` (calm green, not neon)
+
+### ❌ Anti-Patterns (STRICTLY FORBIDDEN)
+
+| Anti-Pattern | Why |
+|--------------|-----|
+| Boxed tabs | Enterprise feel |
+| Thick borders everywhere | Visual noise |
+| Accent bars on every card | Overwhelming |
+| Background-tinted sections in accent color | Not calm |
+| Visual noise competing with patient data | Dangerous |
+| UI resembling accounting software | Not healthcare |
+
+### QA Checklist (Healthcare UI)
+
+- [ ] ไม่มีกรอบรอบ tab
+- [ ] active tab = underline 3px + solid badge
+- [ ] inactive tab = no underline + outline badge
+- [ ] count = 0 → muted badge
+- [ ] ใน 1 viewport: สีเน้น ≤ 2 จุด
+- [ ] ไม่ tint zone เป็นสีส้มทั้งก้อน
+- [ ] card = shadow + ring บาง + hairline 2px
+- [ ] Would this feel calm to someone working 8 hours? ✓
+
+---
+
 ## 🎯 Core Principles
 
 ### 1. Speed Over Beauty

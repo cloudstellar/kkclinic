@@ -1,7 +1,9 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { getDailySales } from './actions'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/server'
 
 const paymentMethodLabels: Record<string, string> = {
     cash: '💵 เงินสด',
@@ -10,6 +12,22 @@ const paymentMethodLabels: Record<string, string> = {
 }
 
 export default async function BillingPage() {
+    // Guard: Staff cannot access billing
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (user) {
+        const { data: userData } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (userData?.role === 'staff') {
+            redirect('/frontdesk')
+        }
+    }
+
     const { data: dailySales } = await getDailySales()
 
     return (

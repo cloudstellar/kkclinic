@@ -84,3 +84,36 @@
 
 - Sprint 4: `/docs/04-features/sprint-4-adjustment/PLAN.md`
 - Sprint 5: `/docs/04-features/sprint-5/PLAN.md`
+
+---
+
+## Sprint 5 Page Conditions Summary
+
+### `/frontdesk` (Staff)
+
+| Condition | Behavior |
+|-----------|----------|
+| **Tab "รอดำเนินการ"** | Transaction วันนี้ + `voided_at IS NULL` + `closed_at IS NULL` |
+| **ปุ่ม "ปิดงาน"** | กดได้ทุก transaction ที่ยังไม่ปิด |
+| **กดปิดงาน** | Card หายจาก list (optimistic) |
+| **Voided transaction** | แสดง badge "ยกเลิก" ไม่มีปุ่มปิดงาน |
+| **ข้ามวัน (เที่ยงคืน)** | รายการเก่าหายจาก "วันนี้" |
+
+### `/dispensing` (Doctor)
+
+| Condition | Behavior |
+|-----------|----------|
+| **Default** | แสดง "รายการวันนี้" |
+| **ดูย้อนหลัง** | Link เล็กใต้ title → โหลด 20 รายการล่าสุด |
+| **Empty + ≥21:00** | แสดง link "👉 ดูรายการล่าสุด" |
+| **History view** | แสดง label "📜 รายการล่าสุด (ไม่ใช่วันนี้)" |
+| **ปุ่ม "กลับไปวันนี้"** | Reset กลับ default view |
+
+> **Badge Policy:** "In the dispensing view, badges are reserved only for unfinished clinical tasks. Completed items are reference-only and do not require counts."
+
+### Timezone
+
+- ใช้ `Asia/Bangkok` (UTC+7) ตลอด
+- Helper: `getTodayRange('Asia/Bangkok')` → `{ start, nextStart }`
+- Query: `.gte(start).lt(nextStart)` (exclusive end)
+
