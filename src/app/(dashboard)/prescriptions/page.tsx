@@ -118,87 +118,132 @@ export default async function PrescriptionsPage({
                 </Card>
             )}
 
-            {/* Table */}
+            {/* Table (Desktop) / Cards (Mobile) */}
             {prescriptions && prescriptions.length > 0 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">
-                            พบ {prescriptions.length} รายการ
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>เลขใบสั่งยา</TableHead>
-                                    <TableHead>ผู้ป่วย</TableHead>
-                                    <TableHead>แพทย์</TableHead>
-                                    <TableHead className="text-right">ยอดรวม</TableHead>
-                                    <TableHead>สถานะ</TableHead>
-                                    <TableHead>วันที่</TableHead>
-                                    <TableHead className="text-right">จัดการ</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {prescriptions.map((rx: { id: string; prescription_no: string; status: string; total_price: number; created_at: string; patient?: { name: string | null; name_en?: string | null; nationality?: string; hn: string; drug_allergies?: string }; doctor?: { full_name: string } }) => {
-                                    const status = statusLabels[rx.status] || statusLabels.pending
-                                    return (
-                                        <TableRow key={rx.id}>
-                                            <TableCell className="font-mono font-medium">
-                                                {rx.prescription_no}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div>
-                                                    <span className="font-medium">
-                                                        {rx.patient ? getDisplayName({
-                                                            name: rx.patient.name || null,
-                                                            name_en: rx.patient.name_en || null,
-                                                            nationality: rx.patient.nationality || 'thai'
-                                                        }) : '-'}
-                                                        {rx.patient && !hasValidName({
-                                                            name: rx.patient.name || null,
-                                                            name_en: rx.patient.name_en || null,
-                                                            nationality: rx.patient.nationality || 'thai'
-                                                        }) && (
-                                                                <span className="text-red-500 ml-1">⚠️</span>
-                                                            )}
+                <>
+                    {/* Desktop Table */}
+                    <Card className="hidden md:block">
+                        <CardHeader>
+                            <CardTitle className="text-base">
+                                พบ {prescriptions.length} รายการ
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>เลขใบสั่งยา</TableHead>
+                                        <TableHead>ผู้ป่วย</TableHead>
+                                        <TableHead>แพทย์</TableHead>
+                                        <TableHead className="text-right">ยอดรวม</TableHead>
+                                        <TableHead>สถานะ</TableHead>
+                                        <TableHead>วันที่</TableHead>
+                                        <TableHead className="text-right">จัดการ</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {prescriptions.map((rx: { id: string; prescription_no: string; status: string; total_price: number; created_at: string; patient?: { name: string | null; name_en?: string | null; nationality?: string; hn: string; drug_allergies?: string }; doctor?: { full_name: string } }) => {
+                                        const status = statusLabels[rx.status] || statusLabels.pending
+                                        return (
+                                            <TableRow key={rx.id}>
+                                                <TableCell className="font-mono font-medium">
+                                                    {rx.prescription_no}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div>
+                                                        <span className="font-medium">
+                                                            {rx.patient ? getDisplayName({
+                                                                name: rx.patient.name || null,
+                                                                name_en: rx.patient.name_en || null,
+                                                                nationality: rx.patient.nationality || 'thai'
+                                                            }) : '-'}
+                                                            {rx.patient && !hasValidName({
+                                                                name: rx.patient.name || null,
+                                                                name_en: rx.patient.name_en || null,
+                                                                nationality: rx.patient.nationality || 'thai'
+                                                            }) && (
+                                                                    <span className="text-red-500 ml-1">⚠️</span>
+                                                                )}
+                                                        </span>
+                                                        <span className="text-sm text-muted-foreground ml-2">
+                                                            ({formatPatientId(rx.patient?.hn || '')})
+                                                        </span>
+                                                    </div>
+                                                    {rx.patient?.drug_allergies && (
+                                                        <span className="text-xs text-red-600">
+                                                            ⚠️ แพ้ยา: {rx.patient.drug_allergies}
+                                                        </span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>{rx.doctor?.full_name}</TableCell>
+                                                <TableCell className="text-right tabular-nums">
+                                                    ฿{(rx.total_price || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className={`px-2 py-1 rounded-full text-xs ${status.className}`}>
+                                                        {status.label}
                                                     </span>
-                                                    <span className="text-sm text-muted-foreground ml-2">
-                                                        ({formatPatientId(rx.patient?.hn || '')})
-                                                    </span>
-                                                </div>
-                                                {rx.patient?.drug_allergies && (
-                                                    <span className="text-xs text-red-600">
-                                                        ⚠️ แพ้ยา: {rx.patient.drug_allergies}
-                                                    </span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>{rx.doctor?.full_name}</TableCell>
-                                            <TableCell className="text-right">
-                                                ฿{(rx.total_price || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className={`px-2 py-1 rounded-full text-xs ${status.className}`}>
-                                                    {status.label}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="text-muted-foreground">
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground tabular-nums">
+                                                    {new Date(rx.created_at).toLocaleDateString('th-TH')}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <Link href={`/prescriptions/${rx.id}`}>
+                                                        <Button variant="ghost" size="sm">
+                                                            ดู
+                                                        </Button>
+                                                    </Link>
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+
+                    {/* Mobile Cards */}
+                    <div className="md:hidden space-y-3">
+                        <p className="text-sm text-muted-foreground">พบ {prescriptions.length} รายการ</p>
+                        {prescriptions.map((rx: { id: string; prescription_no: string; status: string; total_price: number; created_at: string; patient?: { name: string | null; name_en?: string | null; nationality?: string; hn: string; drug_allergies?: string }; doctor?: { full_name: string } }) => {
+                            const status = statusLabels[rx.status] || statusLabels.pending
+                            return (
+                                <Link key={rx.id} href={`/prescriptions/${rx.id}`}>
+                                    <Card className="relative rounded-2xl bg-white p-4 shadow-sm ring-1 ring-neutral-200/60 transition hover:shadow-md before:content-[''] before:absolute before:left-0 before:top-4 before:bottom-4 before:w-[2px] before:rounded-full before:bg-orange-500">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <p className="font-semibold text-neutral-900">
+                                                    {rx.patient ? getDisplayName({
+                                                        name: rx.patient.name || null,
+                                                        name_en: rx.patient.name_en || null,
+                                                        nationality: rx.patient.nationality || 'thai'
+                                                    }) : '-'}
+                                                </p>
+                                                <p className="text-sm text-neutral-500">
+                                                    {formatPatientId(rx.patient?.hn || '')} • {rx.prescription_no}
+                                                </p>
+                                            </div>
+                                            <span className={`px-2 py-1 rounded-full text-xs ${status.className}`}>
+                                                {status.label}
+                                            </span>
+                                        </div>
+                                        {rx.patient?.drug_allergies && (
+                                            <p className="text-xs text-red-600 mb-2">⚠️ แพ้ยา: {rx.patient.drug_allergies}</p>
+                                        )}
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-neutral-500 tabular-nums">
                                                 {new Date(rx.created_at).toLocaleDateString('th-TH')}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <Link href={`/prescriptions/${rx.id}`}>
-                                                    <Button variant="ghost" size="sm">
-                                                        ดู
-                                                    </Button>
-                                                </Link>
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                                            </span>
+                                            <span className="font-semibold text-emerald-600 tabular-nums">
+                                                ฿{(rx.total_price || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                    </Card>
+                                </Link>
+                            )
+                        })}
+                    </div>
+                </>
             )}
         </div>
     )
