@@ -19,16 +19,27 @@ export async function login(formData: FormData) {
         return { error: error.message }
     }
 
-    // Update last_login_at
+    // Update last_login_at and get user role
     const { data: { user } } = await supabase.auth.getUser()
+    let userRole = 'staff'
+
     if (user) {
-        await supabase
+        const { data: userData } = await supabase
             .from('users')
             .update({ last_login_at: new Date().toISOString() })
             .eq('id', user.id)
+            .select('role')
+            .single()
+
+        userRole = userData?.role || 'staff'
     }
 
     revalidatePath('/', 'layout')
+
+    // Staff default landing = /frontdesk
+    if (userRole === 'staff') {
+        redirect('/frontdesk')
+    }
     redirect('/dashboard')
 }
 
