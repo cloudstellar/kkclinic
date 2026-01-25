@@ -135,7 +135,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
 
                     .label-container {
                         width: 94mm;
-                        min-height: 69mm;
+                        height: 69mm;
                         padding: 3mm;
                         border: 1px solid #333;
                         background: white;
