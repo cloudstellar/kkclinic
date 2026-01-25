@@ -1,35 +1,31 @@
-# Next Session: Sprint 6 — Reports & Dashboard
+# Next Session: Sprint 5+ — Doctor Workspace
 
 **Date**: 25 มกราคม 2569
-**Status**: 🚀 Future Planning
+**Status**: 🚧 Ready for Implementation
 **Branch**: `main`
 
 ---
 
 ## 🎯 What's Done (Sprint 5) ✅
 
-Features implemented in `v0.7.0-rc1`:
-- **Staff Workflow**: `/frontdesk` (Dashboard) & `/dispensing` (History view)
-- **Healthcare UI v1.0**: Modern cards, badges, improved readability
-- **Print Layout**: A6 Receipt & 100x75mm Labels (Fixed margins)
-- **Close Transaction**: "ปิดงาน" workflow
-- **Single Source of Truth**: Centralized Timezone & Late Hour config
+- Staff Workflow: `/frontdesk` & `/dispensing`
+- Print Layout fixes (A6, Labels)
+- Healthcare UI v1.0
 
 ---
 
-## 🎯 Next: Sprint 6 — Reports & Dashboard
+## 🎯 CURRENT: Sprint 5+ — Doctor Workspace
 
-> **Goal:** Create actionable insights for clinic owners.
+> **Goal:** Transform `/prescriptions` to Doctor-first Workspace
 
-### 1. Daily/Monthly Reports
-- Total Revenue (Cash/Transfer)
-- Patient Volume (New/Returning)
-- Top 10 Services/Medicines
+| Task | Status |
+|------|--------|
+| Default = วันนี้ + ของฉัน | 🔲 |
+| Search = all-time | 🔲 |
+| Hide money column | 🔲 |
+| Clinical status labels | 🔲 |
 
-### 2. Dashboard (`/dashboard`)
-- Real-time today stats
-- Inventory Low Stock Alerts
-- Recent Activity Feed
+**📄 PLAN:** [docs/04-features/sprint-5-plus/PLAN.md](04-features/sprint-5-plus/PLAN.md)
 
 ---
 
@@ -37,15 +33,14 @@ Features implemented in `v0.7.0-rc1`:
 
 | Document | Path |
 |----------|------|
-| **Sprint 5 Plan (Done)** | [docs/04-features/sprint-5/PLAN.md](04-features/sprint-5/PLAN.md) |
-| **ADR-0003 (RBAC)** | [docs/02-architecture/ADR/0003-role-based-access-control.md](02-architecture/ADR/0003-role-based-access-control.md) |
-| **Clinic Config** | `src/lib/clinic-config.ts` |
+| **Sprint 5+ PLAN** | `docs/04-features/sprint-5-plus/PLAN.md` |
+| **ADR-0003** | `docs/02-architecture/ADR/0003-role-based-access-control.md` |
 
 ---
 
 ## 🚀 Start Command
 
 ```
-Check docs/05-reference/ROADMAP.md for Sprint 6 details
-then propose Implementation Plan
+Read docs/04-features/sprint-5-plus/PLAN.md
+then implement code changes
 ```

@@ -111,19 +111,32 @@
 
 > **Badge Policy:** "In the dispensing view, badges are reserved only for unfinished clinical tasks. Completed items are reference-only and do not require counts."
 
-### `/prescriptions` (Doctor)
+### `/prescriptions` (Doctor Workspace)
 
-| Purpose | Description |
-|---------|-------------|
-| **Read-heavy** | Overview of all prescriptions |
-| **Filter/Search** | By status, prescription_no |
-| **View/Print/Audit** | Historical reference |
+> **บทบาท:** Clinical case management — ไม่ใช่ transaction list
 
-> **Page Role Clarification:**
-> - **Prescription Index ≠ Dispensing**
-> - Prescription Index = Read-heavy (view/search/audit)
-> - Dispensing = Action-heavy (adjust/confirm/void, today-focused)
-> - ❌ No action buttons (จ่าย/adjust/stock) in Prescription Index
+| Default Behavior | Description |
+|-----------------|-------------|
+| **Load** | วันนี้ + ของฉัน (doctor = current user) |
+| **Search/Filter** | ปลด constraint ทั้งหมด → ค้นได้ทุกวัน ทุกหมอ |
+| **CTA** | "+ สร้างใบสั่งยา" เด่นที่สุด |
+
+| Status (Clinical) | Meaning | ≠ Dispensing |
+|-------------------|---------|--------------|
+| **ยังไม่สรุปเคส** | Draft / กำลังทำ | Dispensing = "รอสรุปเคส" |
+| **สรุปเคสแล้ว** | Clinical sign-off | Dispensing = "พร้อมจ่าย" |
+
+> [!IMPORTANT]
+> **Prescription Index (Doctor Workspace) displays case status for awareness, while Dispensing uses the same status as an operational workflow gate.**
+>
+> Doctor Workspace status is **informational only** and does not permit operational actions (payment, stock adjustment).
+
+| ❌ Not in Doctor Workspace | Reason |
+|---------------------------|--------|
+| ยอดเงิน column | หมอไม่คิดเป็นเงิน |
+| Tab แยกสถานะ | ไม่ใช่ workflow gate |
+| ปุ่ม adjust/void | เป็นงาน operational |
+| Stock detail | เป็นงาน staff |
 
 ### Timezone
 
