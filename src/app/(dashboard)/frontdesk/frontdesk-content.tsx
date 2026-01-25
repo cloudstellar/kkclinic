@@ -312,7 +312,7 @@ export function FrontdeskContent() {
                                                                     onClick={(e) => handleClose(tx.id, e)}
                                                                     disabled={closingId === tx.id}
                                                                     aria-label="ปิดงาน"
-                                                                    className="mt-1 text-xs text-neutral-500 hover:text-neutral-700 h-7 px-2"
+                                                                    className="mt-1 text-xs text-neutral-600 bg-neutral-100/60 hover:bg-neutral-200 hover:text-neutral-900 h-7 px-2"
                                                                 >
                                                                     <Check className="w-3.5 h-3.5 mr-1" />
                                                                     {closingId === tx.id ? 'กำลังปิด...' : 'ปิดงาน'}

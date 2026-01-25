@@ -3,6 +3,8 @@
  * All functions are timezone-safe (no Date object for parsing)
  */
 
+import { CLINIC_CONFIG } from './clinic-config'
+
 // Parse date string WITHOUT Date object (timezone-safe)
 function parseDateParts(dateString: string): { year: number; month: number; day: number } | null {
     if (!dateString || !dateString.includes('-')) return null
@@ -85,7 +87,7 @@ export function calculateAge(birthDate: string | null): number | null {
  * Returns { start, nextStart } for use with [start, nextStart) pattern
  * Prevents midnight edge cases by using exclusive end
  */
-export function getTodayRange(tz = 'Asia/Bangkok') {
+export function getTodayRange(tz = CLINIC_CONFIG.timezone) {
     const now = new Date()
 
     // Get today's date string in the target timezone
@@ -111,3 +113,18 @@ export function getTodayRange(tz = 'Asia/Bangkok') {
         nextStart: nextStartLocal.toISOString()
     }
 }
+
+/**
+ * Check if current time is after clinic's "late hour"
+ * Uses CLINIC_CONFIG.lateHour as threshold
+ */
+export function isLateHour(tz = CLINIC_CONFIG.timezone): boolean {
+    const now = new Date()
+    const fmt = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz,
+        hour: 'numeric',
+        hour12: false
+    })
+    return parseInt(fmt.format(now)) >= CLINIC_CONFIG.lateHour
+}
+

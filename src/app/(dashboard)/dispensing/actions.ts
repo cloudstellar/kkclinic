@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getTodayRange } from '@/lib/date-utils'
 
 // Get prescriptions for doctor: pending ones (รอสรุปเคส)
 export async function getPendingForDoctor() {
@@ -30,12 +31,7 @@ export async function getPendingForDoctor() {
 // Get prescriptions that are finalized today (สรุปเคสแล้ว)
 export async function getFinalizedToday() {
     const supabase = await createClient()
-
-    // Get today's transactions with their prescriptions
-    const today = new Date()
-    const bangkokOffset = 7 * 60
-    const localDate = new Date(today.getTime() + bangkokOffset * 60 * 1000)
-    const dateStr = localDate.toISOString().slice(0, 10)
+    const { start, nextStart } = getTodayRange('Asia/Bangkok')
 
     const { data: transactions, error } = await supabase
         .from('transactions')
@@ -51,8 +47,8 @@ export async function getFinalizedToday() {
                 patient:patients(id, hn, name, name_en, nationality)
             )
         `)
-        .gte('paid_at', `${dateStr}T00:00:00+07:00`)
-        .lt('paid_at', `${dateStr}T23:59:59+07:00`)
+        .gte('paid_at', start)
+        .lt('paid_at', nextStart)
         .order('paid_at', { ascending: false })
 
     if (error) {
@@ -62,3 +58,33 @@ export async function getFinalizedToday() {
 
     return { data: transactions || [], error: null }
 }
+
+// Get recent transactions (for "ดูย้อนหลัง" feature)
+export async function getRecentTransactions() {
+    const supabase = await createClient()
+
+    const { data: transactions, error } = await supabase
+        .from('transactions')
+        .select(`
+            id,
+            receipt_no,
+            status,
+            total_amount,
+            paid_at,
+            prescription:prescriptions(
+                id,
+                prescription_no,
+                patient:patients(id, hn, name, name_en, nationality)
+            )
+        `)
+        .order('paid_at', { ascending: false })
+        .limit(20)
+
+    if (error) {
+        console.error('Error fetching recent transactions:', error)
+        return { data: null, error: error.message }
+    }
+
+    return { data: transactions || [], error: null }
+}
+
