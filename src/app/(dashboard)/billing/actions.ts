@@ -863,3 +863,95 @@ export async function createAdjustment(input: CreateAdjustmentInput): Promise<{
     return { data: { adjustmentId: adjustment.id }, error: null }
 }
 
+// ============================================
+// RX HISTORY - Sprint 5: Timeline from existing data
+// ============================================
+export async function getRxHistory(prescriptionId: string) {
+    const supabase = await createClient()
+
+    // Get transaction for this prescription
+    const { data: transaction } = await supabase
+        .from('transactions')
+        .select(`
+            id,
+            receipt_no,
+            status,
+            created_at,
+            voided_at,
+            void_reason,
+            voided_by_user:users!transactions_voided_by_fkey(full_name)
+        `)
+        .eq('prescription_id', prescriptionId)
+        .single()
+
+    if (!transaction) {
+        return { data: [], error: null }
+    }
+
+    // Get adjustments for this transaction
+    const { data: adjustments } = await supabase
+        .from('transaction_adjustments')
+        .select(`
+            id,
+            adjustment_no,
+            created_at,
+            note,
+            created_by_user:users!transaction_adjustments_created_by_fkey(full_name)
+        `)
+        .eq('transaction_id', transaction.id)
+        .order('adjustment_no', { ascending: true })
+
+    // Build timeline
+    type TimelineEvent = {
+        type: 'created' | 'adjusted' | 'voided'
+        at: string
+        label: string
+        by?: string
+        detail?: string
+    }
+
+    const events: TimelineEvent[] = []
+
+    // Event 1: Transaction created (สรุปเคส)
+    events.push({
+        type: 'created',
+        at: transaction.created_at,
+        label: 'สรุปเคส',
+        detail: transaction.receipt_no
+    })
+
+    // Events 2..n: Adjustments
+    if (adjustments) {
+        for (const adj of adjustments) {
+            const createdByUser = Array.isArray(adj.created_by_user)
+                ? adj.created_by_user[0]
+                : adj.created_by_user
+            events.push({
+                type: 'adjusted',
+                at: adj.created_at,
+                label: `ปรับปรุง #${adj.adjustment_no}`,
+                by: createdByUser?.full_name,
+                detail: adj.note || undefined
+            })
+        }
+    }
+
+    // Event last: Voided (if applicable)
+    if (transaction.status === 'voided' && transaction.voided_at) {
+        const voidedByUser = Array.isArray(transaction.voided_by_user)
+            ? transaction.voided_by_user[0]
+            : transaction.voided_by_user
+        events.push({
+            type: 'voided',
+            at: transaction.voided_at,
+            label: 'ยกเลิก',
+            by: voidedByUser?.full_name,
+            detail: transaction.void_reason || undefined
+        })
+    }
+
+    // Sort by timestamp
+    events.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
+
+    return { data: events, error: null }
+}

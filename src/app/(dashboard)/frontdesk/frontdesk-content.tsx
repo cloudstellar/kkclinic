@@ -138,7 +138,7 @@ export function FrontdeskContent() {
                             </TabsTrigger>
                             <TabsTrigger value="done" className="flex flex-col items-center">
                                 <span>รอดำเนินการ ({todayTx.length})</span>
-                                <span className="text-xs text-muted-foreground">รอเก็บเงิน / ปรับรายการ</span>
+                                <span className="text-xs opacity-70">รอเก็บเงิน / ปรับรายการ</span>
                             </TabsTrigger>
                         </TabsList>
 

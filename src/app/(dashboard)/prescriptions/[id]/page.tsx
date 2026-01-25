@@ -13,6 +13,7 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { PaymentButton } from './payment-button'
+import { RxHistory } from './rx-history'
 
 const statusLabels: Record<string, { label: string; className: string }> = {
     pending: { label: 'รอจ่ายยา', className: 'bg-yellow-100 text-yellow-700' },
@@ -217,6 +218,9 @@ export default async function PrescriptionDetailPage({
                     )}
                 </CardContent>
             </Card>
+
+            {/* Sprint 5: Rx History */}
+            <RxHistory prescriptionId={id} />
         </div>
     )
 }
