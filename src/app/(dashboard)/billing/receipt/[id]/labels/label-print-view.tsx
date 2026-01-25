@@ -99,7 +99,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                 @media print {
                     @page {
                         size: 100mm 75mm;
-                        margin: 0;
+                        margin: 3mm 0 0 0;
                     }
 
                     /* Hide everything by default (strips navbar, sidebar, etc) */
@@ -120,7 +120,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         top: 0;
                         width: 100mm;
                         min-height: 75mm;
-                        padding-top: 3mm;
+                        padding-top: 0;
                         
                         /* Layout formatting */
                         display: flex;
@@ -141,6 +141,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         background: white;
                         box-sizing: border-box;
                         page-break-after: always;
+                        break-inside: avoid;
                     }
 
                     .label-container:last-child {

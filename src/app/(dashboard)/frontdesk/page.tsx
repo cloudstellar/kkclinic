@@ -15,7 +15,7 @@ export default async function FrontdeskPage() {
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold mb-6">🏥 หน้าบ้าน</h1>
+            <h1 className="text-2xl font-bold mb-6">🏥 Front Desk</h1>
             <Suspense fallback={<div>กำลังโหลด...</div>}>
                 <FrontdeskContent />
             </Suspense>

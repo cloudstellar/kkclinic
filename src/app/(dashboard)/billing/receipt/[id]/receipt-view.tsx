@@ -63,9 +63,13 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
 
     return (
         <>
-            {/* Print Styles */}
+            {/* Print Styles - A6 size (105mm x 148mm) */}
             <style jsx global>{`
                 @media print {
+                    @page {
+                        size: 105mm 148mm;
+                        margin: 3mm;
+                    }
                     body * {
                         visibility: hidden;
                     }
@@ -76,8 +80,21 @@ export function ReceiptView({ transaction, userRole }: ReceiptViewProps) {
                         position: absolute;
                         left: 0;
                         top: 0;
-                        width: 80mm !important;
+                        width: 99mm !important;
+                        max-width: 99mm !important;
+                        font-size: 9pt !important;
+                        line-height: 1.3 !important;
                     }
+                    .receipt-container .text-lg { font-size: 11pt !important; }
+                    .receipt-container .text-xl { font-size: 12pt !important; }
+                    .receipt-container .text-sm { font-size: 8pt !important; }
+                    .receipt-container .text-xs { font-size: 7pt !important; }
+                    .receipt-container .p-6 { padding: 3mm !important; }
+                    .receipt-container .p-4 { padding: 2mm !important; }
+                    .receipt-container .mb-6 { margin-bottom: 2mm !important; }
+                    .receipt-container .mb-4 { margin-bottom: 1.5mm !important; }
+                    .receipt-container .space-y-4 > * + * { margin-top: 2mm !important; }
+                    .receipt-container .space-y-2 > * + * { margin-top: 1mm !important; }
                     .no-print {
                         display: none !important;
                     }
