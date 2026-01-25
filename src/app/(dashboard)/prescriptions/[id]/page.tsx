@@ -52,7 +52,14 @@ export default async function PrescriptionDetailPage({
                     </div>
                 </div>
                 {prescription.status === 'pending' && (
-                    <PaymentButton prescription={prescription} />
+                    <div className="flex items-center gap-2">
+                        <Link href={`/prescriptions/${id}/edit`}>
+                            <Button variant="outline" size="sm">
+                                ✏️ แก้ไขรายการ
+                            </Button>
+                        </Link>
+                        <PaymentButton prescription={prescription} />
+                    </div>
                 )}
             </div>
 

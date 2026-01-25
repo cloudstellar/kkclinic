@@ -309,3 +309,94 @@ export async function searchMedicines(query: string) {
     return { data, error: null }
 }
 
+// Update prescription items (for pending prescriptions only)
+export async function updatePrescription(
+    prescriptionId: string,
+    items: PrescriptionItemFormData[],
+    note?: string,
+    df?: number,
+    dfNote?: string
+) {
+    const supabase = await createClient()
+
+    // Check prescription exists and is pending
+    const { data: existing, error: fetchError } = await supabase
+        .from('prescriptions')
+        .select('id, status')
+        .eq('id', prescriptionId)
+        .single()
+
+    if (fetchError || !existing) {
+        return { data: null, error: 'Prescription not found' }
+    }
+
+    if (existing.status !== 'pending') {
+        return { data: null, error: 'Only pending prescriptions can be edited' }
+    }
+
+    // Calculate totals
+    const itemsWithPrices = await Promise.all(
+        items.map(async (item) => {
+            const { data: medicine } = await supabase
+                .from('medicines')
+                .select('price')
+                .eq('id', item.medicine_id)
+                .single()
+            return {
+                ...item,
+                unit_price: medicine?.price || 0
+            }
+        })
+    )
+
+    const subtotal = itemsWithPrices.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
+    const totalWithDf = subtotal + (df || 0)
+
+    // Update prescription
+    const { error: updateError } = await supabase
+        .from('prescriptions')
+        .update({
+            note: note || null,
+            total_price: totalWithDf,
+            df: df || 0,
+            df_note: dfNote || null,
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', prescriptionId)
+
+    if (updateError) {
+        return { data: null, error: updateError.message }
+    }
+
+    // Delete old items
+    await supabase
+        .from('prescription_items')
+        .delete()
+        .eq('prescription_id', prescriptionId)
+
+    // Insert new items
+    const itemsToInsert = itemsWithPrices.map(item => ({
+        prescription_id: prescriptionId,
+        item_type: 'medicine' as const,
+        medicine_id: item.medicine_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        dosage_original: item.dosage_original?.trim() || null,
+        dosage_instruction: item.dosage_original?.trim() ? (item.dosage_instruction?.trim() || item.dosage_original.trim()) : null,
+        dosage_language: item.dosage_original?.trim() ? (item.dosage_language || 'th') : null,
+        dictionary_version: item.dosage_original?.trim() ? '1.0' : null,
+        note: item.note || null,
+    }))
+
+    const { error: itemsError } = await supabase
+        .from('prescription_items')
+        .insert(itemsToInsert)
+
+    if (itemsError) {
+        return { data: null, error: itemsError.message }
+    }
+
+    revalidatePath('/prescriptions')
+    revalidatePath(`/prescriptions/${prescriptionId}`)
+    return { data: { id: prescriptionId }, error: null }
+}

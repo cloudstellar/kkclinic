@@ -132,13 +132,33 @@ export function FrontdeskContent() {
                 </CardHeader>
                 <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList className="w-full grid grid-cols-2 mb-4">
-                            <TabsTrigger value="pending" className="flex flex-col items-center">
-                                <span>รอสรุปเคส ({pendingRx.length})</span>
+                        <TabsList className="w-full grid grid-cols-2 mb-4 h-auto bg-transparent p-0">
+                            <TabsTrigger
+                                value="pending"
+                                className="flex items-center gap-2 py-3 rounded-none border-b-[3px] border-transparent data-[state=active]:border-orange-500 data-[state=active]:text-orange-600 data-[state=inactive]:text-gray-500 bg-transparent"
+                            >
+                                <span className="font-medium">รอสรุปเคส</span>
+                                <Badge className={pendingRx.length > 0
+                                    ? "bg-orange-500 text-white"
+                                    : "bg-gray-200 text-gray-500"
+                                }>
+                                    {pendingRx.length}
+                                </Badge>
                             </TabsTrigger>
-                            <TabsTrigger value="done" className="flex flex-col items-center">
-                                <span>รอดำเนินการ ({todayTx.length})</span>
-                                <span className="text-xs opacity-70">รอเก็บเงิน / ปรับรายการ</span>
+                            <TabsTrigger
+                                value="done"
+                                className="flex flex-col items-center gap-0.5 py-2 rounded-none border-b-[3px] border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 data-[state=inactive]:text-gray-500 bg-transparent"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium">รอดำเนินการ</span>
+                                    <Badge className={todayTx.length > 0
+                                        ? "bg-blue-500 text-white"
+                                        : "bg-gray-200 text-gray-500"
+                                    }>
+                                        {todayTx.length}
+                                    </Badge>
+                                </div>
+                                <span className="text-[10px] text-gray-500">รอเก็บเงิน / ปรับรายการ</span>
                             </TabsTrigger>
                         </TabsList>
 
@@ -150,14 +170,14 @@ export function FrontdeskContent() {
                                     ✅ ไม่มีใบสั่งยารอสรุป
                                 </div>
                             ) : (
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     {pendingRx.map((rx) => (
                                         <Link
                                             key={rx.id}
                                             href={`/prescriptions/${rx.id}`}
                                             className="block"
                                         >
-                                            <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                                            <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                                                 <div>
                                                     <div className="font-medium">
                                                         {rx.patient ? getDisplayName({
@@ -198,7 +218,7 @@ export function FrontdeskContent() {
                                     📭 ยังไม่มีรายการสรุปเคสวันนี้
                                 </div>
                             ) : (
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     {todayTx.map((tx) => {
                                         const isVoided = tx.status === 'voided'
                                         return (
@@ -207,7 +227,7 @@ export function FrontdeskContent() {
                                                 href={`/billing/receipt/${tx.id}`}
                                                 className="block"
                                             >
-                                                <div className={`flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer ${isVoided ? 'bg-red-50/50 opacity-60' : ''}`}>
+                                                <div className={`flex items-center justify-between p-4 bg-white rounded-xl shadow-sm transition-shadow cursor-pointer ${isVoided ? 'opacity-50' : 'hover:shadow-md'}`}>
                                                     <div>
                                                         <div className="flex items-center gap-2">
                                                             <span className="font-medium">
