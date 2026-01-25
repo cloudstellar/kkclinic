@@ -149,6 +149,11 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         page-break-after: avoid;
                     }
 
+                    /* Summary sheet (first page) */
+                    .summary-page {
+                        margin-top: 3mm;
+                    }
+
                     /* Font sizes for print - larger for readability */
                     .label-container .text-xl { font-size: 16px !important; }
                     .label-container .text-lg { font-size: 14px !important; }
