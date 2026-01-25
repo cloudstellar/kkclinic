@@ -99,7 +99,7 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                 @media print {
                     @page {
                         size: 100mm 75mm;
-                        margin: 0;
+                        margin: 3mm 0 0 0;
                     }
 
                     /* Hide everything by default (strips navbar, sidebar, etc) */
@@ -119,9 +119,8 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                         left: 0;
                         top: 0;
                         width: 100mm;
-                        height: 75mm;
-                        padding: 0;
-                        margin: 0;
+                        min-height: 75mm;
+                        padding-top: 0;
                         
                         /* Layout formatting */
                         display: flex;
@@ -135,15 +134,14 @@ export function LabelPrintView({ transaction }: LabelPrintViewProps) {
                     }
 
                     .label-container {
-                        width: 100mm;
-                        height: 75mm;
+                        width: 94mm;
+                        max-height: 69mm;
                         padding: 4mm;
-                        border: none;
+                        border: 1px solid #333;
                         background: white;
                         box-sizing: border-box;
                         page-break-after: always;
                         break-inside: avoid;
-                        overflow: hidden;
                     }
 
                     .label-container:last-child {
