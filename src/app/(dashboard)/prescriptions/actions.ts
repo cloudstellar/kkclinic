@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { PrescriptionItemFormData } from '@/types/prescriptions'
+import { getTodayRange } from '@/lib/date-utils'
 
 // Get all prescriptions with filters
 export async function getPrescriptions(status?: string, search?: string) {
@@ -35,6 +36,28 @@ export async function getPrescriptions(status?: string, search?: string) {
     }
 
     return { data, error: null }
+}
+
+// Get today's prescription counts (uses CLINIC_CONFIG.timezone)
+export async function getTodaysPrescriptionCounts() {
+    const supabase = await createClient()
+    const { start, nextStart } = getTodayRange()
+
+    const { data, error } = await supabase
+        .from('prescriptions')
+        .select('status')
+        .gte('created_at', start)
+        .lt('created_at', nextStart)
+
+    if (error) {
+        console.error('Error fetching today counts:', error)
+        return { pending: 0, dispensed: 0 }
+    }
+
+    const pending = data?.filter(p => p.status === 'pending').length || 0
+    const dispensed = data?.filter(p => p.status === 'dispensed').length || 0
+
+    return { pending, dispensed }
 }
 
 // Get single prescription with items

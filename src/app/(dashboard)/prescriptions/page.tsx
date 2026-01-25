@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getPrescriptions } from './actions'
+import { getPrescriptions, getTodaysPrescriptionCounts } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -26,11 +26,10 @@ export default async function PrescriptionsPage({
     searchParams: Promise<{ search?: string; status?: string }>
 }) {
     const params = await searchParams
-    const { data: prescriptions, error } = await getPrescriptions(params.status, params.search)
-
-    // Count by status
-    const pendingCount = prescriptions?.filter((p: { status: string }) => p.status === 'pending').length || 0
-    const dispensedCount = prescriptions?.filter((p: { status: string }) => p.status === 'dispensed').length || 0
+    const [{ data: prescriptions, error }, todayCounts] = await Promise.all([
+        getPrescriptions(params.status, params.search),
+        getTodaysPrescriptionCounts()
+    ])
 
     return (
         <div className="p-6">
@@ -41,20 +40,20 @@ export default async function PrescriptionsPage({
                 </Link>
             </div>
 
-            {/* Stats */}
+            {/* Stats - Today Only */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <Card className={pendingCount > 0 ? 'border-yellow-300 bg-yellow-50' : ''}>
+                <Card className={todayCounts.pending > 0 ? 'ring-1 ring-yellow-300 bg-yellow-50/50' : ''}>
                     <CardContent className="pt-6">
-                        <p className="text-sm text-muted-foreground">รอจ่ายยา</p>
-                        <p className={`text-3xl font-bold ${pendingCount > 0 ? 'text-yellow-600' : ''}`}>
-                            {pendingCount}
+                        <p className="text-sm text-muted-foreground">รอจ่ายยา (วันนี้)</p>
+                        <p className={`text-3xl font-bold tabular-nums ${todayCounts.pending > 0 ? 'text-yellow-600' : ''}`}>
+                            {todayCounts.pending}
                         </p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardContent className="pt-6">
-                        <p className="text-sm text-muted-foreground">จ่ายแล้ววันนี้</p>
-                        <p className="text-3xl font-bold text-green-600">{dispensedCount}</p>
+                        <p className="text-sm text-muted-foreground">จ่ายแล้ว (วันนี้)</p>
+                        <p className="text-3xl font-bold tabular-nums text-green-600">{todayCounts.dispensed}</p>
                     </CardContent>
                 </Card>
             </div>

@@ -111,9 +111,23 @@
 
 > **Badge Policy:** "In the dispensing view, badges are reserved only for unfinished clinical tasks. Completed items are reference-only and do not require counts."
 
+### `/prescriptions` (Doctor)
+
+| Purpose | Description |
+|---------|-------------|
+| **Read-heavy** | Overview of all prescriptions |
+| **Filter/Search** | By status, prescription_no |
+| **View/Print/Audit** | Historical reference |
+
+> **Page Role Clarification:**
+> - **Prescription Index ≠ Dispensing**
+> - Prescription Index = Read-heavy (view/search/audit)
+> - Dispensing = Action-heavy (adjust/confirm/void, today-focused)
+> - ❌ No action buttons (จ่าย/adjust/stock) in Prescription Index
+
 ### Timezone
 
 - ใช้ `Asia/Bangkok` (UTC+7) ตลอด
-- Helper: `getTodayRange('Asia/Bangkok')` → `{ start, nextStart }`
+- Single Source: `CLINIC_CONFIG.timezone` in `src/lib/clinic-config.ts`
+- Helper: `getTodayRange()` → `{ start, nextStart }`
 - Query: `.gte(start).lt(nextStart)` (exclusive end)
-
