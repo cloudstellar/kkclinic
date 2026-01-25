@@ -16,7 +16,7 @@ const menuItems: MenuItem[] = [
     { label: 'แดชบอร์ด', href: '/dashboard', icon: '🏠', roles: ['admin', 'doctor', 'staff'] },
     { label: 'ผู้ป่วย', href: '/patients', icon: '👤', roles: ['admin', 'doctor', 'staff'] },
     { label: 'ใบสั่งยา', href: '/prescriptions', icon: '📝', roles: ['admin', 'doctor'] },
-    { label: 'หน้าบ้าน', href: '/frontdesk', icon: '🏥', roles: ['admin', 'staff'] },
+    { label: 'Front Desk', href: '/frontdesk', icon: '🏥', roles: ['admin', 'staff'] },
     { label: 'จ่ายยา', href: '/dispensing', icon: '💊', roles: ['admin', 'staff'] },
     { label: 'คิดเงิน', href: '/billing', icon: '💳', roles: ['admin', 'doctor'] },
     { label: 'คลังยา', href: '/inventory', icon: '📦', roles: ['admin', 'staff'] },
