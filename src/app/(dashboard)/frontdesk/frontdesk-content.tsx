@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getPendingPrescriptions, getTodayTransactions } from './actions'
 import { formatCurrency } from '@/lib/utils'
 import { getDisplayName } from '@/lib/patient-utils'
@@ -131,39 +130,52 @@ export function FrontdeskContent() {
                     <CardTitle className="text-lg">📋 งานวันนี้</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Tabs value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList className="w-full grid grid-cols-2 mb-4 h-auto bg-transparent p-0">
-                            <TabsTrigger
-                                value="pending"
-                                className="flex items-center gap-2 py-3 rounded-none border-b-[3px] border-transparent data-[state=active]:border-orange-500 data-[state=active]:text-orange-600 data-[state=inactive]:text-gray-500 bg-transparent"
-                            >
-                                <span className="font-medium">รอสรุปเคส</span>
-                                <Badge className={pendingRx.length > 0
-                                    ? "bg-orange-500 text-white"
-                                    : "bg-gray-200 text-gray-500"
+                    {/* Healthcare UI v1.0 Tabs */}
+                    <div className="flex items-end gap-6 border-b border-neutral-200 mb-4">
+                        <button
+                            onClick={() => setActiveTab('pending')}
+                            className={`relative pb-3 px-1 text-base font-medium transition-colors ${activeTab === 'pending' ? 'text-neutral-900' : 'text-neutral-500 hover:text-neutral-800'}`}
+                        >
+                            <span>รอสรุปเคส</span>
+                            <span className={pendingRx.length > 0 && activeTab === 'pending'
+                                ? "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-orange-500 px-2 text-sm font-semibold text-white"
+                                : pendingRx.length > 0
+                                    ? "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-neutral-200 bg-white px-2 text-sm text-neutral-400"
+                                    : "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-neutral-200 bg-white px-2 text-sm text-neutral-400"
+                            }>
+                                {pendingRx.length}
+                            </span>
+                            {activeTab === 'pending' && (
+                                <span className="absolute left-0 -bottom-[1px] h-[3px] w-full rounded-full bg-orange-500" />
+                            )}
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('done')}
+                            className={`relative pb-3 px-1 text-base font-medium transition-colors flex flex-col items-start ${activeTab === 'done' ? 'text-neutral-900' : 'text-neutral-500 hover:text-neutral-800'}`}
+                        >
+                            <div className="flex items-center">
+                                <span>รอดำเนินการ</span>
+                                <span className={todayTx.length > 0 && activeTab === 'done'
+                                    ? "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-blue-600 px-2 text-sm font-semibold text-white"
+                                    : todayTx.length > 0
+                                        ? "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-neutral-200 bg-white px-2 text-sm text-neutral-400"
+                                        : "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-neutral-200 bg-white px-2 text-sm text-neutral-400"
                                 }>
-                                    {pendingRx.length}
-                                </Badge>
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="done"
-                                className="flex flex-col items-center gap-0.5 py-2 rounded-none border-b-[3px] border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 data-[state=inactive]:text-gray-500 bg-transparent"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <span className="font-medium">รอดำเนินการ</span>
-                                    <Badge className={todayTx.length > 0
-                                        ? "bg-blue-500 text-white"
-                                        : "bg-gray-200 text-gray-500"
-                                    }>
-                                        {todayTx.length}
-                                    </Badge>
-                                </div>
-                                <span className="text-[10px] text-gray-500">รอเก็บเงิน / ปรับรายการ</span>
-                            </TabsTrigger>
-                        </TabsList>
+                                    {todayTx.length}
+                                </span>
+                            </div>
+                            <span className="text-[10px] text-neutral-400">รอเก็บเงิน / ปรับรายการ</span>
+                            {activeTab === 'done' && (
+                                <span className="absolute left-0 -bottom-[1px] h-[3px] w-full rounded-full bg-blue-600" />
+                            )}
+                        </button>
+                    </div>
 
-                        <TabsContent value="pending">
-                            {loading ? (
+                    {/* Content Zone */}
+                    <div className="mt-6 rounded-2xl bg-neutral-50/60 p-4">
+                        {/* Pending Tab Content */}
+                        {activeTab === 'pending' && (
+                            loading ? (
                                 <div className="text-center py-8 text-muted-foreground">กำลังโหลด...</div>
                             ) : pendingRx.length === 0 ? (
                                 <div className="text-center py-8 text-muted-foreground">
@@ -177,41 +189,45 @@ export function FrontdeskContent() {
                                             href={`/prescriptions/${rx.id}`}
                                             className="block"
                                         >
-                                            <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                                                <div>
-                                                    <div className="font-medium">
-                                                        {rx.patient ? getDisplayName({
-                                                            name: rx.patient.name,
-                                                            name_en: rx.patient.name_en,
-                                                            nationality: rx.patient.nationality || 'thai'
-                                                        }) : '-'}
+                                            {/* Healthcare Card: shadow + ring + hairline accent */}
+                                            <div className="relative rounded-2xl bg-white p-5 shadow-sm ring-1 ring-neutral-200/60 transition hover:shadow-md before:content-[''] before:absolute before:left-0 before:top-4 before:bottom-4 before:w-[2px] before:rounded-full before:bg-orange-500">
+                                                <div className="flex items-start justify-between gap-6">
+                                                    <div className="min-w-0">
+                                                        <div className="text-xl font-semibold text-neutral-900 leading-tight">
+                                                            {rx.patient ? getDisplayName({
+                                                                name: rx.patient.name,
+                                                                name_en: rx.patient.name_en,
+                                                                nationality: rx.patient.nationality || 'thai'
+                                                            }) : '-'}
+                                                        </div>
+                                                        <div className="mt-1 text-base text-neutral-500">
+                                                            <span className="font-mono">{rx.patient?.hn}</span>
+                                                            <span className="mx-2">•</span>
+                                                            <span>{rx.prescription_no}</span>
+                                                        </div>
                                                     </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        <span className="font-mono">{rx.patient?.hn}</span>
-                                                        <span className="mx-2">•</span>
-                                                        <span>{rx.prescription_no}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="font-semibold text-green-600">
-                                                        {formatCurrency(rx.total_price || 0)}
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground">
-                                                        {new Date(rx.created_at).toLocaleTimeString('th-TH', {
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })}
+                                                    <div className="shrink-0 text-right">
+                                                        <div className="text-2xl font-semibold text-emerald-600 tabular-nums">
+                                                            {formatCurrency(rx.total_price || 0)}
+                                                        </div>
+                                                        <div className="mt-1 text-sm text-neutral-400 tabular-nums">
+                                                            {new Date(rx.created_at).toLocaleTimeString('th-TH', {
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </Link>
                                     ))}
                                 </div>
-                            )}
-                        </TabsContent>
+                            )
+                        )}
 
-                        <TabsContent value="done">
-                            {loading ? (
+                        {/* Done Tab Content */}
+                        {activeTab === 'done' && (
+                            loading ? (
                                 <div className="text-center py-8 text-muted-foreground">กำลังโหลด...</div>
                             ) : todayTx.length === 0 ? (
                                 <div className="text-center py-8 text-muted-foreground">
@@ -227,51 +243,54 @@ export function FrontdeskContent() {
                                                 href={`/billing/receipt/${tx.id}`}
                                                 className="block"
                                             >
-                                                <div className={`flex items-center justify-between p-4 bg-white rounded-xl shadow-sm transition-shadow cursor-pointer ${isVoided ? 'opacity-50' : 'hover:shadow-md'}`}>
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="font-medium">
-                                                                {tx.patient ? getDisplayName({
-                                                                    name: tx.patient.name,
-                                                                    name_en: tx.patient.name_en,
-                                                                    nationality: tx.patient.nationality || 'thai'
-                                                                }) : '-'}
-                                                            </span>
-                                                            {isVoided && (
-                                                                <Badge variant="destructive" className="text-xs">
-                                                                    ยกเลิก
+                                                {/* Healthcare Card: shadow + ring + hairline accent */}
+                                                <div className={`relative rounded-2xl bg-white p-5 shadow-sm ring-1 ring-neutral-200/60 transition before:content-[''] before:absolute before:left-0 before:top-4 before:bottom-4 before:w-[2px] before:rounded-full before:bg-blue-600 ${isVoided ? 'opacity-50' : 'hover:shadow-md'}`}>
+                                                    <div className="flex items-start justify-between gap-6">
+                                                        <div className="min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xl font-semibold text-neutral-900 leading-tight">
+                                                                    {tx.patient ? getDisplayName({
+                                                                        name: tx.patient.name,
+                                                                        name_en: tx.patient.name_en,
+                                                                        nationality: tx.patient.nationality || 'thai'
+                                                                    }) : '-'}
+                                                                </span>
+                                                                {isVoided && (
+                                                                    <Badge variant="destructive" className="text-xs">
+                                                                        ยกเลิก
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                            <div className="mt-1 text-base text-neutral-500">
+                                                                <span className="font-mono">{tx.receipt_no}</span>
+                                                                <span className="mx-2">•</span>
+                                                                <span>
+                                                                    {new Date(tx.paid_at).toLocaleTimeString('th-TH', {
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit'
+                                                                    })}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="shrink-0 text-right">
+                                                            <div className={`text-2xl font-semibold tabular-nums ${isVoided ? 'line-through text-neutral-400' : 'text-emerald-600'}`}>
+                                                                {formatCurrency(tx.total_amount || 0)}
+                                                            </div>
+                                                            {!isVoided && (
+                                                                <Badge variant="outline" className="mt-1 text-xs">
+                                                                    🧾 รอเก็บเงิน
                                                                 </Badge>
                                                             )}
                                                         </div>
-                                                        <div className="text-sm text-muted-foreground">
-                                                            <span className="font-mono">{tx.receipt_no}</span>
-                                                            <span className="mx-2">•</span>
-                                                            <span>
-                                                                {new Date(tx.paid_at).toLocaleTimeString('th-TH', {
-                                                                    hour: '2-digit',
-                                                                    minute: '2-digit'
-                                                                })}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className={`font-semibold ${isVoided ? 'line-through text-gray-400' : 'text-green-600'}`}>
-                                                            {formatCurrency(tx.total_amount || 0)}
-                                                        </div>
-                                                        {!isVoided && (
-                                                            <Badge variant="outline" className="text-xs">
-                                                                🧾 รอเก็บเงิน
-                                                            </Badge>
-                                                        )}
                                                     </div>
                                                 </div>
                                             </Link>
                                         )
                                     })}
                                 </div>
-                            )}
-                        </TabsContent>
-                    </Tabs>
+                            )
+                        )}
+                    </div>
 
                     {/* Refresh Button */}
                     <div className="mt-4 text-center">

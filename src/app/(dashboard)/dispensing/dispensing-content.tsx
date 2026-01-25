@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getPendingForDoctor, getFinalizedToday } from './actions'
 import { formatCurrency } from '@/lib/utils'
 import { getDisplayName } from '@/lib/patient-utils'
@@ -87,33 +86,49 @@ export function DispensingContent() {
                 <CardTitle className="text-lg">📋 รายการใบสั่งยา</CardTitle>
             </CardHeader>
             <CardContent>
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="w-full grid grid-cols-2 mb-4 h-auto bg-transparent p-0">
-                        <TabsTrigger
-                            value="pending"
-                            className="flex items-center gap-2 py-3 rounded-none border-b-[3px] border-transparent data-[state=active]:border-orange-500 data-[state=active]:text-orange-600 data-[state=inactive]:text-gray-500 bg-transparent"
-                        >
-                            <span className="font-medium">รอสรุปเคส</span>
-                            <Badge className={pendingRx.length > 0
-                                ? "bg-orange-500 text-white"
-                                : "bg-gray-200 text-gray-500"
-                            }>
-                                {pendingRx.length}
-                            </Badge>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="finalized"
-                            className="flex items-center gap-2 py-3 rounded-none border-b-[3px] border-transparent data-[state=active]:border-gray-500 data-[state=active]:text-gray-700 data-[state=inactive]:text-gray-500 bg-transparent"
-                        >
-                            <span className="font-medium">สรุปเคสแล้ว</span>
-                            <Badge className="bg-gray-200 text-gray-500">
-                                {finalizedTx.length}
-                            </Badge>
-                        </TabsTrigger>
-                    </TabsList>
+                {/* Healthcare UI v1.0 Tabs */}
+                <div className="flex items-end gap-6 border-b border-neutral-200 mb-4">
+                    <button
+                        onClick={() => setActiveTab('pending')}
+                        className={`relative pb-3 px-1 text-base font-medium transition-colors ${activeTab === 'pending' ? 'text-neutral-900' : 'text-neutral-500 hover:text-neutral-800'}`}
+                    >
+                        <span>รอสรุปเคส</span>
+                        <span className={pendingRx.length > 0 && activeTab === 'pending'
+                            ? "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-orange-500 px-2 text-sm font-semibold text-white"
+                            : pendingRx.length > 0
+                                ? "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-neutral-200 bg-white px-2 text-sm text-neutral-400"
+                                : "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-neutral-200 bg-white px-2 text-sm text-neutral-400"
+                        }>
+                            {pendingRx.length}
+                        </span>
+                        {activeTab === 'pending' && (
+                            <span className="absolute left-0 -bottom-[1px] h-[3px] w-full rounded-full bg-orange-500" />
+                        )}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('finalized')}
+                        className={`relative pb-3 px-1 text-base font-medium transition-colors ${activeTab === 'finalized' ? 'text-neutral-900' : 'text-neutral-500 hover:text-neutral-800'}`}
+                    >
+                        <span>สรุปเคสแล้ว</span>
+                        <span className={finalizedTx.length > 0 && activeTab === 'finalized'
+                            ? "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-neutral-600 px-2 text-sm font-semibold text-white"
+                            : finalizedTx.length > 0
+                                ? "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-neutral-200 bg-white px-2 text-sm text-neutral-400"
+                                : "ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-neutral-200 bg-white px-2 text-sm text-neutral-400"
+                        }>
+                            {finalizedTx.length}
+                        </span>
+                        {activeTab === 'finalized' && (
+                            <span className="absolute left-0 -bottom-[1px] h-[3px] w-full rounded-full bg-neutral-600" />
+                        )}
+                    </button>
+                </div>
 
-                    <TabsContent value="pending">
-                        {loading ? (
+                {/* Content Zone */}
+                <div className="mt-6 rounded-2xl bg-neutral-50/60 p-4">
+                    {/* Pending Tab Content */}
+                    {activeTab === 'pending' && (
+                        loading ? (
                             <div className="text-center py-8 text-muted-foreground">กำลังโหลด...</div>
                         ) : pendingRx.length === 0 ? (
                             <div className="text-center py-8 text-muted-foreground">
@@ -127,41 +142,45 @@ export function DispensingContent() {
                                         href={`/prescriptions/${rx.id}`}
                                         className="block"
                                     >
-                                        <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                                            <div>
-                                                <div className="font-medium">
-                                                    {rx.patient ? getDisplayName({
-                                                        name: rx.patient.name,
-                                                        name_en: rx.patient.name_en,
-                                                        nationality: rx.patient.nationality || 'thai'
-                                                    }) : '-'}
+                                        {/* Healthcare Card */}
+                                        <div className="relative rounded-2xl bg-white p-5 shadow-sm ring-1 ring-neutral-200/60 transition hover:shadow-md before:content-[''] before:absolute before:left-0 before:top-4 before:bottom-4 before:w-[2px] before:rounded-full before:bg-orange-500">
+                                            <div className="flex items-start justify-between gap-6">
+                                                <div className="min-w-0">
+                                                    <div className="text-xl font-semibold text-neutral-900 leading-tight">
+                                                        {rx.patient ? getDisplayName({
+                                                            name: rx.patient.name,
+                                                            name_en: rx.patient.name_en,
+                                                            nationality: rx.patient.nationality || 'thai'
+                                                        }) : '-'}
+                                                    </div>
+                                                    <div className="mt-1 text-base text-neutral-500">
+                                                        <span className="font-mono">{rx.patient?.hn}</span>
+                                                        <span className="mx-2">•</span>
+                                                        <span>{rx.prescription_no}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    <span className="font-mono">{rx.patient?.hn}</span>
-                                                    <span className="mx-2">•</span>
-                                                    <span>{rx.prescription_no}</span>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="font-semibold text-green-600">
-                                                    {formatCurrency(rx.total_price || 0)}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground">
-                                                    {new Date(rx.created_at).toLocaleTimeString('th-TH', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    })}
+                                                <div className="shrink-0 text-right">
+                                                    <div className="text-2xl font-semibold text-emerald-600 tabular-nums">
+                                                        {formatCurrency(rx.total_price || 0)}
+                                                    </div>
+                                                    <div className="mt-1 text-sm text-neutral-400 tabular-nums">
+                                                        {new Date(rx.created_at).toLocaleTimeString('th-TH', {
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </Link>
                                 ))}
                             </div>
-                        )}
-                    </TabsContent>
+                        )
+                    )}
 
-                    <TabsContent value="finalized">
-                        {loading ? (
+                    {/* Finalized Tab Content */}
+                    {activeTab === 'finalized' && (
+                        loading ? (
                             <div className="text-center py-8 text-muted-foreground">กำลังโหลด...</div>
                         ) : finalizedTx.length === 0 ? (
                             <div className="text-center py-8 text-muted-foreground">
@@ -178,49 +197,52 @@ export function DispensingContent() {
                                             href={`/billing/receipt/${tx.id}`}
                                             className="block"
                                         >
-                                            <div className={`flex items-center justify-between p-4 bg-white rounded-xl shadow-sm transition-shadow cursor-pointer ${isVoided ? 'opacity-50' : 'hover:shadow-md'}`}>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-medium">
-                                                            {patient ? getDisplayName({
-                                                                name: patient.name,
-                                                                name_en: patient.name_en,
-                                                                nationality: patient.nationality || 'thai'
-                                                            }) : '-'}
-                                                        </span>
-                                                        {isVoided && (
-                                                            <Badge variant="destructive" className="text-xs">
-                                                                ยกเลิก
-                                                            </Badge>
-                                                        )}
+                                            {/* Healthcare Card */}
+                                            <div className={`relative rounded-2xl bg-white p-5 shadow-sm ring-1 ring-neutral-200/60 transition before:content-[''] before:absolute before:left-0 before:top-4 before:bottom-4 before:w-[2px] before:rounded-full before:bg-neutral-400 ${isVoided ? 'opacity-50' : 'hover:shadow-md'}`}>
+                                                <div className="flex items-start justify-between gap-6">
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xl font-semibold text-neutral-900 leading-tight">
+                                                                {patient ? getDisplayName({
+                                                                    name: patient.name,
+                                                                    name_en: patient.name_en,
+                                                                    nationality: patient.nationality || 'thai'
+                                                                }) : '-'}
+                                                            </span>
+                                                            {isVoided && (
+                                                                <Badge variant="destructive" className="text-xs">
+                                                                    ยกเลิก
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        <div className="mt-1 text-base text-neutral-500">
+                                                            <span className="font-mono">{tx.receipt_no}</span>
+                                                            <span className="mx-2">•</span>
+                                                            <span>
+                                                                {new Date(tx.paid_at).toLocaleTimeString('th-TH', {
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit'
+                                                                })}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        <span className="font-mono">{tx.receipt_no}</span>
-                                                        <span className="mx-2">•</span>
-                                                        <span>
-                                                            {new Date(tx.paid_at).toLocaleTimeString('th-TH', {
-                                                                hour: '2-digit',
-                                                                minute: '2-digit'
-                                                            })}
-                                                        </span>
+                                                    <div className="shrink-0 text-right">
+                                                        <div className={`text-2xl font-semibold tabular-nums ${isVoided ? 'line-through text-neutral-400' : 'text-emerald-600'}`}>
+                                                            {formatCurrency(tx.total_amount || 0)}
+                                                        </div>
+                                                        <Badge variant="outline" className="mt-1 text-xs opacity-70">
+                                                            ดูใบเสร็จ
+                                                        </Badge>
                                                     </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className={`font-semibold ${isVoided ? 'line-through text-gray-400' : 'text-green-600'}`}>
-                                                        {formatCurrency(tx.total_amount || 0)}
-                                                    </div>
-                                                    <Badge variant="outline" className="text-xs opacity-70">
-                                                        ดูใบเสร็จ
-                                                    </Badge>
                                                 </div>
                                             </div>
                                         </Link>
                                     )
                                 })}
                             </div>
-                        )}
-                    </TabsContent>
-                </Tabs>
+                        )
+                    )}
+                </div>
 
                 {/* Refresh Button */}
                 <div className="mt-4 text-center">
